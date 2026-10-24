@@ -1,0 +1,92 @@
+# ==========================================
+# 1. KREDENSIAL, KUNCI & RAHASIA (SANGAT KRITIS)
+# ==========================================
+.env
+.env*
+!.env.example
+*.pem
+*.key
+*.cert
+*.crt
+*.pfx
+*.p12
+id_rsa*
+id_ed25519*
+service-account*.json
+.npmrc
+.yarnrc
+
+# ==========================================
+# 2. DEPENDENSI NODE.JS
+# ==========================================
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+# ==========================================
+# 3. BUILD ARTIFACTS, CACHE & VERCEL
+# ==========================================
+.next/
+out/
+build/
+dist/
+.vercel/
+.vercel
+.turbo/
+*.tsbuildinfo
+
+# ==========================================
+# 4. BASIS DATA LOKAL & DUMP BACKUP
+# ==========================================
+*.sqlite
+*.sqlite3
+*.db
+*.dump
+dump.rdb
+*.bak
+*.backup
+
+# ==========================================
+# 5. SAMPAH SISTEM OPERASI (OS JUNK)
+# ==========================================
+# Windows
+Thumbs.db
+Thumbs.db:encryptable
+ehthumbs.db
+ehthumbs_vista.db
+[Dd]esktop.ini
+$RECYCLE.BIN/
+*.lnk
+
+# macOS
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+.AppleDouble
+.LSOverride
+
+# ==========================================
+# 6. IDE, EDITOR CACHE & SEMENTARA
+# ==========================================
+.idea/
+*.sublime-project
+*.sublime-workspace
+.vscode/*
+!.vscode/settings.json
+!.vscode/extensions.json
+*.swp
+*.swo
+
+# ==========================================
+# 7. TESTING, CACHE & SEMENTARA
+# ==========================================
+coverage/
+.nyc_output/
+*.lcov
+tmp/
+temp/

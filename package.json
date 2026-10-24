@@ -1,0 +1,29 @@
+{
+  "name": "manajemen-tugas-web",
+  "version": "1.0.0",
+  "description": "Sistem Aplikasi Manajemen Tugas Berbasis Web Modern",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node server.js",
+    "seed": "node seed.js"
+  },
+  "keywords": [
+    "task-management",
+    "neon-db",
+    "vercel",
+    "express",
+    "html-css-js"
+  ],
+  "author": "Nugi",
+  "license": "ISC",
+  "dependencies": {
+    "@neondatabase/serverless": "^1.2.0",
+    "bcryptjs": "^3.0.3",
+    "cookie-parser": "^1.4.7",
+    "dotenv": "^18.0.9",
+    "express": "^5.3.0",
+    "jsonwebtoken": "^9.0.3",
+    "pg": "^8.23.1"
+  }
+}

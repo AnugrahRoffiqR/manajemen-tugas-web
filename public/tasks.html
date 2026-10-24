@@ -1,0 +1,481 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Daftar Tugas — Sistem Manajemen Tugas</title>
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body style="display: flex; flex-direction: column;">
+
+  <div id="mobile-header"></div>
+
+  <div style="display: flex; min-height: 100dvh;">
+    <div id="sidebar-container"></div>
+
+    <main style="flex: 1; padding: 2rem; max-width: 1300px; margin: 0 auto; width: 100%; margin-bottom: 70px;">
+      
+      <!-- Top Action Bar -->
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; flex-wrap: wrap; gap: 1rem;">
+        <div>
+          <h1 style="font-size: 1.75rem; font-weight: 700; color: #f8fafc; letter-spacing: -0.02em;">Workspace Tugas</h1>
+          <p style="color: #94a3b8; font-size: 0.875rem;">Kelola siklus pekerjaan tim, ubah status, dan pantau tenggat waktu.</p>
+        </div>
+        
+        <div style="display: flex; align-items: center; gap: 0.75rem;">
+          <!-- Dual View Switcher -->
+          <div style="background: var(--surface-shell); border: 1px solid var(--border-hairline); border-radius: 0.75rem; padding: 4px; display: flex; gap: 4px;">
+            <button id="view-kanban-btn" onclick="switchView('kanban')" class="btn-secondary" style="padding: 0.375rem 0.75rem; min-height: 32px; font-size: 0.75rem; border: none; background: #3b82f6; color: #fff;">
+              ▦ Kanban Board
+            </button>
+            <button id="view-table-btn" onclick="switchView('table')" class="btn-secondary" style="padding: 0.375rem 0.75rem; min-height: 32px; font-size: 0.75rem; border: none; background: transparent; color: #94a3b8;">
+              ☰ Tabel List
+            </button>
+          </div>
+
+          <button onclick="openTaskModal()" class="btn-island">
+            <span>+ Buat Tugas</span>
+            <span class="btn-icon-pill">→</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Filter Toolbar -->
+      <div class="doppelrand-shell" style="margin-bottom: 1.75rem;">
+        <div class="doppelrand-core" style="padding: 1rem 1.25rem;">
+          <div style="display: flex; gap: 1rem; flex-wrap: wrap; align-items: center; justify-content: space-between;">
+            
+            <!-- Search Input -->
+            <div style="flex: 1; min-width: 240px;">
+              <input type="text" id="filter-search" class="form-input" placeholder="🔍 Cari judul atau deskripsi tugas..." oninput="handleSearch()">
+            </div>
+
+            <!-- Filter Controls -->
+            <div style="display: flex; gap: 0.75rem; flex-wrap: wrap; align-items: center;">
+              <select id="filter-status" class="form-select" style="width: auto; padding: 0.5rem 0.875rem;" onchange="loadTasks()">
+                <option value="Semua">Semua Status</option>
+                <option value="To Do">To Do</option>
+                <option value="In Progress">In Progress</option>
+                <option value="Done">Done</option>
+              </select>
+
+              <select id="filter-priority" class="form-select" style="width: auto; padding: 0.5rem 0.875rem;" onchange="loadTasks()">
+                <option value="Semua">Semua Prioritas</option>
+                <option value="High">🔴 High</option>
+                <option value="Medium">🟡 Medium</option>
+                <option value="Low">🟢 Low</option>
+              </select>
+
+              <select id="filter-category" class="form-select" style="width: auto; padding: 0.5rem 0.875rem;" onchange="loadTasks()">
+                <option value="Semua">Semua Kategori</option>
+                <option value="Operasional">Operasional</option>
+                <option value="Teknis">Teknis</option>
+                <option value="Administrasi">Administrasi</option>
+                <option value="Bisnis">Bisnis</option>
+                <option value="Umum">Umum</option>
+              </select>
+
+              <button onclick="resetFilters()" class="btn-secondary" style="padding: 0.5rem 0.875rem; min-height: 38px; font-size: 0.75rem;">
+                ↺ Reset
+              </button>
+            </div>
+
+          </div>
+        </div>
+      </div>
+
+      <!-- VIEW 1: KANBAN BOARD -->
+      <div id="kanban-view" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 1.5rem; align-items: flex-start;">
+        
+        <!-- Kolom 1: To Do -->
+        <div class="doppelrand-shell">
+          <div class="doppelrand-core" style="background: rgba(15, 23, 42, 0.6);">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; border-bottom: 1px solid var(--border-hairline); padding-bottom: 0.75rem;">
+              <div style="display: flex; align-items: center; gap: 0.5rem;">
+                <span style="color: #94a3b8; font-size: 1.1rem;">○</span>
+                <h3 style="font-size: 0.9375rem; font-weight: 700; color: #f8fafc;">Antrean (To Do)</h3>
+              </div>
+              <span id="count-todo" class="badge badge-todo font-mono">0</span>
+            </div>
+            <div id="col-todo" style="display: flex; flex-direction: column; gap: 0.875rem; min-height: 120px;"></div>
+          </div>
+        </div>
+
+        <!-- Kolom 2: In Progress -->
+        <div class="doppelrand-shell">
+          <div class="doppelrand-core" style="background: rgba(15, 23, 42, 0.6);">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; border-bottom: 1px solid var(--border-hairline); padding-bottom: 0.75rem;">
+              <div style="display: flex; align-items: center; gap: 0.5rem;">
+                <span style="color: #fbbf24; font-size: 1.1rem;">◐</span>
+                <h3 style="font-size: 0.9375rem; font-weight: 700; color: #fbbf24;">Sedang Jalan (In Progress)</h3>
+              </div>
+              <span id="count-inprogress" class="badge badge-in-progress font-mono">0</span>
+            </div>
+            <div id="col-inprogress" style="display: flex; flex-direction: column; gap: 0.875rem; min-height: 120px;"></div>
+          </div>
+        </div>
+
+        <!-- Kolom 3: Done -->
+        <div class="doppelrand-shell">
+          <div class="doppelrand-core" style="background: rgba(15, 23, 42, 0.6);">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; border-bottom: 1px solid var(--border-hairline); padding-bottom: 0.75rem;">
+              <div style="display: flex; align-items: center; gap: 0.5rem;">
+                <span style="color: #34d399; font-size: 1.1rem;">✓</span>
+                <h3 style="font-size: 0.9375rem; font-weight: 700; color: #34d399;">Selesai (Done)</h3>
+              </div>
+              <span id="count-done" class="badge badge-done font-mono">0</span>
+            </div>
+            <div id="col-done" style="display: flex; flex-direction: column; gap: 0.875rem; min-height: 120px;"></div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- VIEW 2: TABLE LIST VIEW -->
+      <div id="table-view" style="display: none;">
+        <div class="doppelrand-shell">
+          <div class="doppelrand-core" style="padding: 1.25rem;">
+            <div style="overflow-x: auto;">
+              <table style="width: 100%; border-collapse: collapse; text-align: left;">
+                <thead>
+                  <tr style="border-bottom: 1px solid var(--border-hairline); color: #64748b; font-size: 0.75rem; text-transform: uppercase;">
+                    <th style="padding: 0.75rem 0.5rem; width: 40px;"></th>
+                    <th style="padding: 0.75rem 1rem;">Judul Tugas</th>
+                    <th style="padding: 0.75rem 1rem;">Kategori</th>
+                    <th style="padding: 0.75rem 1rem;">Prioritas</th>
+                    <th style="padding: 0.75rem 1rem;">Status</th>
+                    <th style="padding: 0.75rem 1rem;">Tenggat Waktu</th>
+                    <th style="padding: 0.75rem 1rem;">Assignee</th>
+                    <th style="padding: 0.75rem 1rem; text-align: right;">Aksi</th>
+                  </tr>
+                </thead>
+                <tbody id="task-table-rows"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </main>
+  </div>
+
+  <div id="mobile-bottom-nav"></div>
+
+  <!-- Modal Buat / Edit Tugas -->
+  <div id="task-modal" class="modal-overlay">
+    <div class="modal-container">
+      <div style="padding: 1.25rem 1.5rem; border-bottom: 1px solid var(--border-hairline); display: flex; justify-content: space-between; align-items: center;">
+        <h3 id="modal-title" style="font-size: 1.125rem; font-weight: 700; color: #f8fafc;">+ Tambah Tugas Baru</h3>
+        <button onclick="closeTaskModal()" style="background: none; border: none; color: #94a3b8; font-size: 1.25rem; cursor: pointer;">✕</button>
+      </div>
+
+      <form id="task-form" style="padding: 1.5rem;">
+        <input type="hidden" id="edit-task-id" value="">
+
+        <div style="margin-bottom: 1rem;">
+          <label style="display: block; font-size: 0.8125rem; font-weight: 600; color: #cbd5e1; margin-bottom: 0.375rem;">Judul Tugas *</label>
+          <input type="text" id="task-title" class="form-input" placeholder="Contoh: Perbaiki Algoritma Reminder" required>
+        </div>
+
+        <div style="margin-bottom: 1rem;">
+          <label style="display: block; font-size: 0.8125rem; font-weight: 600; color: #cbd5e1; margin-bottom: 0.375rem;">Deskripsi</label>
+          <textarea id="task-desc" class="form-textarea" rows="3" placeholder="Instruksi pengerjaan..."></textarea>
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem;">
+          <div>
+            <label style="display: block; font-size: 0.8125rem; font-weight: 600; color: #cbd5e1; margin-bottom: 0.375rem;">Kategori</label>
+            <select id="task-category" class="form-select">
+              <option value="Operasional">Operasional</option>
+              <option value="Teknis">Teknis</option>
+              <option value="Administrasi">Administrasi</option>
+              <option value="Bisnis">Bisnis</option>
+              <option value="Umum">Umum</option>
+            </select>
+          </div>
+          <div>
+            <label style="display: block; font-size: 0.8125rem; font-weight: 600; color: #cbd5e1; margin-bottom: 0.375rem;">Prioritas</label>
+            <select id="task-priority" class="form-select">
+              <option value="Low">🟢 Low</option>
+              <option value="Medium" selected>🟡 Medium</option>
+              <option value="High">🔴 High</option>
+            </select>
+          </div>
+        </div>
+
+        <div style="margin-bottom: 1rem;">
+          <label style="display: block; font-size: 0.8125rem; font-weight: 600; color: #cbd5e1; margin-bottom: 0.375rem;">Status</label>
+          <select id="task-status" class="form-select">
+            <option value="To Do">To Do (Antrean)</option>
+            <option value="In Progress">In Progress (Sedang Jalan)</option>
+            <option value="Done">Done (Selesai)</option>
+          </select>
+        </div>
+
+        <div style="margin-bottom: 1.5rem;">
+          <label style="display: block; font-size: 0.8125rem; font-weight: 600; color: #cbd5e1; margin-bottom: 0.375rem;">Tenggat Waktu *</label>
+          <input type="datetime-local" id="task-due-date" class="form-input" required>
+        </div>
+
+        <div style="display: flex; justify-content: flex-end; gap: 0.75rem;">
+          <button type="button" onclick="closeTaskModal()" class="btn-secondary">Batal</button>
+          <button type="submit" id="save-task-btn" class="btn-island">
+            <span id="save-task-btn-text">Simpan Tugas</span>
+            <span class="btn-icon-pill">✓</span>
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script src="/js/api.js"></script>
+  <script src="/js/navbar.js"></script>
+  <script>
+    initNavigation('tasks');
+
+    let allTasks = [];
+    let currentView = 'kanban';
+
+    function switchView(view) {
+      currentView = view;
+      const kanbanBtn = document.getElementById('view-kanban-btn');
+      const tableBtn = document.getElementById('view-table-btn');
+      const kanbanView = document.getElementById('kanban-view');
+      const tableView = document.getElementById('table-view');
+
+      if (view === 'kanban') {
+        kanbanView.style.display = 'grid';
+        tableView.style.display = 'none';
+        kanbanBtn.style.background = '#3b82f6';
+        kanbanBtn.style.color = '#fff';
+        tableBtn.style.background = 'transparent';
+        tableBtn.style.color = '#94a3b8';
+      } else {
+        kanbanView.style.display = 'none';
+        tableView.style.display = 'block';
+        tableBtn.style.background = '#3b82f6';
+        tableBtn.style.color = '#fff';
+        kanbanBtn.style.background = 'transparent';
+        kanbanBtn.style.color = '#94a3b8';
+      }
+    }
+
+    const handleSearch = debounce(() => {
+      loadTasks();
+    }, 250);
+
+    function resetFilters() {
+      document.getElementById('filter-search').value = '';
+      document.getElementById('filter-status').value = 'Semua';
+      document.getElementById('filter-priority').value = 'Semua';
+      document.getElementById('filter-category').value = 'Semua';
+      loadTasks();
+    }
+
+    async function loadTasks() {
+      const search = document.getElementById('filter-search').value;
+      const status = document.getElementById('filter-status').value;
+      const priority = document.getElementById('filter-priority').value;
+      const category = document.getElementById('filter-category').value;
+
+      const params = new URLSearchParams();
+      if (search) params.append('search', search);
+      if (status !== 'Semua') params.append('status', status);
+      if (priority !== 'Semua') params.append('priority', priority);
+      if (category !== 'Semua') params.append('category', category);
+
+      try {
+        const res = await apiFetch(`/api/tasks?${params.toString()}`);
+        if (res && res.data) {
+          allTasks = res.data;
+          renderKanban(allTasks);
+          renderTable(allTasks);
+        }
+      } catch (err) {}
+    }
+
+    function renderKanban(tasks) {
+      const colTodo = document.getElementById('col-todo');
+      const colInProg = document.getElementById('col-inprogress');
+      const colDone = document.getElementById('col-done');
+
+      const todos = tasks.filter(t => t.status === 'To Do');
+      const inProgs = tasks.filter(t => t.status === 'In Progress');
+      const dones = tasks.filter(t => t.status === 'Done');
+
+      document.getElementById('count-todo').textContent = todos.length;
+      document.getElementById('count-inprogress').textContent = inProgs.length;
+      document.getElementById('count-done').textContent = dones.length;
+
+      colTodo.innerHTML = todos.length ? todos.map(t => createKanbanCard(t)).join('') : '<p style="font-size:12px; color:#64748b; text-align:center; padding:1.5rem;">Tidak ada antrean</p>';
+      colInProg.innerHTML = inProgs.length ? inProgs.map(t => createKanbanCard(t)).join('') : '<p style="font-size:12px; color:#64748b; text-align:center; padding:1.5rem;">Kosong</p>';
+      colDone.innerHTML = dones.length ? dones.map(t => createKanbanCard(t)).join('') : '<p style="font-size:12px; color:#64748b; text-align:center; padding:1.5rem;">Belum ada yang selesai</p>';
+    }
+
+    function createKanbanCard(task) {
+      const priorityPill = {
+        High: '<span class="badge" style="background:rgba(239,68,68,0.2); color:#f87171;">HIGH</span>',
+        Medium: '<span class="badge" style="background:rgba(245,158,11,0.2); color:#fbbf24;">MED</span>',
+        Low: '<span class="badge" style="background:rgba(16,185,129,0.2); color:#34d399;">LOW</span>',
+      }[task.priority] || '';
+
+      return `
+        <div style="background: var(--surface-core); border: 1px solid var(--border-hairline); border-radius: 0.875rem; padding: 1rem; box-shadow: 0 2px 8px rgba(0,0,0,0.3);">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+            ${priorityPill}
+            <span style="font-size: 11px; color: #94a3b8; font-weight: 500;">${task.category}</span>
+          </div>
+
+          <h4 style="font-size: 0.9375rem; font-weight: 600; color: #f8fafc; margin-bottom: 0.375rem;">${task.title}</h4>
+          ${task.description ? `<p style="font-size: 0.75rem; color: #94a3b8; margin-bottom: 0.75rem; line-height: 1.4;">${task.description}</p>` : ''}
+
+          <div style="display: flex; align-items: center; justify-content: space-between; border-top: 1px solid var(--border-hairline); padding-top: 0.75rem; margin-top: 0.5rem;">
+            <span style="font-size: 11px; color: #64748b;" class="font-mono">📅 ${formatDateWIB(task.due_date)}</span>
+            
+            <div style="display: flex; gap: 4px;">
+              ${task.status !== 'To Do' ? `<button onclick="updateTaskStatus(${task.id}, 'To Do')" title="Pindah ke To Do" style="background:none; border:none; color:#94a3b8; cursor:pointer;">⏪</button>` : ''}
+              ${task.status !== 'In Progress' ? `<button onclick="updateTaskStatus(${task.id}, 'In Progress')" title="Pindah ke In Progress" style="background:none; border:none; color:#fbbf24; cursor:pointer;">▶</button>` : ''}
+              ${task.status !== 'Done' ? `<button onclick="updateTaskStatus(${task.id}, 'Done')" title="Tandai Selesai" style="background:none; border:none; color:#34d399; cursor:pointer;">✓</button>` : ''}
+              <button onclick="openEditTaskModal(${task.id})" title="Edit" style="background:none; border:none; color:#60a5fa; cursor:pointer;">✏️</button>
+              <button onclick="deleteTask(${task.id})" title="Hapus" style="background:none; border:none; color:#ef4444; cursor:pointer;">🗑️</button>
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
+    function renderTable(tasks) {
+      const tbody = document.getElementById('task-table-rows');
+      if (!tasks.length) {
+        tbody.innerHTML = '<tr><td colspan="8" style="text-align:center; padding:2rem; color:#64748b;">Tidak ada data tugas yang sesuai.</td></tr>';
+        return;
+      }
+
+      tbody.innerHTML = tasks.map(t => `
+        <tr style="border-bottom: 1px solid var(--border-hairline); font-size: 0.875rem;">
+          <td style="padding: 0.875rem 0.5rem;">
+            <input type="checkbox" ${t.completed ? 'checked' : ''} onchange="updateTaskStatus(${t.id}, this.checked ? 'Done' : 'In Progress')" style="width: 18px; height: 18px; cursor: pointer; accent-color: #10b981;">
+          </td>
+          <td style="padding: 0.875rem 1rem; font-weight: 600; color: #f8fafc;">${t.title}</td>
+          <td style="padding: 0.875rem 1rem; color: #cbd5e1; font-size: 0.8125rem;">${t.category}</td>
+          <td style="padding: 0.875rem 1rem;">
+            <span style="font-weight: 700; font-size: 0.75rem; color: ${t.priority === 'High' ? '#ef4444' : t.priority === 'Medium' ? '#f59e0b' : '#10b981'};">
+              ${t.priority}
+            </span>
+          </td>
+          <td style="padding: 0.875rem 1rem;">
+            <span class="badge ${t.status === 'Done' ? 'badge-done' : t.status === 'In Progress' ? 'badge-in-progress' : 'badge-todo'}">
+              ${t.status}
+            </span>
+          </td>
+          <td style="padding: 0.875rem 1rem; color: #94a3b8; font-size: 0.8125rem;" class="font-mono">${formatDateWIB(t.due_date)}</td>
+          <td style="padding: 0.875rem 1rem; color: #94a3b8; font-size: 0.8125rem;">${t.assignee_name || '-'}</td>
+          <td style="padding: 0.875rem 1rem; text-align: right;">
+            <button onclick="openEditTaskModal(${t.id})" class="btn-secondary" style="padding: 4px 8px; min-height: 28px; font-size: 12px; margin-right: 4px;">Edit</button>
+            <button onclick="deleteTask(${t.id})" class="btn-danger" style="padding: 4px 8px; min-height: 28px; font-size: 12px;">Hapus</button>
+          </td>
+        </tr>
+      `).join('');
+    }
+
+    async function updateTaskStatus(taskId, status) {
+      try {
+        await apiFetch(`/api/tasks/${taskId}`, {
+          method: 'PUT',
+          body: JSON.stringify({ status }),
+        });
+        showToast('Status berhasil diubah!', 'success');
+        loadTasks();
+      } catch (e) {}
+    }
+
+    async function deleteTask(taskId) {
+      if (!confirm('Apakah Anda yakin ingin menghapus tugas ini?')) return;
+      try {
+        await apiFetch(`/api/tasks/${taskId}`, { method: 'DELETE' });
+        showToast('Tugas berhasil dihapus!', 'info');
+        loadTasks();
+      } catch (e) {}
+    }
+
+    // Modal Create / Edit
+    function openTaskModal() {
+      document.getElementById('task-form').reset();
+      document.getElementById('edit-task-id').value = '';
+      document.getElementById('modal-title').textContent = '+ Tambah Tugas Baru';
+      document.getElementById('save-task-btn-text').textContent = 'Simpan Tugas';
+
+      const tomorrow = new Date();
+      tomorrow.setDate(tomorrow.getDate() + 1);
+      tomorrow.setHours(17, 0, 0, 0);
+      const tzOffset = tomorrow.getTimezoneOffset() * 60000;
+      document.getElementById('task-due-date').value = new Date(tomorrow.getTime() - tzOffset).toISOString().slice(0, 16);
+
+      document.getElementById('task-modal').classList.add('active');
+    }
+
+    function openEditTaskModal(id) {
+      const task = allTasks.find(t => t.id === id);
+      if (!task) return;
+
+      document.getElementById('edit-task-id').value = task.id;
+      document.getElementById('task-title').value = task.title;
+      document.getElementById('task-desc').value = task.description || '';
+      document.getElementById('task-category').value = task.category;
+      document.getElementById('task-priority').value = task.priority;
+      document.getElementById('task-status').value = task.status;
+
+      const date = new Date(task.due_date);
+      const tzOffset = date.getTimezoneOffset() * 60000;
+      document.getElementById('task-due-date').value = new Date(date.getTime() - tzOffset).toISOString().slice(0, 16);
+
+      document.getElementById('modal-title').textContent = '✏️ Edit Tugas';
+      document.getElementById('save-task-btn-text').textContent = 'Perbarui Tugas';
+      document.getElementById('task-modal').classList.add('active');
+    }
+
+    function closeTaskModal() {
+      document.getElementById('task-modal').classList.remove('active');
+    }
+
+    document.getElementById('task-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const saveBtn = document.getElementById('save-task-btn');
+      saveBtn.disabled = true;
+
+      const id = document.getElementById('edit-task-id').value;
+      const title = document.getElementById('task-title').value;
+      const description = document.getElementById('task-desc').value;
+      const category = document.getElementById('task-category').value;
+      const priority = document.getElementById('task-priority').value;
+      const status = document.getElementById('task-status').value;
+      const due_date = document.getElementById('task-due-date').value;
+
+      try {
+        if (id) {
+          // Update
+          await apiFetch(`/api/tasks/${id}`, {
+            method: 'PUT',
+            body: JSON.stringify({ title, description, category, priority, status, due_date }),
+          });
+          showToast('Tugas berhasil diperbarui!', 'success');
+        } else {
+          // Create
+          await apiFetch('/api/tasks', {
+            method: 'POST',
+            body: JSON.stringify({ title, description, category, priority, due_date }),
+          });
+          showToast('Tugas baru berhasil dibuat!', 'success');
+        }
+        closeTaskModal();
+        loadTasks();
+      } catch (err) {
+      } finally {
+        saveBtn.disabled = false;
+      }
+    });
+
+    loadTasks();
+  </script>
+</body>
+</html>

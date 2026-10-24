@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Masuk — Sistem Manajemen Tugas</title>
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body style="display: flex; align-items: center; justify-content: center; min-height: 100dvh; padding: 1.5rem; background: radial-gradient(circle at 50% 10%, rgba(59, 130, 246, 0.08) 0%, transparent 60%), #090d16;">
+
+  <div class="doppelrand-shell" style="width: 100%; max-width: 440px;">
+    <div class="doppelrand-core" style="padding: 2.25rem 2rem;">
+      
+      <!-- Brand Header -->
+      <div style="text-align: center; margin-bottom: 2rem;">
+        <div style="width: 48px; height: 48px; border-radius: 14px; background: linear-gradient(135deg, #3b82f6, #1d4ed8); display: inline-flex; align-items: center; justify-content: center; color: #fff; font-size: 22px; font-weight: 800; box-shadow: 0 4px 16px rgba(59, 130, 246, 0.4); margin-bottom: 0.875rem;">
+          ✓
+        </div>
+        <h1 style="font-size: 1.5rem; font-weight: 700; color: #f8fafc; letter-spacing: -0.02em;">Manajemen Tugas</h1>
+        <p style="font-size: 0.875rem; color: #94a3b8; margin-top: 0.25rem;">Masuk untuk mengelola workspace tim Anda</p>
+      </div>
+
+      <!-- Error Alert Box -->
+      <div id="error-alert" style="display: none; background: rgba(239, 68, 68, 0.12); border: 1px solid rgba(239, 68, 68, 0.3); border-radius: 0.75rem; padding: 0.75rem 1rem; color: #f87171; font-size: 0.875rem; margin-bottom: 1.25rem;">
+        <span id="error-message"></span>
+      </div>
+
+      <!-- Login Form -->
+      <form id="login-form">
+        <div style="margin-bottom: 1.25rem;">
+          <label for="email" style="display: block; font-size: 0.8125rem; font-weight: 600; color: #cbd5e1; margin-bottom: 0.5rem;">
+            Alamat Email
+          </label>
+          <input 
+            type="email" 
+            id="email" 
+            name="email" 
+            class="form-input" 
+            placeholder="admin@manajementugas.local" 
+            required
+            autocomplete="email"
+          >
+        </div>
+
+        <div style="margin-bottom: 1.75rem;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+            <label for="password" style="font-size: 0.8125rem; font-weight: 600; color: #cbd5e1;">
+              Kata Sandi
+            </label>
+            <button 
+              type="button" 
+              id="toggle-pwd-btn" 
+              style="background: none; border: none; color: #3b82f6; font-size: 0.75rem; font-weight: 600; cursor: pointer;"
+            >
+              Lihat Sandi
+            </button>
+          </div>
+          <input 
+            type="password" 
+            id="password" 
+            name="password" 
+            class="form-input" 
+            placeholder="••••••••" 
+            required
+            autocomplete="current-password"
+          >
+        </div>
+
+        <button type="submit" id="submit-btn" class="btn-island" style="width: 100%; justify-content: center;">
+          <span id="btn-text">Masuk ke Sistem</span>
+          <span class="btn-icon-pill">→</span>
+        </button>
+      </form>
+
+      <!-- Demo Credentials Helper -->
+      <div style="margin-top: 1.75rem; padding-top: 1.25rem; border-top: 1px solid var(--border-hairline); text-align: center;">
+        <p style="font-size: 0.75rem; color: #64748b; margin-bottom: 0.375rem;">Akun Owner Default:</p>
+        <div style="display: inline-block; background: rgba(255, 255, 255, 0.04); border: 1px solid var(--border-hairline); border-radius: 0.5rem; padding: 0.375rem 0.75rem; font-size: 0.75rem; color: #94a3b8;">
+          <code class="font-mono" style="color: #60a5fa;">admin@manajementugas.local</code> / <code class="font-mono" style="color: #34d399;">Admin123!</code>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <script src="/js/api.js"></script>
+  <script>
+    // Toggle Password Visibility
+    const pwdInput = document.getElementById('password');
+    const toggleBtn = document.getElementById('toggle-pwd-btn');
+    toggleBtn.addEventListener('click', () => {
+      if (pwdInput.type === 'password') {
+        pwdInput.type = 'text';
+        toggleBtn.textContent = 'Sembunyikan';
+      } else {
+        pwdInput.type = 'password';
+        toggleBtn.textContent = 'Lihat Sandi';
+      }
+    });
+
+    // Form Submission
+    const loginForm = document.getElementById('login-form');
+    const submitBtn = document.getElementById('submit-btn');
+    const btnText = document.getElementById('btn-text');
+    const errorAlert = document.getElementById('error-alert');
+    const errorMessage = document.getElementById('error-message');
+
+    loginForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      errorAlert.style.display = 'none';
+
+      // Anti-double-click state
+      submitBtn.disabled = true;
+      btnText.textContent = 'Memverifikasi...';
+
+      const email = document.getElementById('email').value.trim();
+      const password = document.getElementById('password').value;
+
+      try {
+        const res = await fetch('/api/auth/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email, password }),
+        });
+
+        const data = await res.json();
+
+        if (!res.ok) {
+          throw new Error(data.message || 'Email atau kata sandi tidak sesuai.');
+        }
+
+        showToast(data.message, 'success');
+        setTimeout(() => {
+          window.location.href = '/dashboard';
+        }, 600);
+      } catch (err) {
+        errorAlert.style.display = 'block';
+        errorMessage.textContent = err.message;
+        submitBtn.disabled = false;
+        btnText.textContent = 'Masuk ke Sistem';
+      }
+    });
+  </script>
+</body>
+</html>

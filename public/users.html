@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Kelola Tim — Sistem Manajemen Tugas</title>
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body style="display: flex; flex-direction: column;">
+
+  <div id="mobile-header"></div>
+
+  <div style="display: flex; min-height: 100dvh;">
+    <div id="sidebar-container"></div>
+
+    <main style="flex: 1; padding: 2rem; max-width: 1100px; margin: 0 auto; width: 100%; margin-bottom: 70px;">
+      
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; flex-wrap: wrap; gap: 1rem;">
+        <div>
+          <div style="display: flex; align-items: center; gap: 0.5rem;">
+            <h1 style="font-size: 1.75rem; font-weight: 700; color: #f8fafc; letter-spacing: -0.02em;">Manajemen Pengguna</h1>
+            <span class="badge" style="background: rgba(59, 130, 246, 0.15); color: #60a5fa; border: 1px solid rgba(59, 130, 246, 0.3);">
+              KHUSUS OWNER
+            </span>
+          </div>
+          <p style="color: #94a3b8; font-size: 0.875rem; margin-top: 0.25rem;">Kelola hak akses anggota tim, pendaftaran akun baru, dan kontrol status aktif.</p>
+        </div>
+
+        <button onclick="openAddUserModal()" class="btn-island">
+          <span>+ Tambah Anggota</span>
+          <span class="btn-icon-pill">👤</span>
+        </button>
+      </div>
+
+      <!-- Users Table -->
+      <div class="doppelrand-shell">
+        <div class="doppelrand-core" style="padding: 1.5rem;">
+          <div style="overflow-x: auto;">
+            <table style="width: 100%; border-collapse: collapse; text-align: left;">
+              <thead>
+                <tr style="border-bottom: 1px solid var(--border-hairline); color: #64748b; font-size: 0.75rem; text-transform: uppercase;">
+                  <th style="padding: 0.75rem 1rem;">Pengguna</th>
+                  <th style="padding: 0.75rem 1rem;">Peran (Role)</th>
+                  <th style="padding: 0.75rem 1rem;">Status Akun</th>
+                  <th style="padding: 0.75rem 1rem;">Beban Tugas</th>
+                  <th style="padding: 0.75rem 1rem;">Tanggal Bergabung</th>
+                  <th style="padding: 0.75rem 1rem; text-align: right;">Aksi</th>
+                </tr>
+              </thead>
+              <tbody id="users-table-rows">
+                <tr>
+                  <td colspan="6" style="text-align: center; padding: 2rem; color: #64748b; font-size: 0.875rem;">
+                    Memuat data anggota tim...
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+    </main>
+  </div>
+
+  <div id="mobile-bottom-nav"></div>
+
+  <!-- Modal Tambah Pengguna Baru -->
+  <div id="add-user-modal" class="modal-overlay">
+    <div class="modal-container">
+      <div style="padding: 1.25rem 1.5rem; border-bottom: 1px solid var(--border-hairline); display: flex; justify-content: space-between; align-items: center;">
+        <h3 style="font-size: 1.125rem; font-weight: 700; color: #f8fafc;">+ Daftarkan Anggota Tim Baru</h3>
+        <button onclick="closeAddUserModal()" style="background: none; border: none; color: #94a3b8; font-size: 1.25rem; cursor: pointer;">✕</button>
+      </div>
+      <form id="add-user-form" style="padding: 1.5rem;">
+        <div style="margin-bottom: 1rem;">
+          <label style="display: block; font-size: 0.8125rem; font-weight: 600; color: #cbd5e1; margin-bottom: 0.375rem;">Nama Lengkap *</label>
+          <input type="text" id="new-user-name" class="form-input" placeholder="Contoh: Budi Santoso" required>
+        </div>
+
+        <div style="margin-bottom: 1rem;">
+          <label style="display: block; font-size: 0.8125rem; font-weight: 600; color: #cbd5e1; margin-bottom: 0.375rem;">Alamat Email *</label>
+          <input type="email" id="new-user-email" class="form-input" placeholder="budi@perusahaan.com" required>
+        </div>
+
+        <div style="margin-bottom: 1rem;">
+          <label style="display: block; font-size: 0.8125rem; font-weight: 600; color: #cbd5e1; margin-bottom: 0.375rem;">Kata Sandi Awal *</label>
+          <input type="password" id="new-user-password" class="form-input" placeholder="Minimal 8 karakter..." required minlength="6">
+        </div>
+
+        <div style="margin-bottom: 1.5rem;">
+          <label style="display: block; font-size: 0.8125rem; font-weight: 600; color: #cbd5e1; margin-bottom: 0.375rem;">Peran (Role) *</label>
+          <select id="new-user-role" class="form-select">
+            <option value="User" selected>User (Anggota Pelaksana)</option>
+            <option value="Owner">Owner (Administrator Utama)</option>
+          </select>
+        </div>
+
+        <div style="display: flex; justify-content: flex-end; gap: 0.75rem;">
+          <button type="button" onclick="closeAddUserModal()" class="btn-secondary">Batal</button>
+          <button type="submit" id="save-user-btn" class="btn-island">
+            <span>Daftarkan Akun</span>
+            <span class="btn-icon-pill">✓</span>
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal Edit Pengguna -->
+  <div id="edit-user-modal" class="modal-overlay">
+    <div class="modal-container">
+      <div style="padding: 1.25rem 1.5rem; border-bottom: 1px solid var(--border-hairline); display: flex; justify-content: space-between; align-items: center;">
+        <h3 style="font-size: 1.125rem; font-weight: 700; color: #f8fafc;">✏️ Edit Data Pengguna</h3>
+        <button onclick="closeEditUserModal()" style="background: none; border: none; color: #94a3b8; font-size: 1.25rem; cursor: pointer;">✕</button>
+      </div>
+      <form id="edit-user-form" style="padding: 1.5rem;">
+        <input type="hidden" id="edit-user-id">
+
+        <div style="margin-bottom: 1rem;">
+          <label style="display: block; font-size: 0.8125rem; font-weight: 600; color: #cbd5e1; margin-bottom: 0.375rem;">Nama Lengkap</label>
+          <input type="text" id="edit-user-name" class="form-input" required>
+        </div>
+
+        <div style="margin-bottom: 1rem;">
+          <label style="display: block; font-size: 0.8125rem; font-weight: 600; color: #cbd5e1; margin-bottom: 0.375rem;">Peran (Role)</label>
+          <select id="edit-user-role" class="form-select">
+            <option value="User">User</option>
+            <option value="Owner">Owner</option>
+          </select>
+        </div>
+
+        <div style="margin-bottom: 1rem;">
+          <label style="display: block; font-size: 0.8125rem; font-weight: 600; color: #cbd5e1; margin-bottom: 0.375rem;">Status Akun</label>
+          <select id="edit-user-status" class="form-select">
+            <option value="Active">Active (Aktif)</option>
+            <option value="Inactive">Inactive (Dinonaktifkan)</option>
+          </select>
+        </div>
+
+        <div style="margin-bottom: 1.5rem;">
+          <label style="display: block; font-size: 0.8125rem; font-weight: 600; color: #cbd5e1; margin-bottom: 0.375rem;">Reset Kata Sandi (Kosongkan jika tidak diubah)</label>
+          <input type="password" id="edit-user-password" class="form-input" placeholder="Masukkan password baru...">
+        </div>
+
+        <div style="display: flex; justify-content: flex-end; gap: 0.75rem;">
+          <button type="button" onclick="closeEditUserModal()" class="btn-secondary">Batal</button>
+          <button type="submit" id="update-user-btn" class="btn-island">
+            <span>Simpan Perubahan</span>
+            <span class="btn-icon-pill">✓</span>
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script src="/js/api.js"></script>
+  <script src="/js/navbar.js"></script>
+  <script>
+    initNavigation('users');
+
+    let allUsersList = [];
+    let loggedInUser = null;
+
+    async function loadUsersData() {
+      try {
+        const meRes = await fetch('/api/auth/me');
+        if (meRes.ok) {
+          const d = await meRes.json();
+          loggedInUser = d.data;
+          if (loggedInUser.role !== 'Owner') {
+            alert('Akses ditolak. Halaman ini hanya untuk Owner.');
+            window.location.href = '/dashboard';
+            return;
+          }
+        }
+
+        const res = await apiFetch('/api/users');
+        if (res && res.data) {
+          allUsersList = res.data;
+          renderUsersTable(allUsersList);
+        }
+      } catch (err) {}
+    }
+
+    function renderUsersTable(users) {
+      const tbody = document.getElementById('users-table-rows');
+      if (!users.length) {
+        tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; padding:2rem; color:#64748b;">Belum ada pengguna.</td></tr>';
+        return;
+      }
+
+      tbody.innerHTML = users.map(u => {
+        const isSelf = loggedInUser && loggedInUser.id === u.id;
+        const roleColor = u.role === 'Owner' ? '#60a5fa' : '#94a3b8';
+        const statusColor = u.status === 'Active' ? '#34d399' : '#f87171';
+
+        return `
+          <tr style="border-bottom: 1px solid var(--border-hairline); font-size: 0.875rem;">
+            <td style="padding: 1rem;">
+              <div style="display: flex; align-items: center; gap: 0.75rem;">
+                <div style="width: 34px; height: 34px; border-radius: 50%; background: ${roleColor}; display: flex; align-items: center; justify-content: center; color: #fff; font-weight: 700; font-size: 13px;">
+                  ${u.name.charAt(0).toUpperCase()}
+                </div>
+                <div>
+                  <p style="font-weight: 600; color: #f8fafc;">${u.name} ${isSelf ? '<span style="font-size: 10px; color: #60a5fa; font-weight: 700;">(Anda)</span>' : ''}</p>
+                  <p style="font-size: 0.75rem; color: #94a3b8;">${u.email}</p>
+                </div>
+              </div>
+            </td>
+            <td style="padding: 1rem;">
+              <span class="badge" style="background: ${roleColor}22; color: ${roleColor}; border: 1px solid ${roleColor}44;">
+                ${u.role}
+              </span>
+            </td>
+            <td style="padding: 1rem;">
+              <span class="badge" style="background: ${statusColor}22; color: ${statusColor}; border: 1px solid ${statusColor}44;">
+                ${u.status}
+              </span>
+            </td>
+            <td style="padding: 1rem; color: #cbd5e1;" class="font-mono">
+              ${u.completed_tasks} / ${u.total_tasks} Selesai
+            </td>
+            <td style="padding: 1rem; color: #64748b; font-size: 0.8125rem;" class="font-mono">
+              ${formatDateWIB(u.created_at)}
+            </td>
+            <td style="padding: 1rem; text-align: right;">
+              <button onclick="openEditUserModal(${u.id})" class="btn-secondary" style="padding: 4px 10px; min-height: 30px; font-size: 12px; margin-right: 4px;">
+                Edit
+              </button>
+              ${!isSelf ? `
+              <button onclick="deleteUserAccount(${u.id}, '${u.name}')" class="btn-danger" style="padding: 4px 10px; min-height: 30px; font-size: 12px;">
+                Hapus
+              </button>` : ''}
+            </td>
+          </tr>
+        `;
+      }).join('');
+    }
+
+    // Modal Add
+    function openAddUserModal() {
+      document.getElementById('add-user-form').reset();
+      document.getElementById('add-user-modal').classList.add('active');
+    }
+
+    function closeAddUserModal() {
+      document.getElementById('add-user-modal').classList.remove('active');
+    }
+
+    document.getElementById('add-user-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const saveBtn = document.getElementById('save-user-btn');
+      saveBtn.disabled = true;
+
+      const name = document.getElementById('new-user-name').value;
+      const email = document.getElementById('new-user-email').value;
+      const password = document.getElementById('new-user-password').value;
+      const role = document.getElementById('new-user-role').value;
+
+      try {
+        await apiFetch('/api/users', {
+          method: 'POST',
+          body: JSON.stringify({ name, email, password, role }),
+        });
+        showToast('Akun anggota tim berhasil dibuat!', 'success');
+        closeAddUserModal();
+        loadUsersData();
+      } catch (err) {
+      } finally {
+        saveBtn.disabled = false;
+      }
+    });
+
+    // Modal Edit
+    function openEditUserModal(id) {
+      const user = allUsersList.find(u => u.id === id);
+      if (!user) return;
+
+      document.getElementById('edit-user-id').value = user.id;
+      document.getElementById('edit-user-name').value = user.name;
+      document.getElementById('edit-user-role').value = user.role;
+      document.getElementById('edit-user-status').value = user.status;
+      document.getElementById('edit-user-password').value = '';
+
+      // Proteksi Self-Lockout di UI
+      if (loggedInUser && loggedInUser.id === user.id) {
+        document.getElementById('edit-user-role').disabled = true;
+        document.getElementById('edit-user-status').disabled = true;
+      } else {
+        document.getElementById('edit-user-role').disabled = false;
+        document.getElementById('edit-user-status').disabled = false;
+      }
+
+      document.getElementById('edit-user-modal').classList.add('active');
+    }
+
+    function closeEditUserModal() {
+      document.getElementById('edit-user-modal').classList.remove('active');
+    }
+
+    document.getElementById('edit-user-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const updateBtn = document.getElementById('update-user-btn');
+      updateBtn.disabled = true;
+
+      const id = document.getElementById('edit-user-id').value;
+      const name = document.getElementById('edit-user-name').value;
+      const role = document.getElementById('edit-user-role').value;
+      const status = document.getElementById('edit-user-status').value;
+      const password = document.getElementById('edit-user-password').value;
+
+      try {
+        await apiFetch(`/api/users/${id}`, {
+          method: 'PUT',
+          body: JSON.stringify({ name, role, status, password }),
+        });
+        showToast('Data pengguna berhasil diperbarui!', 'success');
+        closeEditUserModal();
+        loadUsersData();
+      } catch (err) {
+      } finally {
+        updateBtn.disabled = false;
+      }
+    });
+
+    async function deleteUserAccount(id, name) {
+      if (!confirm(`Hapus akun ${name} secara permanen beserta seluruh tugasnya?`)) return;
+
+      try {
+        await apiFetch(`/api/users/${id}`, { method: 'DELETE' });
+        showToast('Akun berhasil dihapus.', 'info');
+        loadUsersData();
+      } catch (err) {}
+    }
+
+    loadUsersData();
+  </script>
+</body>
+</html>

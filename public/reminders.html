@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Pengingat Deadline — Sistem Manajemen Tugas</title>
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body style="display: flex; flex-direction: column;">
+
+  <div id="mobile-header"></div>
+
+  <div style="display: flex; min-height: 100dvh;">
+    <div id="sidebar-container"></div>
+
+    <main style="flex: 1; padding: 2rem; max-width: 1100px; margin: 0 auto; width: 100%; margin-bottom: 70px;">
+      
+      <div style="margin-bottom: 2rem;">
+        <h1 style="font-size: 1.75rem; font-weight: 700; color: #f8fafc; letter-spacing: -0.02em;">Pengingat & Evaluasi Tenggat Waktu</h1>
+        <p style="color: #94a3b8; font-size: 0.875rem;">Sistem otomatis mendeteksi tugas yang kritis dan memungkinkan pembuatan jadwal pengingat kustom.</p>
+      </div>
+
+      <!-- Section 1: Tugas Terlambat (Overdue) -->
+      <div style="margin-bottom: 2rem;">
+        <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 1rem;">
+          <span style="font-size: 1.25rem;">⚠️</span>
+          <h2 style="font-size: 1.125rem; font-weight: 700; color: #f87171;">Tugas Terlewat Tenggat (Overdue)</h2>
+          <span id="badge-overdue-count" class="badge badge-overdue font-mono">0</span>
+        </div>
+
+        <div id="overdue-list" style="display: flex; flex-direction: column; gap: 0.875rem;">
+          <p style="font-size: 0.875rem; color: #64748b; padding: 1rem; text-align: center;">Memeriksa data...</p>
+        </div>
+      </div>
+
+      <!-- Section 2: Tugas Mendekati Deadline (< 24 Jam) -->
+      <div style="margin-bottom: 2.5rem;">
+        <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 1rem;">
+          <span style="font-size: 1.25rem;">⚡</span>
+          <h2 style="font-size: 1.125rem; font-weight: 700; color: #fb923c;">Mendesak: Jatuh Tempo Hari Ini (< 24 Jam)</h2>
+          <span id="badge-urgent-count" class="badge badge-urgent font-mono">0</span>
+        </div>
+
+        <div id="urgent-list" style="display: flex; flex-direction: column; gap: 0.875rem;">
+          <p style="font-size: 0.875rem; color: #64748b; padding: 1rem; text-align: center;">Memeriksa data...</p>
+        </div>
+      </div>
+
+      <!-- Section 3: Pengingat Kustom (Custom Reminders) -->
+      <div class="doppelrand-shell">
+        <div class="doppelrand-core" style="padding: 1.5rem;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.25rem; flex-wrap: wrap; gap: 0.5rem;">
+            <div>
+              <h3 style="font-size: 1.125rem; font-weight: 700; color: #f8fafc;">Catatan Pengingat Mandiri</h3>
+              <p style="font-size: 0.8125rem; color: #94a3b8;">Jadwalkan memo atau alarm pengingat pribadi</p>
+            </div>
+            <button onclick="document.getElementById('custom-reminder-form').classList.toggle('hidden')" class="btn-secondary" style="font-size: 0.8125rem; padding: 0.375rem 0.875rem; min-height: 34px;">
+              + Buat Pengingat Baru
+            </button>
+          </div>
+
+          <!-- Form Tambah Custom Reminder (Hidden by default) -->
+          <form id="custom-reminder-form" class="hidden" style="background: rgba(0,0,0,0.25); border: 1px solid var(--border-hairline); border-radius: 0.75rem; padding: 1rem; margin-bottom: 1.5rem;">
+            <div style="display: grid; grid-template-columns: 2fr 1fr auto; gap: 0.75rem; align-items: flex-end;">
+              <div>
+                <label style="display: block; font-size: 0.75rem; color: #cbd5e1; margin-bottom: 0.25rem;">Pesan Pengingat *</label>
+                <input type="text" id="rem-title" class="form-input" placeholder="Contoh: Rapat evaluasi bersama Pak Nugi jam 14:00" required>
+              </div>
+              <div>
+                <label style="display: block; font-size: 0.75rem; color: #cbd5e1; margin-bottom: 0.25rem;">Waktu Pengingat *</label>
+                <input type="datetime-local" id="rem-time" class="form-input" required>
+              </div>
+              <button type="submit" class="btn-island" style="min-height: 42px;">
+                <span>Simpan</span>
+              </button>
+            </div>
+          </form>
+
+          <div id="custom-reminders-list" style="display: flex; flex-direction: column; gap: 0.75rem;">
+            <p style="font-size: 0.875rem; color: #64748b; text-align: center; padding: 1.5rem;">Memuat daftar pengingat...</p>
+          </div>
+        </div>
+      </div>
+
+    </main>
+  </div>
+
+  <div id="mobile-bottom-nav"></div>
+
+  <style>
+    .hidden { display: none !important; }
+  </style>
+
+  <script src="/js/api.js"></script>
+  <script src="/js/navbar.js"></script>
+  <script>
+    initNavigation('reminders');
+
+    async function loadReminders() {
+      try {
+        const res = await apiFetch('/api/reminders/urgent');
+        if (res && res.data) {
+          const overdue = res.data.overdue_tasks || [];
+          const urgent = res.data.urgent_tasks || [];
+
+          document.getElementById('badge-overdue-count').textContent = overdue.length;
+          document.getElementById('badge-urgent-count').textContent = urgent.length;
+
+          // Render Overdue
+          const overdueContainer = document.getElementById('overdue-list');
+          if (overdue.length > 0) {
+            overdueContainer.innerHTML = overdue.map(t => createReminderCard(t, 'overdue')).join('');
+          } else {
+            overdueContainer.innerHTML = `
+              <div style="background: rgba(16, 185, 129, 0.08); border: 1px solid rgba(16, 185, 129, 0.2); border-radius: 0.75rem; padding: 1rem 1.25rem; color: #34d399; font-size: 0.875rem;">
+                ✓ Tidak ada tugas yang terlewat. Semua pekerjaan berjalan sesuai jadwal!
+              </div>
+            `;
+          }
+
+          // Render Urgent
+          const urgentContainer = document.getElementById('urgent-list');
+          if (urgent.length > 0) {
+            urgentContainer.innerHTML = urgent.map(t => createReminderCard(t, 'urgent')).join('');
+          } else {
+            urgentContainer.innerHTML = `
+              <div style="background: rgba(255, 255, 255, 0.03); border: 1px solid var(--border-hairline); border-radius: 0.75rem; padding: 1rem 1.25rem; color: #94a3b8; font-size: 0.875rem;">
+                ✓ Tidak ada tugas dengan tenggat waktu mendesak hari ini.
+              </div>
+            `;
+          }
+        }
+
+        // Load Custom Reminders
+        const customRes = await apiFetch('/api/reminders');
+        const customContainer = document.getElementById('custom-reminders-list');
+        if (customRes && customRes.data && customRes.data.length > 0) {
+          customContainer.innerHTML = customRes.data.map(r => `
+            <div style="display: flex; align-items: center; justify-content: space-between; background: rgba(255,255,255,0.03); border: 1px solid var(--border-hairline); border-radius: 0.75rem; padding: 0.875rem 1.25rem;">
+              <div>
+                <p style="font-size: 0.9375rem; font-weight: 600; color: #f8fafc;">${r.title}</p>
+                <span style="font-size: 0.75rem; color: #60a5fa;" class="font-mono">⏰ Dijadwalkan: ${formatDateWIB(r.remind_at)}</span>
+              </div>
+              <button onclick="deleteCustomReminder(${r.id})" class="btn-danger" style="padding: 4px 10px; min-height: 30px; font-size: 12px;">
+                Hapus
+              </button>
+            </div>
+          `).join('');
+        } else {
+          customContainer.innerHTML = `
+            <p style="font-size: 0.875rem; color: #64748b; text-align: center; padding: 1.5rem;">
+              Belum ada catatan pengingat kustom. Buat satu untuk memo penting.
+            </p>
+          `;
+        }
+
+      } catch (err) {}
+    }
+
+    function createReminderCard(task, type) {
+      const isOverdue = type === 'overdue';
+      const borderColor = isOverdue ? 'rgba(239, 68, 68, 0.3)' : 'rgba(249, 115, 22, 0.3)';
+      const bgColor = isOverdue ? 'rgba(239, 68, 68, 0.06)' : 'rgba(249, 115, 22, 0.06)';
+      const badgeClass = isOverdue ? 'badge-overdue' : 'badge-urgent';
+
+      return `
+        <div style="display: flex; align-items: center; justify-content: space-between; background: ${bgColor}; border: 1px solid ${borderColor}; border-radius: 0.875rem; padding: 1rem 1.25rem; flex-wrap: wrap; gap: 0.75rem;">
+          <div>
+            <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.25rem;">
+              <span class="badge ${badgeClass}">${formatHoursRemaining(task.hours_left)}</span>
+              <span style="font-size: 12px; color: #94a3b8;">${task.category}</span>
+            </div>
+            <h4 style="font-size: 1rem; font-weight: 600; color: #f8fafc;">${task.title}</h4>
+            <span style="font-size: 12px; color: #64748b;" class="font-mono">Tenggat: ${formatDateWIB(task.due_date)}</span>
+          </div>
+
+          <button onclick="completeTaskNow(${task.id})" class="btn-island" style="min-height: 36px; padding: 0.375rem 0.875rem; font-size: 0.8125rem;">
+            <span>Tandai Selesai</span>
+            <span class="btn-icon-pill">✓</span>
+          </button>
+        </div>
+      `;
+    }
+
+    async function completeTaskNow(taskId) {
+      try {
+        await apiFetch(`/api/tasks/${taskId}`, {
+          method: 'PUT',
+          body: JSON.stringify({ status: 'Done' }),
+        });
+        showToast('Tugas berhasil diselesaikan!', 'success');
+        loadReminders();
+      } catch (e) {}
+    }
+
+    async function deleteCustomReminder(id) {
+      try {
+        await apiFetch(`/api/reminders/${id}`, { method: 'DELETE' });
+        showToast('Pengingat dihapus.', 'info');
+        loadReminders();
+      } catch (e) {}
+    }
+
+    // Submit Custom Reminder
+    document.getElementById('custom-reminder-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const title = document.getElementById('rem-title').value;
+      const remind_at = document.getElementById('rem-time').value;
+
+      try {
+        await apiFetch('/api/reminders', {
+          method: 'POST',
+          body: JSON.stringify({ title, remind_at }),
+        });
+        showToast('Pengingat berhasil dijadwalkan!', 'success');
+        document.getElementById('custom-reminder-form').reset();
+        document.getElementById('custom-reminder-form').classList.add('hidden');
+        loadReminders();
+      } catch (e) {}
+    });
+
+    // Default time 3 jam dari sekarang
+    const nowPlus3 = new Date(Date.now() + 3 * 3600000);
+    const tzOffset = nowPlus3.getTimezoneOffset() * 60000;
+    document.getElementById('rem-time').value = new Date(nowPlus3.getTime() - tzOffset).toISOString().slice(0, 16);
+
+    loadReminders();
+  </script>
+</body>
+</html>

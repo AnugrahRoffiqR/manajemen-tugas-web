@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dashboard — Sistem Manajemen Tugas</title>
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body style="display: flex; flex-direction: column;">
+
+  <!-- Mobile Top Bar (< 1024px) -->
+  <div id="mobile-header"></div>
+
+  <div style="display: flex; min-height: 100dvh;">
+    <!-- Desktop Sidebar (>= 1024px) -->
+    <div id="sidebar-container"></div>
+
+    <!-- Main Content Area -->
+    <main style="flex: 1; padding: 2rem; max-width: 1200px; margin: 0 auto; width: 100%; margin-bottom: 70px;">
+      
+      <!-- Header Dashboard & Greeting -->
+      <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 2rem; flex-wrap: wrap; gap: 1rem;">
+        <div>
+          <h1 style="font-size: 1.75rem; font-weight: 700; color: #f8fafc; letter-spacing: -0.02em;">Dashboard Utama</h1>
+          <p style="color: #94a3b8; font-size: 0.875rem; margin-top: 0.25rem;">Pantau status tugas tim dan tenggat waktu hari ini secara *real-time*.</p>
+        </div>
+        <button onclick="openCreateTaskModal()" class="btn-island">
+          <span>+ Buat Tugas Baru</span>
+          <span class="btn-icon-pill">→</span>
+        </button>
+      </div>
+
+      <!-- Urgent Alert Banner (Dinamic) -->
+      <div id="urgent-alert-banner" style="display: none; margin-bottom: 1.75rem;">
+        <div class="doppelrand-shell" style="border-color: rgba(249, 115, 22, 0.4); background: rgba(249, 115, 22, 0.08);">
+          <div class="doppelrand-core" style="background: rgba(15, 23, 42, 0.9); display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 1rem; padding: 1rem 1.25rem;">
+            <div style="display: flex; align-items: center; gap: 0.875rem;">
+              <span style="font-size: 1.5rem;">⚡</span>
+              <div>
+                <h4 style="font-size: 0.9375rem; font-weight: 700; color: #fb923c;" id="urgent-banner-title">Perhatian: Ada Tugas Mendesak!</h4>
+                <p style="font-size: 0.8125rem; color: #cbd5e1;" id="urgent-banner-desc">Segera periksa dan selesaikan tugas sebelum melewati tenggat waktu.</p>
+              </div>
+            </div>
+            <a href="/reminders" class="btn-secondary" style="font-size: 0.8125rem; padding: 0.5rem 1rem; border-color: rgba(249, 115, 22, 0.3); color: #fb923c;">
+              Lihat di Pengingat →
+            </a>
+          </div>
+        </div>
+      </div>
+
+      <!-- Bento Grid Stats (4 Kolom) -->
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 1.25rem; margin-bottom: 2.5rem;">
+        <!-- Card 1: Total Tugas -->
+        <div class="doppelrand-shell">
+          <div class="doppelrand-core">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem;">
+              <span style="font-size: 0.8125rem; font-weight: 600; color: #94a3b8;">TOTAL TUGAS</span>
+              <span style="font-size: 1.25rem;">📋</span>
+            </div>
+            <h2 id="stat-total" style="font-size: 2rem; font-weight: 800; color: #f8fafc;" class="font-mono">0</h2>
+            <p style="font-size: 0.75rem; color: #64748b; margin-top: 0.25rem;">Tercatat dalam sistem</p>
+          </div>
+        </div>
+
+        <!-- Card 2: Sedang Dikerjakan -->
+        <div class="doppelrand-shell">
+          <div class="doppelrand-core">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem;">
+              <span style="font-size: 0.8125rem; font-weight: 600; color: #fbbf24;">SEDANG BERJALAN</span>
+              <span style="font-size: 1.25rem;">⏳</span>
+            </div>
+            <h2 id="stat-in-progress" style="font-size: 2rem; font-weight: 800; color: #fbbf24;" class="font-mono">0</h2>
+            <p style="font-size: 0.75rem; color: #64748b; margin-top: 0.25rem;">Status 'In Progress'</p>
+          </div>
+        </div>
+
+        <!-- Card 3: Selesai -->
+        <div class="doppelrand-shell">
+          <div class="doppelrand-core">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem;">
+              <span style="font-size: 0.8125rem; font-weight: 600; color: #34d399;">SELESAI</span>
+              <span style="font-size: 1.25rem;">✅</span>
+            </div>
+            <h2 id="stat-done" style="font-size: 2rem; font-weight: 800; color: #34d399;" class="font-mono">0</h2>
+            <p style="font-size: 0.75rem; color: #64748b; margin-top: 0.25rem;">Tugas telah rampung</p>
+          </div>
+        </div>
+
+        <!-- Card 4: Overdue -->
+        <div class="doppelrand-shell">
+          <div class="doppelrand-core">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem;">
+              <span style="font-size: 0.8125rem; font-weight: 600; color: #f87171;">TERLAMBAT</span>
+              <span style="font-size: 1.25rem;">⚠️</span>
+            </div>
+            <h2 id="stat-overdue" style="font-size: 2rem; font-weight: 800; color: #f87171;" class="font-mono">0</h2>
+            <p style="font-size: 0.75rem; color: #64748b; margin-top: 0.25rem;">Melewati tenggat waktu</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Recent Priority Tasks Table -->
+      <div class="doppelrand-shell">
+        <div class="doppelrand-core" style="padding: 1.5rem;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.25rem;">
+            <div>
+              <h3 style="font-size: 1.125rem; font-weight: 700; color: #f8fafc;">Tugas Prioritas Terdekat</h3>
+              <p style="font-size: 0.8125rem; color: #94a3b8;">Daftar tugas yang harus diselesaikan terlebih dahulu</p>
+            </div>
+            <a href="/tasks" style="font-size: 0.8125rem; font-weight: 600; color: #60a5fa; text-decoration: none;">
+              Buka Semua Tugas →
+            </a>
+          </div>
+
+          <div style="overflow-x: auto;">
+            <table style="width: 100%; border-collapse: collapse; text-align: left;">
+              <thead>
+                <tr style="border-bottom: 1px solid var(--border-hairline); color: #64748b; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.05em;">
+                  <th style="padding: 0.75rem 0.5rem; width: 40px;">Status</th>
+                  <th style="padding: 0.75rem 1rem;">Judul Tugas</th>
+                  <th style="padding: 0.75rem 1rem;">Kategori</th>
+                  <th style="padding: 0.75rem 1rem;">Prioritas</th>
+                  <th style="padding: 0.75rem 1rem;">Tenggat Waktu</th>
+                  <th style="padding: 0.75rem 1rem; text-align: right;">Aksi</th>
+                </tr>
+              </thead>
+              <tbody id="priority-task-rows">
+                <tr>
+                  <td colspan="6" style="text-align: center; padding: 2rem; color: #64748b; font-size: 0.875rem;">
+                    Memuat daftar tugas...
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+    </main>
+  </div>
+
+  <!-- Mobile Bottom Nav (< 768px) -->
+  <div id="mobile-bottom-nav"></div>
+
+  <!-- Modal Tambah Tugas Cepat -->
+  <div id="task-modal" class="modal-overlay">
+    <div class="modal-container">
+      <div style="padding: 1.5rem; border-bottom: 1px solid var(--border-hairline); display: flex; justify-content: space-between; align-items: center;">
+        <h3 style="font-size: 1.125rem; font-weight: 700; color: #f8fafc;">+ Tambah Tugas Baru</h3>
+        <button onclick="closeTaskModal()" style="background: none; border: none; color: #94a3b8; font-size: 1.25rem; cursor: pointer;">✕</button>
+      </div>
+      <form id="create-task-form" style="padding: 1.5rem;">
+        <div style="margin-bottom: 1rem;">
+          <label style="display: block; font-size: 0.8125rem; font-weight: 600; color: #cbd5e1; margin-bottom: 0.375rem;">Judul Tugas *</label>
+          <input type="text" id="task-title" class="form-input" placeholder="Contoh: Audit PRD & Sistem Desain" required>
+        </div>
+
+        <div style="margin-bottom: 1rem;">
+          <label style="display: block; font-size: 0.8125rem; font-weight: 600; color: #cbd5e1; margin-bottom: 0.375rem;">Deskripsi</label>
+          <textarea id="task-desc" class="form-textarea" rows="3" placeholder="Rincian catatan pekerjaan..."></textarea>
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem;">
+          <div>
+            <label style="display: block; font-size: 0.8125rem; font-weight: 600; color: #cbd5e1; margin-bottom: 0.375rem;">Kategori</label>
+            <select id="task-category" class="form-select">
+              <option value="Umum">Umum</option>
+              <option value="Operasional">Operasional</option>
+              <option value="Teknis">Teknis</option>
+              <option value="Administrasi">Administrasi</option>
+              <option value="Bisnis">Bisnis</option>
+            </select>
+          </div>
+          <div>
+            <label style="display: block; font-size: 0.8125rem; font-weight: 600; color: #cbd5e1; margin-bottom: 0.375rem;">Prioritas</label>
+            <select id="task-priority" class="form-select">
+              <option value="Low">🟢 Low</option>
+              <option value="Medium" selected>🟡 Medium</option>
+              <option value="High">🔴 High</option>
+            </select>
+          </div>
+        </div>
+
+        <div style="margin-bottom: 1.5rem;">
+          <label style="display: block; font-size: 0.8125rem; font-weight: 600; color: #cbd5e1; margin-bottom: 0.375rem;">Tenggat Waktu (Deadline) *</label>
+          <input type="datetime-local" id="task-due-date" class="form-input" required>
+        </div>
+
+        <div style="display: flex; justify-content: flex-end; gap: 0.75rem;">
+          <button type="button" onclick="closeTaskModal()" class="btn-secondary">Batal</button>
+          <button type="submit" id="save-task-btn" class="btn-island">
+            <span>Simpan Tugas</span>
+            <span class="btn-icon-pill">✓</span>
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script src="/js/api.js"></script>
+  <script src="/js/navbar.js"></script>
+  <script>
+    initNavigation('dashboard');
+
+    async function loadDashboardData() {
+      try {
+        // Ambil Data Analitik Ringkas
+        const repRes = await apiFetch('/api/reports/analytics?period=all');
+        if (repRes && repRes.data) {
+          const m = repRes.data.metrics;
+          document.getElementById('stat-total').textContent = m.total_tasks || 0;
+          document.getElementById('stat-in-progress').textContent = m.in_progress_tasks || 0;
+          document.getElementById('stat-done').textContent = m.completed_tasks || 0;
+          document.getElementById('stat-overdue').textContent = m.overdue_tasks || 0;
+        }
+
+        // Ambil Data Peringatan Mendesak
+        const remRes = await apiFetch('/api/reminders/urgent');
+        if (remRes && remRes.data) {
+          const urgentBanner = document.getElementById('urgent-alert-banner');
+          const totalUrgent = remRes.data.total_urgent + remRes.data.total_overdue;
+          if (totalUrgent > 0) {
+            urgentBanner.style.display = 'block';
+            document.getElementById('urgent-banner-title').textContent = `Perhatian: Ada ${totalUrgent} Tugas Mendesak / Terlambat!`;
+            document.getElementById('urgent-banner-desc').textContent = `Terdapat ${remRes.data.total_overdue} tugas yang lewat tenggat dan ${remRes.data.total_urgent} tugas yang jatuh tempo dalam < 24 jam.`;
+          } else {
+            urgentBanner.style.display = 'none';
+          }
+        }
+
+        // Ambil 5 Tugas Prioritas Terdekat
+        const tasksRes = await apiFetch('/api/tasks?status=Semua');
+        const rowsContainer = document.getElementById('priority-task-rows');
+
+        if (tasksRes && tasksRes.data && tasksRes.data.length > 0) {
+          const activeTasks = tasksRes.data.filter(t => !t.completed).slice(0, 5);
+          if (activeTasks.length === 0) {
+            rowsContainer.innerHTML = `
+              <tr>
+                <td colspan="6" style="text-align: center; padding: 2rem; color: #10b981; font-size: 0.875rem;">
+                  🎉 Hebat! Semua tugas aktif telah diselesaikan.
+                </td>
+              </tr>
+            `;
+            return;
+          }
+
+          rowsContainer.innerHTML = activeTasks.map(task => {
+            const priorityColors = {
+              High: '#ef4444',
+              Medium: '#f59e0b',
+              Low: '#10b981',
+            };
+
+            return `
+              <tr style="border-bottom: 1px solid var(--border-hairline); font-size: 0.875rem;">
+                <td style="padding: 1rem 0.5rem;">
+                  <button onclick="toggleTaskStatus(${task.id}, 'Done')" title="Tandai Selesai" style="width: 24px; height: 24px; border-radius: 6px; border: 1px solid var(--border-subtle); background: none; color: #10b981; cursor: pointer; display: flex; align-items: center; justify-content: center;">
+                    ${task.completed ? '✓' : ''}
+                  </button>
+                </td>
+                <td style="padding: 1rem; font-weight: 600; color: #f8fafc;">
+                  ${task.title}
+                  ${task.description ? `<p style="font-size: 0.75rem; color: #94a3b8; font-weight: 400; margin-top: 2px;">${task.description}</p>` : ''}
+                </td>
+                <td style="padding: 1rem; color: #cbd5e1; font-size: 0.8125rem;">
+                  ${task.category}
+                </td>
+                <td style="padding: 1rem;">
+                  <span style="font-size: 0.75rem; font-weight: 700; color: ${priorityColors[task.priority] || '#fff'};">
+                    ${task.priority}
+                  </span>
+                </td>
+                <td style="padding: 1rem; color: #94a3b8; font-size: 0.8125rem;" class="font-mono">
+                  ${formatDateWIB(task.due_date)}
+                </td>
+                <td style="padding: 1rem; text-align: right;">
+                  <button onclick="toggleTaskStatus(${task.id}, 'Done')" class="btn-secondary" style="font-size: 0.75rem; padding: 0.375rem 0.75rem; min-height: 32px;">
+                    Selesaikan ✓
+                  </button>
+                </td>
+              </tr>
+            `;
+          }).join('');
+        } else {
+          rowsContainer.innerHTML = `
+            <tr>
+              <td colspan="6" style="text-align: center; padding: 2rem; color: #64748b; font-size: 0.875rem;">
+                Belum ada tugas. Klik tombol '+ Buat Tugas Baru' untuk memulai.
+              </td>
+            </tr>
+          `;
+        }
+      } catch (err) {
+        console.error(err);
+      }
+    }
+
+    async function toggleTaskStatus(taskId, newStatus) {
+      try {
+        await apiFetch(`/api/tasks/${taskId}`, {
+          method: 'PUT',
+          body: JSON.stringify({ status: newStatus }),
+        });
+        showToast('Status tugas berhasil diperbarui!', 'success');
+        loadDashboardData();
+      } catch (err) {}
+    }
+
+    // Modal Handlers
+    function openCreateTaskModal() {
+      // Set default deadline besok jam 17:00
+      const tomorrow = new Date();
+      tomorrow.setDate(tomorrow.getDate() + 1);
+      tomorrow.setHours(17, 0, 0, 0);
+      const tzOffset = tomorrow.getTimezoneOffset() * 60000;
+      const localISOTime = new Date(tomorrow.getTime() - tzOffset).toISOString().slice(0, 16);
+      document.getElementById('task-due-date').value = localISOTime;
+
+      document.getElementById('task-modal').classList.add('active');
+    }
+
+    function closeTaskModal() {
+      document.getElementById('task-modal').classList.remove('active');
+    }
+
+    document.getElementById('create-task-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const saveBtn = document.getElementById('save-task-btn');
+      saveBtn.disabled = true;
+
+      const title = document.getElementById('task-title').value;
+      const description = document.getElementById('task-desc').value;
+      const category = document.getElementById('task-category').value;
+      const priority = document.getElementById('task-priority').value;
+      const due_date = document.getElementById('task-due-date').value;
+
+      try {
+        await apiFetch('/api/tasks', {
+          method: 'POST',
+          body: JSON.stringify({ title, description, category, priority, due_date }),
+        });
+        showToast('Tugas baru berhasil disimpan!', 'success');
+        closeTaskModal();
+        document.getElementById('create-task-form').reset();
+        loadDashboardData();
+      } catch (err) {
+      } finally {
+        saveBtn.disabled = false;
+      }
+    });
+
+    loadDashboardData();
+  </script>
+</body>
+</html>
