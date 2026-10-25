@@ -1,13 +1,12 @@
 /* ==========================================================================
-   STYLE.CSS — SaaS Analytics Design System (UI/UX Pro Max Edition)
-   Matching: https://uupm.cc/demo/saas-analytics-dashboard
-   Glassmorphism + Electric Blue & Neon Purple Gradient + Emerald CTA
+   STYLE.CSS — Clean Modern SaaS Task Management Design System
+   Inspired by UUPM SaaS Design Language (Precision Typography, Crisp Cards, Intentional Colors)
    ========================================================================== */
 
 @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Open+Sans:wght@300;400;500;600;700&family=Poppins:wght@400;500;600;700;800&display=swap');
 
 :root {
-  /* Core UUPM SaaS Analytics Tokens */
+  /* Core Brand Tokens */
   --primary: #0080ff;
   --primary-dark: #0066cc;
   --secondary: #8b00ff;
@@ -26,7 +25,7 @@
   --surface-core: #ffffff;
   --surface-elevated: #ffffff;
   --surface-hover: #f1f5f9;
-  --surface-card: rgba(255, 255, 255, 0.85);
+  --surface-card: #ffffff;
 
   --border-hairline: #e2e8f0;
   --border-subtle: #cbd5e1;
@@ -38,7 +37,7 @@
 
   --accent-primary: #22c55e;
   --accent-primary-hover: #16a34a;
-  --accent-glow: rgba(0, 128, 255, 0.2);
+  --accent-glow: rgba(0, 128, 255, 0.15);
 
   /* Status Tokens */
   --status-todo: #64748b;
@@ -70,8 +69,7 @@ body {
   font-family: 'Open Sans', system-ui, -apple-system, sans-serif;
   background-color: #f8fafc;
   background-image: 
-    radial-gradient(80% 50% at 50% -20%, rgba(0, 128, 255, 0.12), transparent),
-    radial-gradient(60% 40% at 85% 10%, rgba(139, 0, 255, 0.08), transparent),
+    radial-gradient(80% 50% at 50% -20%, rgba(0, 128, 255, 0.07), transparent),
     linear-gradient(#ffffff 0%, #f8fafc 100%);
   background-attachment: fixed;
   color: var(--text);
@@ -126,27 +124,21 @@ body.modal-open {
 }
 
 /* ==========================================================================
-   UUPM GLASSMORPHISM & GRADIENT CLASSES
+   CARDS & CONTAINERS (Deliberate & Crisp SaaS Quality)
    ========================================================================== */
-.glass-card {
-  -webkit-backdrop-filter: blur(12px);
-  backdrop-filter: blur(12px);
-  background: rgba(255, 255, 255, 0.85);
-  border: 1px solid rgba(0, 128, 255, 0.15);
-  border-radius: 1rem;
-  box-shadow: 0 4px 24px rgba(0, 128, 255, 0.08);
-}
-
-.glass-card-hover {
-  cursor: pointer;
-  transition: all 0.25s var(--ease-out);
+.glass-card, .doppelrand-shell {
+  background: #ffffff;
+  border: 1px solid var(--border);
+  border-radius: 0.875rem;
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.04), 0 1px 2px -1px rgba(0, 0, 0, 0.04);
+  transition: border-color 0.2s var(--ease-out), box-shadow 0.2s var(--ease-out), transform 0.2s var(--ease-out);
 }
 
 .glass-card-hover:hover {
-  background: rgba(255, 255, 255, 0.98);
+  cursor: pointer;
   border-color: rgba(0, 128, 255, 0.35);
-  box-shadow: 0 8px 32px rgba(0, 128, 255, 0.16);
-  transform: translateY(-2px);
+  box-shadow: 0 4px 16px rgba(0, 128, 255, 0.08);
+  transform: translateY(-1px);
 }
 
 .gradient-primary {
@@ -160,17 +152,7 @@ body.modal-open {
   background-clip: text;
 }
 
-/* Float Animation */
-@keyframes float {
-  0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(-8px); }
-}
-
-.animate-float {
-  animation: 4s ease-in-out infinite float;
-}
-
-/* Pulse Ring Animation */
+/* Pulse Ring Animation for live indicator */
 @keyframes pulse-ring {
   0% { opacity: 1; transform: scale(0.8); }
   100% { opacity: 0; transform: scale(2.2); }
@@ -180,29 +162,13 @@ body.modal-open {
   animation: 1.5s ease-out infinite pulse-ring;
 }
 
-/* Doppelrand backward compatibility (mapped to modern UUPM glass aesthetics) */
-.doppelrand-shell {
-  background: rgba(255, 255, 255, 0.85);
-  border: 1px solid rgba(0, 128, 255, 0.15);
-  border-radius: 1.25rem;
-  padding: 0.375rem;
-  box-shadow: 0 8px 24px rgba(0, 128, 255, 0.06);
-  backdrop-filter: blur(12px);
-  transition: transform 180ms var(--ease-out), border-color 180ms var(--ease-out), box-shadow 180ms var(--ease-out);
-}
-
-.doppelrand-shell:hover {
-  border-color: rgba(0, 128, 255, 0.3);
-}
-
 .doppelrand-core {
-  background: #ffffff;
-  border-radius: calc(1.25rem - 0.375rem);
-  padding: 1.25rem;
-  border: 1px solid rgba(226, 232, 240, 0.8);
+  background: transparent;
+  padding: 0;
+  border: none;
 }
 
-/* Stat Cards in UUPM Style */
+/* Stat Cards */
 .stat-card {
   position: relative;
   overflow: hidden;
@@ -210,7 +176,7 @@ body.modal-open {
 
 .stat-card:hover {
   transform: translateY(-2px);
-  box-shadow: 0 10px 28px rgba(0, 128, 255, 0.12);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.06);
 }
 
 .stat-card-total {

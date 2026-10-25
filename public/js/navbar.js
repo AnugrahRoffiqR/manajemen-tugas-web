@@ -44,19 +44,19 @@ async function initNavigation(activeKey = '') {
   const sidebarContainer = document.getElementById('sidebar-container');
   if (sidebarContainer) {
     sidebarContainer.innerHTML = `
-      <aside style="width: 260px; height: 100vh; position: sticky; top: 0; background: rgba(255, 255, 255, 0.85); backdrop-filter: blur(16px); border-right: 1px solid rgba(0, 128, 255, 0.12); display: flex; flex-direction: column; justify-content: space-between; padding: 1.5rem 1rem;">
+      <aside style="width: 260px; height: 100vh; position: sticky; top: 0; background: #ffffff; border-right: 1px solid var(--border); display: flex; flex-direction: column; justify-content: space-between; padding: 1.5rem 1rem;">
         <div>
-          <!-- Brand Logo & Live Pulse Pill (UUPM SaaS Demo Standard) -->
+          <!-- Brand Logo & Live Pulse Pill (Sistem Manajemen Tugas) -->
           <div style="padding: 0.5rem 0.5rem 1.25rem;">
             <div style="display: flex; align-items: center; gap: 0.75rem; margin-bottom: 0.875rem;">
-              <div style="width: 40px; height: 40px; border-radius: 12px; background: linear-gradient(135deg, #0080ff, #8b00ff); display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 14px rgba(0, 128, 255, 0.35); flex-shrink: 0;">
-                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>
+              <div style="width: 38px; height: 38px; border-radius: 10px; background: linear-gradient(135deg, #0080ff, #8b00ff); display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 10px rgba(0, 128, 255, 0.3); flex-shrink: 0;">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
               </div>
               <div>
-                <h2 style="font-size: 16px; font-weight: 700; font-family: 'Poppins', sans-serif; line-height: 1.2;">
-                  <span class="gradient-text">DataPulse</span>
+                <h2 style="font-size: 15px; font-weight: 700; font-family: 'Poppins', sans-serif; color: var(--text); line-height: 1.2;">
+                  Manajemen <span style="color: var(--primary);">Tugas</span>
                 </h2>
-                <span style="font-size: 11px; color: #64748b; font-weight: 500;">Manajemen Tugas</span>
+                <span style="font-size: 11px; color: var(--text-muted); font-weight: 500;">Workspace Tim</span>
               </div>
             </div>
 
@@ -115,9 +115,9 @@ async function initNavigation(activeKey = '') {
         </div>
 
         <!-- User Profile Card in Sidebar -->
-        <div style="background: #ffffff; border: 1px solid var(--border); border-radius: 1rem; padding: 0.875rem; display: flex; align-items: center; justify-content: space-between; box-shadow: 0 2px 8px rgba(0, 128, 255, 0.05);">
+        <div style="background: #ffffff; border: 1px solid var(--border); border-radius: 0.875rem; padding: 0.875rem; display: flex; align-items: center; justify-content: space-between; box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);">
           <div style="display: flex; align-items: center; gap: 0.625rem; overflow: hidden;">
-            <div style="width: 36px; height: 36px; border-radius: 50%; background: linear-gradient(135deg, #0080ff, #8b00ff); display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 14px; color: #fff; flex-shrink: 0; box-shadow: 0 2px 8px rgba(0, 128, 255, 0.3);">
+            <div style="width: 36px; height: 36px; border-radius: 50%; background: linear-gradient(135deg, #0080ff, #8b00ff); display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 14px; color: #fff; flex-shrink: 0; box-shadow: 0 2px 8px rgba(0, 128, 255, 0.25);">
               ${currentUser.name.charAt(0).toUpperCase()}
             </div>
             <div style="overflow: hidden;">
@@ -137,12 +137,12 @@ async function initNavigation(activeKey = '') {
   const mobileHeader = document.getElementById('mobile-header');
   if (mobileHeader) {
     mobileHeader.innerHTML = `
-      <header style="display: flex; align-items: center; justify-content: space-between; padding: 0.875rem 1rem; background: rgba(255, 255, 255, 0.9); backdrop-filter: blur(12px); border-bottom: 1px solid var(--border); position: sticky; top: 0; z-index: 100;">
+      <header style="display: flex; align-items: center; justify-content: space-between; padding: 0.875rem 1rem; background: #ffffff; border-bottom: 1px solid var(--border); position: sticky; top: 0; z-index: 100;">
         <div style="display: flex; align-items: center; gap: 0.625rem;">
-          <div style="width: 34px; height: 34px; border-radius: 10px; background: linear-gradient(135deg, #0080ff, #8b00ff); display: flex; align-items: center; justify-content: center; color: #fff; font-weight: bold; box-shadow: 0 2px 8px rgba(0, 128, 255, 0.3);">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>
+          <div style="width: 32px; height: 32px; border-radius: 8px; background: linear-gradient(135deg, #0080ff, #8b00ff); display: flex; align-items: center; justify-content: center; color: #fff; font-weight: bold; box-shadow: 0 2px 6px rgba(0, 128, 255, 0.25);">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
           </div>
-          <span style="font-weight: 700; font-size: 15px; font-family: 'Poppins', sans-serif;" class="gradient-text">DataPulse</span>
+          <span style="font-weight: 700; font-size: 15px; font-family: 'Poppins', sans-serif; color: var(--text);">Manajemen <span style="color: var(--primary);">Tugas</span></span>
         </div>
         <div style="display: flex; align-items: center; gap: 0.625rem;">
           <span style="font-size: 12px; color: #475569; font-weight: 600;">${currentUser.name.split(' ')[0]}</span>
