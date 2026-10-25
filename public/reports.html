@@ -187,19 +187,33 @@
           // Render Kategori
           const catContainer = document.getElementById('category-bars');
           const cats = res.data.category_distribution || [];
+          const catColorMap = {
+            Teknis: '#06b6d4',
+            Operasional: '#f59e0b',
+            Bisnis: '#10b981',
+            Administrasi: '#a855f7',
+            Umum: '#94a3b8'
+          };
           if (cats.length) {
             const maxCat = Math.max(...cats.map(c => parseInt(c.count, 10)), 1);
-            catContainer.innerHTML = cats.map(c => `
-              <div>
-                <div style="display:flex; justify-content:space-between; font-size:12px; margin-bottom:4px;">
-                  <span style="color:#f8fafc; font-weight:600;">${c.category}</span>
-                  <span style="color:#94a3b8;" class="font-mono">${c.count} tugas</span>
+            catContainer.innerHTML = cats.map(c => {
+              const catClass = `cat-${(c.category || 'umum').toLowerCase()}`;
+              const barColor = catColorMap[c.category] || '#3b82f6';
+              return `
+                <div>
+                  <div style="display:flex; justify-content:space-between; align-items:center; font-size:12px; margin-bottom:6px;">
+                    <span class="cat-badge ${catClass}">
+                      <span class="cat-dot"></span>
+                      <span>${c.category}</span>
+                    </span>
+                    <span style="color:#cbd5e1; font-weight:600;" class="font-mono">${c.count} tugas (${Math.round((c.count/m.total_tasks)*100 || 0)}%)</span>
+                  </div>
+                  <div style="width:100%; height:8px; background:rgba(255,255,255,0.06); border-radius:999px; overflow:hidden; box-shadow: inset 0 1px 2px rgba(0,0,0,0.5);">
+                    <div style="width:${(c.count/maxCat)*100}%; height:100%; background:${barColor}; border-radius:999px; transition: width 600ms var(--ease-spring); box-shadow: 0 0 8px ${barColor}66;"></div>
+                  </div>
                 </div>
-                <div style="width:100%; height:8px; background:rgba(255,255,255,0.06); border-radius:4px; overflow:hidden;">
-                  <div style="width:${(c.count/maxCat)*100}%; height:100%; background:#3b82f6; border-radius:4px;"></div>
-                </div>
-              </div>
-            `).join('');
+              `;
+            }).join('');
           } else {
             catContainer.innerHTML = '<p style="font-size:12px; color:#94a3b8;">Belum ada data tugas.</p>';
           }
@@ -211,17 +225,23 @@
             const maxPrio = Math.max(...prios.map(p => parseInt(p.count, 10)), 1);
             const prioColors = { High: '#ef4444', Medium: '#f59e0b', Low: '#10b981' };
 
-            prioContainer.innerHTML = prios.map(p => `
-              <div>
-                <div style="display:flex; justify-content:space-between; font-size:12px; margin-bottom:4px;">
-                  <span style="color:${prioColors[p.priority] || '#fff'}; font-weight:700;">${p.priority}</span>
-                  <span style="color:#94a3b8;" class="font-mono">${p.count} tugas</span>
+            prioContainer.innerHTML = prios.map(p => {
+              const pColor = prioColors[p.priority] || '#3b82f6';
+              return `
+                <div>
+                  <div style="display:flex; justify-content:space-between; align-items:center; font-size:12px; margin-bottom:6px;">
+                    <span style="color:${pColor}; font-weight:700; display:inline-flex; align-items:center; gap:6px;">
+                      <span style="width:6px; height:6px; border-radius:50%; background:${pColor}; box-shadow:0 0 6px ${pColor};"></span>
+                      ${p.priority}
+                    </span>
+                    <span style="color:#cbd5e1; font-weight:600;" class="font-mono">${p.count} tugas (${Math.round((p.count/m.total_tasks)*100 || 0)}%)</span>
+                  </div>
+                  <div style="width:100%; height:8px; background:rgba(255,255,255,0.06); border-radius:999px; overflow:hidden; box-shadow: inset 0 1px 2px rgba(0,0,0,0.5);">
+                    <div style="width:${(p.count/maxPrio)*100}%; height:100%; background:${pColor}; border-radius:999px; transition: width 600ms var(--ease-spring); box-shadow: 0 0 8px ${pColor}66;"></div>
+                  </div>
                 </div>
-                <div style="width:100%; height:8px; background:rgba(255,255,255,0.06); border-radius:4px; overflow:hidden;">
-                  <div style="width:${(p.count/maxPrio)*100}%; height:100%; background:${prioColors[p.priority] || '#3b82f6'}; border-radius:4px;"></div>
-                </div>
-              </div>
-            `).join('');
+              `;
+            }).join('');
           } else {
             prioContainer.innerHTML = '<p style="font-size:12px; color:#94a3b8;">Belum ada data tugas.</p>';
           }
