@@ -410,7 +410,7 @@
       const description = document.getElementById('task-desc').value;
       const category = document.getElementById('task-category').value;
       const priority = document.getElementById('task-priority').value;
-      const due_date = document.getElementById('task-due-date').value;
+      const due_date = localInputToISO(document.getElementById('task-due-date').value);
 
       try {
         await apiFetch('/api/tasks', {

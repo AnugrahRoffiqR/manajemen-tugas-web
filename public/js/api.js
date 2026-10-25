@@ -108,13 +108,22 @@ async function apiFetch(endpoint, options = {}) {
 function formatDateWIB(dateString) {
   if (!dateString) return '-';
   const date = new Date(dateString);
+  if (Number.isNaN(date.getTime())) return '-';
   return new Intl.DateTimeFormat('id-ID', {
     day: 'numeric',
     month: 'short',
     year: 'numeric',
     hour: '2-digit',
     minute: '2-digit',
+    timeZone: 'Asia/Jakarta', // label says WIB, so format in WIB regardless of the device zone
   }).format(date) + ' WIB';
+}
+
+// <input type="datetime-local"> has no zone; send an absolute ISO time so a UTC server stores the right instant.
+function localInputToISO(value) {
+  if (!value) return value;
+  const date = new Date(value);
+  return Number.isNaN(date.getTime()) ? value : date.toISOString();
 }
 
 // Format Sisa Waktu Deadline

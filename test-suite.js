@@ -285,6 +285,10 @@ async function runTests() {
       ['TC-15i', 'DELETE', '/api/users/2147483000', undefined, 404, 'Hapus user yang tidak ada → 404'],
       ['TC-15j', 'DELETE', '/api/reminders/2147483000', undefined, 404, 'Hapus pengingat yang tidak ada → 404'],
       ['TC-15k', 'GET', '/api/tasks?status=Done&status=To%20Do', undefined, 200, 'Query param ganda tidak membuat 500'],
+      ['TC-15l', 'GET', '/api/reports/analytics?period=today&period=week', undefined, 200, 'Period ganda di laporan tidak membuat 500'],
+      ['TC-15m', 'GET', '/api/tasks?user_id=abc', undefined, 400, 'Filter user_id non-angka ditolak'],
+      ['TC-15n', 'POST', '/api/users', { name: 'X', email: 'bukan-email', password: 'Password1' }, 400, 'Format email salah ditolak'],
+      ['TC-15o', 'PUT', '/api/users/2147483000', { status: 'Dibekukan' }, 400, 'Status user di luar enum ditolak'],
     ];
     for (const [id, method, url, body, expected, desc] of badCases) {
       const r = await fetch(`${BASE_URL}${url}`, {
@@ -294,6 +298,40 @@ async function runTests() {
       });
       assert(r.status === expected, id, `${desc} (dapat ${r.status})`);
     }
+
+    // ----------------------------------------------------
+    // TC-16: Re-save tugas Done tidak menggeser completed_at
+    // ----------------------------------------------------
+    const t16 = await (await fetch(`${BASE_URL}/api/tasks`, {
+      method: 'POST', headers: jsonHeaders(ownerCookie),
+      body: JSON.stringify({ title: 'TC16', due_date: due }),
+    })).json();
+    const t16Id = t16.data?.id;
+    const firstDone = await (await fetch(`${BASE_URL}/api/tasks/${t16Id}`, {
+      method: 'PUT', headers: jsonHeaders(ownerCookie), body: JSON.stringify({ status: 'Done' }),
+    })).json();
+    await new Promise((r) => setTimeout(r, 1100));
+    const resaved = await (await fetch(`${BASE_URL}/api/tasks/${t16Id}`, {
+      method: 'PUT', headers: jsonHeaders(ownerCookie), body: JSON.stringify({ status: 'Done', title: 'TC16 edit' }),
+    })).json();
+    assert(
+      firstDone.data?.completed_at && firstDone.data.completed_at === resaved.data?.completed_at,
+      'TC-16', 'Simpan ulang tugas Done mempertahankan completed_at'
+    );
+    if (t16Id) await fetch(`${BASE_URL}/api/tasks/${t16Id}`, { method: 'DELETE', headers: { 'Cookie': ownerCookie } });
+
+    // ----------------------------------------------------
+    // TC-14: Rate limit login (dijalankan terakhir karena mengunci IP ini 60 detik)
+    // ----------------------------------------------------
+    let lastStatus = 0;
+    for (let i = 0; i < 6; i++) {
+      const r = await fetch(`${BASE_URL}/api/auth/login`, {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: 'admin@manajementugas.local', password: `salah-${i}` }),
+      });
+      lastStatus = r.status;
+    }
+    assert(lastStatus === 429, 'TC-14', `Percobaan login gagal ke-6 diblokir (dapat ${lastStatus})`);
 
   } catch (err) {
     console.error('Fatal Test Exception:', err);

@@ -39,6 +39,14 @@ CREATE TABLE IF NOT EXISTS reminders (
 
 CREATE INDEX IF NOT EXISTS idx_reminders_user_id   ON reminders(user_id);
 CREATE INDEX IF NOT EXISTS idx_reminders_remind_at ON reminders(remind_at);
+CREATE INDEX IF NOT EXISTS idx_tasks_user_id       ON tasks(user_id);
+
+-- Penghitung login gagal per IP (dipakai bersama oleh semua instance Vercel).
+CREATE TABLE IF NOT EXISTS login_attempts (
+  ip        TEXT PRIMARY KEY,
+  count     INTEGER NOT NULL DEFAULT 1,
+  reset_at  TIMESTAMPTZ NOT NULL
+);
 
 -- ------------------------------------------------------------------
 -- Migrasi untuk database lama (sudah diterapkan di production).

@@ -477,7 +477,7 @@
         category: document.getElementById('task-category').value,
         priority: document.getElementById('task-priority').value,
         status: document.getElementById('task-status').value,
-        due_date: document.getElementById('task-due-date').value,
+        due_date: localInputToISO(document.getElementById('task-due-date').value),
       };
 
       try {

@@ -69,7 +69,7 @@
           <div class="field-row" style="align-items: end;">
             <div class="field">
               <label for="rem-title" class="field-label">Pesan Pengingat *</label>
-              <input type="text" id="rem-title" class="form-input" required>
+              <input type="text" id="rem-title" class="form-input" required maxlength="255">
             </div>
             <div class="field">
               <label for="rem-time" class="field-label">Waktu Pengingat *</label>
@@ -186,7 +186,7 @@
     formEl.addEventListener('submit', async (e) => {
       e.preventDefault();
       const title = document.getElementById('rem-title').value;
-      const remind_at = document.getElementById('rem-time').value;
+      const remind_at = localInputToISO(document.getElementById('rem-time').value);
 
       try {
         await apiFetch('/api/reminders', {

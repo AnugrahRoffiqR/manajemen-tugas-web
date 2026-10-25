@@ -192,7 +192,7 @@ app.post('/api/auth/login', loginRateLimit, async (req, res) => {
     );
 
     if (userRes.rows.length === 0) {
-      recordLoginFailure(req.ip);
+      await recordLoginFailure(req.ip);
       return res.status(401).json({
         success: false,
         error: 'INVALID_CREDENTIALS',
@@ -204,7 +204,7 @@ app.post('/api/auth/login', loginRateLimit, async (req, res) => {
 
     const isMatch = await comparePassword(password, user.password);
     if (!isMatch) {
-      recordLoginFailure(req.ip);
+      await recordLoginFailure(req.ip);
       return res.status(401).json({
         success: false,
         error: 'INVALID_CREDENTIALS',
@@ -221,7 +221,7 @@ app.post('/api/auth/login', loginRateLimit, async (req, res) => {
       });
     }
 
-    clearLoginFailures(req.ip);
+    await clearLoginFailures(req.ip);
     const token = generateToken(user);
     res.cookie(COOKIE_NAME, token, COOKIE_OPTIONS);
 
@@ -586,7 +586,8 @@ app.delete('/api/reminders/:id', authMiddleware, async (req, res) => {
 // ==========================================
 app.get('/api/reports/analytics', authMiddleware, async (req, res) => {
   try {
-    const { period } = req.query; // 'today', 'week', 'month', 'all'
+    const rawPeriod = queryString(req.query.period);
+    const period = ['today', 'week', 'month', 'all'].includes(rawPeriod) ? rawPeriod : 'all';
     const isOwner = req.user.role === 'Owner';
 
     // Period boundaries in WIB (UTC+7, no DST) regardless of the host timezone (Vercel runs in UTC).
