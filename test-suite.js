@@ -3,12 +3,32 @@
  * Menjalankan seluruh skenario pengujian integrasi & keamanan secara otomatis.
  */
 
-const BASE_URL = 'http://localhost:3000';
+require('dotenv').config();
+const app = require('./server');
+
+const PORT = process.env.PORT || 3005;
+const BASE_URL = `http://localhost:${PORT}`;
 
 async function runTests() {
   console.log('====================================================');
   console.log('🧪 MEMULAI AUTOMATED UAT VERIFICATION SUITE');
   console.log('====================================================\n');
+
+  let serverInstance = null;
+  // Pastikan server aktif jika belum berjalan
+  try {
+    const probe = await fetch(`${BASE_URL}/api/health`).catch(() => null);
+    if (!probe) {
+      serverInstance = await new Promise((resolve) => {
+        const s = app.listen(PORT, () => resolve(s));
+      });
+      console.log(`📡 Server otomatis dijalankan pada port ${PORT} untuk pengujian.\n`);
+    }
+  } catch (e) {
+    serverInstance = await new Promise((resolve) => {
+      const s = app.listen(PORT, () => resolve(s));
+    });
+  }
 
   let passed = 0;
   let failed = 0;

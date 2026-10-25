@@ -86,6 +86,13 @@ async function checkAndSeedInitialData() {
 }
 
 // ==========================================
+// HEALTH CHECK
+// ==========================================
+app.get('/api/health', (req, res) => {
+  res.json({ status: 'ok', timestamp: new Date().toISOString() });
+});
+
+// ==========================================
 // MODUL AUTENTIKASI API (/api/auth)
 // ==========================================
 app.post('/api/auth/login', async (req, res) => {
