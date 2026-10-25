@@ -48,18 +48,18 @@
         </div>
       </div>
 
-      <!-- Period Filter Tabs (Tactile Clay Block Tablist) -->
-      <div role="tablist" aria-label="Filter Periode Waktu" class="no-print" style="background: #ffffff; border: 2.5px solid var(--border); border-radius: 16px; padding: 4px; display: inline-flex; gap: 4px; margin-bottom: 2rem; flex-wrap: wrap; box-shadow: 3px 3px 0 var(--border);">
-        <button role="tab" aria-selected="true" id="btn-period-all" onclick="changePeriod('all')" class="btn-secondary" style="padding: 0.375rem 1rem; min-height: 38px; font-size: 0.8125rem; border: none; background: #ea580c; color: #fff; box-shadow: none;">
+      <!-- Period Filter Tabs (Reference A SaaS Tablist) -->
+      <div role="tablist" aria-label="Filter Periode Waktu" class="no-print" style="background: #ffffff; border: 1px solid var(--border); border-radius: 8px; padding: 3px; display: inline-flex; gap: 3px; margin-bottom: 2rem; flex-wrap: wrap;">
+        <button role="tab" aria-selected="true" id="btn-period-all" onclick="changePeriod('all')" class="btn-secondary" style="padding: 0.35rem 0.875rem; min-height: 32px; font-size: 0.8125rem; border: none; background: #0284c7; color: #fff; border-radius: 6px;">
           Semua Waktu
         </button>
-        <button role="tab" aria-selected="false" id="btn-period-month" onclick="changePeriod('month')" class="btn-secondary" style="padding: 0.375rem 1rem; min-height: 38px; font-size: 0.8125rem; border: none; background: transparent; color: var(--text-muted); box-shadow: none;">
+        <button role="tab" aria-selected="false" id="btn-period-month" onclick="changePeriod('month')" class="btn-secondary" style="padding: 0.35rem 0.875rem; min-height: 32px; font-size: 0.8125rem; border: none; background: transparent; color: var(--text-muted); border-radius: 6px;">
           Bulan Ini
         </button>
-        <button role="tab" aria-selected="false" id="btn-period-week" onclick="changePeriod('week')" class="btn-secondary" style="padding: 0.375rem 1rem; min-height: 38px; font-size: 0.8125rem; border: none; background: transparent; color: var(--text-muted); box-shadow: none;">
+        <button role="tab" aria-selected="false" id="btn-period-week" onclick="changePeriod('week')" class="btn-secondary" style="padding: 0.35rem 0.875rem; min-height: 32px; font-size: 0.8125rem; border: none; background: transparent; color: var(--text-muted); border-radius: 6px;">
           Minggu Ini
         </button>
-        <button role="tab" aria-selected="false" id="btn-period-today" onclick="changePeriod('today')" class="btn-secondary" style="padding: 0.375rem 1rem; min-height: 38px; font-size: 0.8125rem; border: none; background: transparent; color: var(--text-muted); box-shadow: none;">
+        <button role="tab" aria-selected="false" id="btn-period-today" onclick="changePeriod('today')" class="btn-secondary" style="padding: 0.35rem 0.875rem; min-height: 32px; font-size: 0.8125rem; border: none; background: transparent; color: var(--text-muted); border-radius: 6px;">
           Hari Ini
         </button>
       </div>
@@ -201,7 +201,7 @@
       ['all', 'month', 'week', 'today'].forEach(p => {
         const btn = document.getElementById(`btn-period-${p}`);
         if (p === period) {
-          btn.style.background = '#ea580c';
+          btn.style.background = '#0284c7';
           btn.style.color = '#fff';
         } else {
           btn.style.background = 'transparent';

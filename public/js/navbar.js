@@ -44,28 +44,28 @@ async function initNavigation(activeKey = '') {
   const sidebarContainer = document.getElementById('sidebar-container');
   if (sidebarContainer) {
     sidebarContainer.innerHTML = `
-      <aside style="width: 260px; height: 100vh; position: sticky; top: 0; background: #ffffff; border-right: 2.5px solid var(--border); display: flex; flex-direction: column; justify-content: space-between; padding: 1.5rem 1rem;">
+      <aside style="width: 260px; height: 100vh; position: sticky; top: 0; background: #ffffff; border-right: 1px solid var(--border); display: flex; flex-direction: column; justify-content: space-between; padding: 1.5rem 1rem;">
         <div>
           <!-- Brand Logo & Live Pulse Pill (Sistem Manajemen Tugas) -->
           <div style="padding: 0.5rem 0.5rem 1.25rem;">
             <div style="display: flex; align-items: center; gap: 0.75rem; margin-bottom: 0.875rem;">
-              <div style="width: 40px; height: 40px; border-radius: 12px; background: #ff8c7a; border: 2px solid var(--border); box-shadow: 2px 2px 0 var(--border); display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#2d3748" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+              <div style="width: 38px; height: 38px; border-radius: 10px; background: #fff7ed; border: 1px solid #fed7aa; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#ea580c" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
               </div>
               <div>
-                <h2 style="font-size: 16px; font-weight: 700; font-family: 'Fredoka', 'Nunito', sans-serif; color: var(--text); line-height: 1.2;">
+                <h2 style="font-size: 15px; font-weight: 700; font-family: 'Poppins', 'Plus Jakarta Sans', sans-serif; color: var(--text); line-height: 1.2;">
                   Manajemen <span style="color: #ea580c;">Tugas</span>
                 </h2>
-                <span style="font-size: 11px; color: var(--text-muted); font-weight: 600;">Workspace Tim</span>
+                <span style="font-size: 11px; color: var(--text-muted); font-weight: 500;">Workspace Tim</span>
               </div>
             </div>
 
-            <!-- Workspace Status Pill with Tactile Border -->
-            <div style="display: inline-flex; align-items: center; gap: 8px; padding: 6px 10px; border-radius: 10px; background: #fff9f5; border: 2px solid var(--border); box-shadow: 2px 2px 0 var(--border); font-size: 11px; color: #2d3748; width: 100%;">
+            <!-- Workspace Status Pill with Refined Border -->
+            <div style="display: inline-flex; align-items: center; gap: 8px; padding: 6px 10px; border-radius: 8px; background: #f0fdf4; border: 1px solid #bbf7d0; font-size: 11px; color: #166534; width: 100%;">
               <span style="position: relative; display: flex; width: 8px; height: 8px;">
                 <span style="position: relative; display: inline-flex; border-radius: 50%; width: 8px; height: 8px; background: #16a34a;"></span>
               </span>
-              <span style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-weight: 700; font-family: 'Fredoka', 'Nunito', sans-serif;">Real-time Cloud Sync</span>
+              <span style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-weight: 600; font-family: 'Plus Jakarta Sans', sans-serif;">Real-time Cloud Sync</span>
             </div>
           </div>
 
@@ -91,7 +91,7 @@ async function initNavigation(activeKey = '') {
                 <span>Pengingat</span>
               </div>
               <div style="display: flex; align-items: center; gap: 6px;">
-                ${urgentCount > 0 ? `<span style="background: #dc2626; color: #fff; font-size: 11px; font-weight: 700; padding: 1px 7px; border-radius: 999px; border: 1.5px solid var(--border);">${urgentCount}</span>` : ''}
+                ${urgentCount > 0 ? `<span style="background: #dc2626; color: #fff; font-size: 11px; font-weight: 700; padding: 1px 7px; border-radius: 999px; border: 1px solid #b91c1c;">${urgentCount}</span>` : ''}
                 <kbd class="nav-kbd">3</kbd>
               </div>
             </a>
@@ -114,17 +114,17 @@ async function initNavigation(activeKey = '') {
         </div>
 
         <!-- User Profile Card in Sidebar -->
-        <div style="background: #ffffff; border: 2.5px solid var(--border); border-radius: 16px; padding: 0.875rem; display: flex; align-items: center; justify-content: space-between; box-shadow: 3px 3px 0 var(--border);">
+        <div style="background: #ffffff; border: 1px solid var(--border); border-radius: 12px; padding: 0.75rem; display: flex; align-items: center; justify-content: space-between; box-shadow: none;">
           <div style="display: flex; align-items: center; gap: 0.625rem; overflow: hidden;">
-            <div style="width: 36px; height: 36px; border-radius: 10px; background: #ff8c7a; border: 2px solid var(--border); display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 15px; color: #2d3748; font-family: 'Fredoka', sans-serif; flex-shrink: 0;">
+            <div style="width: 34px; height: 34px; border-radius: 8px; background: #fff7ed; border: 1px solid #fed7aa; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 14px; color: #ea580c; font-family: 'Poppins', sans-serif; flex-shrink: 0;">
               ${currentUser.name.charAt(0).toUpperCase()}
             </div>
             <div style="overflow: hidden;">
-              <p style="font-size: 13px; font-weight: 700; color: #2d3748; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-family: 'Fredoka', 'Nunito', sans-serif;">${currentUser.name}</p>
-              <span style="font-size: 11px; color: ${currentUser.role === 'Owner' ? '#ea580c' : '#64748b'}; font-weight: 700;">${currentUser.role}</span>
+              <p style="font-size: 13px; font-weight: 600; color: #0f172a; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-family: 'Plus Jakarta Sans', sans-serif;">${currentUser.name}</p>
+              <span style="font-size: 11px; color: ${currentUser.role === 'Owner' ? '#ea580c' : '#64748b'}; font-weight: 600;">${currentUser.role}</span>
             </div>
           </div>
-          <button onclick="handleLogout()" title="Keluar dari akun" aria-label="Keluar dari akun" class="btn-action-icon" style="flex-shrink: 0; width: 34px; height: 34px;">
+          <button onclick="handleLogout()" title="Keluar dari akun" aria-label="Keluar dari akun" class="btn-action-icon" style="flex-shrink: 0; width: 32px; height: 32px;">
             ${ICONS.logout}
           </button>
         </div>
@@ -136,16 +136,16 @@ async function initNavigation(activeKey = '') {
   const mobileHeader = document.getElementById('mobile-header');
   if (mobileHeader) {
     mobileHeader.innerHTML = `
-      <header style="display: flex; align-items: center; justify-content: space-between; padding: 0.875rem 1rem; background: #ffffff; border-bottom: 2.5px solid var(--border); position: sticky; top: 0; z-index: 100;">
+      <header style="display: flex; align-items: center; justify-content: space-between; padding: 0.75rem 1rem; background: rgba(255, 255, 255, 0.9); backdrop-filter: blur(12px); border-bottom: 1px solid var(--border); position: sticky; top: 0; z-index: 100;">
         <div style="display: flex; align-items: center; gap: 0.625rem;">
-          <div style="width: 34px; height: 34px; border-radius: 10px; background: #ff8c7a; border: 2px solid var(--border); box-shadow: 2px 2px 0 var(--border); display: flex; align-items: center; justify-content: center; color: #2d3748; font-weight: bold;">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#2d3748" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+          <div style="width: 32px; height: 32px; border-radius: 8px; background: #fff7ed; border: 1px solid #fed7aa; display: flex; align-items: center; justify-content: center; color: #ea580c; font-weight: bold;">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#ea580c" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
           </div>
-          <span style="font-weight: 700; font-size: 16px; font-family: 'Fredoka', 'Nunito', sans-serif; color: var(--text);">Manajemen <span style="color: #ea580c;">Tugas</span></span>
+          <span style="font-weight: 700; font-size: 15px; font-family: 'Poppins', 'Plus Jakarta Sans', sans-serif; color: var(--text);">Manajemen <span style="color: #ea580c;">Tugas</span></span>
         </div>
         <div style="display: flex; align-items: center; gap: 0.625rem;">
-          <span style="font-size: 12px; color: #2d3748; font-weight: 700; font-family: 'Fredoka', sans-serif;">${currentUser.name.split(' ')[0]}</span>
-          <button onclick="handleLogout()" class="btn-action-icon" title="Keluar dari akun" aria-label="Keluar dari akun" style="width: 34px; height: 34px;">
+          <span style="font-size: 12px; color: #0f172a; font-weight: 600; font-family: 'Plus Jakarta Sans', sans-serif;">${currentUser.name.split(' ')[0]}</span>
+          <button onclick="handleLogout()" class="btn-action-icon" title="Keluar dari akun" aria-label="Keluar dari akun" style="width: 32px; height: 32px;">
             ${ICONS.logout}
           </button>
         </div>
@@ -157,7 +157,7 @@ async function initNavigation(activeKey = '') {
   const mobileBottomNav = document.getElementById('mobile-bottom-nav');
   if (mobileBottomNav) {
     mobileBottomNav.innerHTML = `
-      <nav aria-label="Navigasi Utama Mobile" style="position: fixed; bottom: 0; left: 0; right: 0; height: calc(60px + env(safe-area-inset-bottom, 0px)); padding-bottom: env(safe-area-inset-bottom, 0px); background: #ffffff; border-top: 2.5px solid var(--border); display: flex; align-items: center; justify-content: space-around; z-index: 99; box-shadow: 0 -2px 0 var(--border);">
+      <nav aria-label="Navigasi Utama Mobile" style="position: fixed; bottom: 0; left: 0; right: 0; height: calc(60px + env(safe-area-inset-bottom, 0px)); padding-bottom: env(safe-area-inset-bottom, 0px); background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(12px); border-top: 1px solid var(--border); display: flex; align-items: center; justify-content: space-around; z-index: 99; box-shadow: 0 -1px 3px rgba(0, 0, 0, 0.03);">
         <a href="/dashboard" class="mobile-nav-link ${activeKey === 'dashboard' ? 'active' : ''}" aria-label="Halaman Utama Dashboard">
           <span class="mobile-nav-icon">${ICONS.dashboard}</span>
           <span class="mobile-nav-label">Home</span>
@@ -169,7 +169,7 @@ async function initNavigation(activeKey = '') {
         <a href="/reminders" class="mobile-nav-link ${activeKey === 'reminders' ? 'active' : ''}" aria-label="Halaman Pengingat Deadline" style="position: relative;">
           <span class="mobile-nav-icon">${ICONS.reminders}</span>
           <span class="mobile-nav-label">Ingat</span>
-          ${urgentCount > 0 ? `<span style="position: absolute; top: 8px; right: 25%; width: 8px; height: 8px; border-radius: 50%; background: #ef4444; box-shadow: 0 0 6px #ef4444;"></span>` : ''}
+          ${urgentCount > 0 ? `<span style="position: absolute; top: 8px; right: 25%; width: 8px; height: 8px; border-radius: 50%; background: #ef4444;"></span>` : ''}
         </a>
         <a href="/reports" class="mobile-nav-link ${activeKey === 'reports' ? 'active' : ''}" aria-label="Halaman Laporan Kinerja">
           <span class="mobile-nav-icon">${ICONS.reports}</span>

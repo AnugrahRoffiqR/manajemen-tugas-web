@@ -1,39 +1,38 @@
 /* ==========================================================================
    STYLE.CSS — Sistem Manajemen Tugas
-   Design System: Educational Platform Reference + Taste Skill Craftsmanship
-   Light theme, claymorphism-inspired tactile surfaces, vibrant accents, block composition
+   Design System: SaaS Analytics UI (Ref A) + Educational Platform Atmosphere (Ref B)
+   Warm ivory cream canvas, pastel tonal surfaces, crisp 1px SaaS components
    ========================================================================== */
 
-@import url('https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Nunito:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700&family=Poppins:wght@600;700;800&display=swap');
 
 :root {
-  /* Educational Platform Reference Color Tokens */
-  --primary: #f5a69d;
-  --primary-coral: #ff8c7a;
-  --primary-tint: #fff9f5;
-  --secondary: #add8e6;
-  --secondary-tint: #f0f9ff;
+  /* Reference A (SaaS Analytics UI) Main Interface Colors */
+  --primary: #0284c7;
+  --primary-dark: #0369a1;
+  --primary-tint: #f0f9ff;
   --cta: #16a34a;
   --cta-dark: #15803d;
   --cta-tint: #f0fdf4;
-  --accent-mint: #98ff98;
-  --accent-purple: #e0e7ff;
 
-  /* Neutrals & Surfaces */
+  /* Reference B (Educational Platform) Background Atmosphere & Pastel Layers */
   --canvas-bg: #fffbf8;
+  --surface-cream: #fff9f5;
+  --surface-peach: #fff7ed;
+  --surface-sky: #f0f9ff;
+  --surface-mint: #f0fdf4;
   --surface-card: #ffffff;
-  --surface-subtle: #fff9f5;
-  --surface-hover: #fef4ee;
+  --surface-hover: #fdf6ee;
 
   /* Typography Colors */
-  --text: #2d3748;
+  --text: #0f172a;
   --text-muted: #64748b;
   --text-tertiary: #94a3b8;
 
   /* Borders & Rules */
-  --border: #2d3748;
-  --border-light: #e2e8f0;
-  --border-focus: #2d3748;
+  --border: #e2e8f0;
+  --border-subtle: #f1f5f9;
+  --border-focus: #0284c7;
   --rule: #f1f5f9;
 
   /* Status Colors */
@@ -43,14 +42,11 @@
   --status-urgent: #d97706;
   --status-overdue: #dc2626;
 
-  /* Sizing & Claymorphism Tokens */
-  --radius-card: 1.125rem;
-  --radius-control: 0.875rem;
+  /* Sizing Tokens */
+  --radius-card: 0.875rem;
+  --radius-control: 0.625rem;
   --radius-pill: 9999px;
-  --control-height: 42px;
-  --shadow-clay: 4px 4px 0 var(--text), inset 0 -3px 0 rgba(0, 0, 0, 0.08);
-  --shadow-btn: 3px 3px 0 var(--text);
-  --shadow-card-hover: 2px 2px 0 var(--text), inset 0 -3px 0 rgba(0, 0, 0, 0.08);
+  --control-height: 40px;
 }
 
 /* ==========================================================================
@@ -68,7 +64,7 @@ html {
 }
 
 body {
-  font-family: 'Nunito', system-ui, -apple-system, sans-serif;
+  font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
   background-color: var(--canvas-bg);
   color: var(--text);
   min-height: 100dvh;
@@ -80,11 +76,11 @@ body {
 }
 
 h1, h2, h3, h4, h5, h6 {
-  font-family: 'Fredoka', 'Nunito', sans-serif;
+  font-family: 'Poppins', 'Plus Jakarta Sans', sans-serif;
   color: var(--text);
-  font-weight: 700;
+  font-weight: 600;
   line-height: 1.25;
-  letter-spacing: -0.01em;
+  letter-spacing: -0.02em;
 }
 
 body.modal-open {
@@ -129,19 +125,18 @@ body.modal-open {
 }
 
 /* ==========================================================================
-   CARDS & CONTAINERS (Educational Platform Reference: Tactile Claymorphism)
+   CARDS & CONTAINERS (Reference A SaaS Clean Cards on Reference B Warm Canvas)
    ========================================================================== */
 .glass-card, .clay-card, .doppelrand-shell {
   background: var(--surface-card);
-  border: 2.5px solid var(--border);
+  border: 1px solid var(--border);
   border-radius: var(--radius-card);
-  box-shadow: var(--shadow-clay);
-  transition: transform 0.15s ease, box-shadow 0.15s ease;
+  box-shadow: none;
+  transition: border-color 0.15s ease;
 }
 
 .glass-card:hover, .clay-card:hover {
-  box-shadow: var(--shadow-card-hover);
-  transform: translate(1px, 1px);
+  border-color: #cbd5e1;
 }
 
 .doppelrand-core {
@@ -150,42 +145,43 @@ body.modal-open {
   border: none;
 }
 
-/* Stat Cards (Vibrant Block Composition from Reference) */
+/* Stat Cards (Reference A SaaS Metrics with Tonal Accent Rim) */
 .stat-card {
-  border: 2.5px solid var(--border);
+  border: 1px solid var(--border);
   border-radius: var(--radius-card);
   padding: 1.25rem 1.5rem;
-  box-shadow: var(--shadow-clay);
-  transition: transform 0.15s ease, box-shadow 0.15s ease;
+  box-shadow: none;
+  background: var(--surface-card);
+  transition: border-color 0.15s ease, transform 0.15s ease;
 }
 
 .stat-card:hover {
-  box-shadow: var(--shadow-card-hover);
-  transform: translate(2px, 2px);
+  border-color: #cbd5e1;
+  transform: translateY(-1px);
 }
 
 .stat-card-total {
-  background: #f0f9ff;
-  border-color: var(--border);
+  background: #ffffff;
+  border-top: 3px solid var(--primary);
 }
 
 .stat-card-progress {
-  background: #fff7ed;
-  border-color: var(--border);
+  background: #ffffff;
+  border-top: 3px solid #f59e0b;
 }
 
 .stat-card-done {
-  background: #f0fdf4;
-  border-color: var(--border);
+  background: #ffffff;
+  border-top: 3px solid var(--cta);
 }
 
 .stat-card-overdue {
-  background: #fef2f2;
-  border-color: var(--border);
+  background: #ffffff;
+  border-top: 3px solid var(--status-overdue);
 }
 
 /* ==========================================================================
-   BUTTONS & CONTROLS (Tactile Offset Clay Buttons)
+   BUTTONS & CONTROLS (Reference A Clean SaaS Buttons)
    ========================================================================== */
 .btn-primary, .btn-island {
   display: inline-flex;
@@ -194,29 +190,26 @@ body.modal-open {
   gap: 0.5rem;
   background: var(--cta);
   color: #ffffff;
-  font-family: 'Fredoka', 'Nunito', sans-serif;
+  font-family: 'Poppins', 'Plus Jakarta Sans', sans-serif;
   font-weight: 600;
-  font-size: 0.9375rem;
+  font-size: 0.875rem;
   padding: 0.5rem 1.25rem;
   border-radius: var(--radius-control);
-  border: 2.5px solid var(--border);
-  box-shadow: var(--shadow-btn);
+  border: 1px solid transparent;
+  box-shadow: none;
   cursor: pointer;
   text-decoration: none;
   min-height: var(--control-height);
   white-space: nowrap;
-  transition: transform 0.15s ease, box-shadow 0.15s ease, background-color 0.15s ease;
+  transition: background-color 0.15s ease;
 }
 
 .btn-primary:hover, .btn-island:hover {
   background: var(--cta-dark);
-  box-shadow: 1px 1px 0 var(--border);
-  transform: translate(2px, 2px);
 }
 
 .btn-primary:active, .btn-island:active {
-  box-shadow: 0 0 0 var(--border);
-  transform: translate(3px, 3px);
+  background: var(--cta-dark);
 }
 
 .btn-icon-pill {
@@ -236,29 +229,27 @@ body.modal-open {
   gap: 0.5rem;
   background: #ffffff;
   color: var(--text);
-  font-family: 'Fredoka', 'Nunito', sans-serif;
-  border: 2.5px solid var(--border);
-  box-shadow: var(--shadow-btn);
-  font-weight: 600;
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  border: 1px solid #cbd5e1;
+  box-shadow: none;
+  font-weight: 500;
   font-size: 0.875rem;
   padding: 0.5rem 1.125rem;
   border-radius: var(--radius-control);
   cursor: pointer;
   min-height: var(--control-height);
   text-decoration: none;
-  transition: transform 0.15s ease, box-shadow 0.15s ease, background-color 0.15s ease;
+  transition: background-color 0.15s ease, border-color 0.15s ease;
 }
 
 .btn-secondary:hover {
   background: var(--surface-hover);
-  box-shadow: 1px 1px 0 var(--border);
-  transform: translate(2px, 2px);
+  border-color: #94a3b8;
   color: var(--text);
 }
 
 .btn-secondary:active {
-  box-shadow: 0 0 0 var(--border);
-  transform: translate(3px, 3px);
+  background: var(--surface-hover);
 }
 
 .btn-danger {
@@ -268,27 +259,24 @@ body.modal-open {
   gap: 0.5rem;
   background: #fef2f2;
   color: #b91c1c;
-  font-family: 'Fredoka', 'Nunito', sans-serif;
+  font-family: 'Plus Jakarta Sans', sans-serif;
   font-weight: 600;
   font-size: 0.8125rem;
   padding: 0.375rem 0.875rem;
-  border-radius: 12px;
-  border: 2px solid #b91c1c;
-  box-shadow: 2px 2px 0 #b91c1c;
+  border-radius: 8px;
+  border: 1px solid #fecaca;
+  box-shadow: none;
   cursor: pointer;
   min-height: 34px;
-  transition: transform 0.15s ease, box-shadow 0.15s ease, background-color 0.15s ease;
+  transition: background-color 0.15s ease;
 }
 
 .btn-danger:hover {
   background: #fee2e2;
-  box-shadow: 1px 1px 0 #b91c1c;
-  transform: translate(1px, 1px);
 }
 
 .btn-danger:active {
-  box-shadow: 0 0 0 #b91c1c;
-  transform: translate(2px, 2px);
+  background: #fee2e2;
 }
 
 .btn-action-icon {
@@ -297,36 +285,34 @@ body.modal-open {
   justify-content: center;
   width: 34px;
   height: 34px;
-  border-radius: 10px;
-  border: 2px solid var(--border);
-  box-shadow: 2px 2px 0 var(--border);
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  box-shadow: none;
   background: #ffffff;
   color: var(--text);
   cursor: pointer;
   padding: 0;
-  transition: transform 0.15s ease, box-shadow 0.15s ease, background-color 0.15s ease;
+  transition: background-color 0.15s ease, border-color 0.15s ease;
 }
 
 .btn-action-icon:hover {
   background: var(--surface-hover);
-  box-shadow: 1px 1px 0 var(--border);
-  transform: translate(1px, 1px);
+  border-color: #cbd5e1;
 }
 
 .btn-action-icon:active {
-  box-shadow: 0 0 0 var(--border);
-  transform: translate(2px, 2px);
+  background: var(--surface-hover);
 }
 
 /* ==========================================================================
-   FORM CONTROLS (Chunky Tactile Inputs)
+   FORM CONTROLS (Clean SaaS Inputs)
    ========================================================================== */
 .form-input, .form-select, .form-textarea {
   width: 100%;
   background: #ffffff;
-  border: 2px solid #cbd5e1;
-  border-radius: 12px;
-  padding: 0.625rem 0.875rem;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  padding: 0.5rem 0.75rem;
   color: var(--text);
   font-family: inherit;
   font-size: 0.875rem;
@@ -340,8 +326,9 @@ body.modal-open {
 }
 
 .form-input:focus, .form-select:focus, .form-textarea:focus {
-  border-color: var(--border);
-  box-shadow: 3px 3px 0 var(--border);
+  border-color: var(--primary);
+  outline: 2px solid rgba(2, 132, 199, 0.2);
+  outline-offset: 1px;
 }
 
 .form-input::placeholder, .form-textarea::placeholder {
@@ -353,31 +340,30 @@ body.modal-open {
   display: inline-flex;
   align-items: center;
   gap: 0.375rem;
-  padding: 0.4rem 0.875rem;
+  padding: 0.35rem 0.75rem;
   border-radius: var(--radius-pill);
   background: #ffffff;
-  border: 2px solid #cbd5e1;
+  border: 1px solid var(--border);
   color: var(--text-muted);
-  font-family: 'Fredoka', 'Nunito', sans-serif;
+  font-family: 'Plus Jakarta Sans', sans-serif;
   font-size: 0.8125rem;
-  font-weight: 600;
+  font-weight: 500;
   cursor: pointer;
   user-select: none;
-  transition: transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease, color 0.15s ease, background-color 0.15s ease;
+  transition: background-color 0.15s ease, border-color 0.15s ease, color 0.15s ease;
 }
 
 .filter-chip:hover {
   background: var(--surface-hover);
   color: var(--text);
-  border-color: var(--border);
+  border-color: #cbd5e1;
 }
 
 .filter-chip.active {
-  background: #fff0eb;
-  border-color: var(--border);
-  box-shadow: 2px 2px 0 var(--border);
-  color: var(--text);
-  font-weight: 700;
+  background: #f0f9ff;
+  border-color: var(--primary);
+  color: var(--primary);
+  font-weight: 600;
 }
 
 /* ==========================================================================
@@ -533,15 +519,15 @@ body.modal-open {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0.625rem 0.875rem;
-  border-radius: 12px;
+  padding: 0.5rem 0.75rem;
+  border-radius: 8px;
   color: var(--text-muted);
   text-decoration: none;
-  font-family: 'Fredoka', 'Nunito', sans-serif;
-  font-size: 0.9375rem;
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 0.875rem;
   font-weight: 500;
-  border: 2px solid transparent;
-  transition: transform 0.15s ease, background-color 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease;
+  border: 1px solid transparent;
+  transition: background-color 0.15s ease, border-color 0.15s ease, color 0.15s ease;
 }
 
 .nav-item:hover {
@@ -550,11 +536,10 @@ body.modal-open {
 }
 
 .nav-item.active {
-  background: #fff0eb;
-  border-color: var(--border);
-  box-shadow: 2px 2px 0 var(--border);
-  color: var(--text);
-  font-weight: 700;
+  background: #f0f9ff;
+  border-color: #bae6fd;
+  color: var(--primary);
+  font-weight: 600;
 }
 
 .nav-kbd {
@@ -568,7 +553,7 @@ body.modal-open {
 }
 
 /* ==========================================================================
-   KANBAN BOARD (Tactile Block Columns)
+   KANBAN BOARD (Reference A SaaS Cards with Priority Accents)
    ========================================================================== */
 .kanban-grid {
   display: grid;
@@ -594,29 +579,28 @@ body.modal-open {
 
 .kanban-card {
   background: #ffffff;
-  border: 2px solid var(--border);
-  border-radius: 14px;
-  padding: 1.125rem;
-  box-shadow: 3px 3px 0 var(--border);
-  transition: transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 1rem;
+  box-shadow: none;
+  transition: border-color 0.15s ease;
   position: relative;
 }
 
 .kanban-card:hover {
-  box-shadow: 1px 1px 0 var(--border);
-  transform: translate(2px, 2px);
+  border-color: #cbd5e1;
 }
 
 .kanban-card[data-priority="High"] {
-  border-left: 5px solid var(--status-overdue);
+  border-left: 4px solid var(--status-overdue);
 }
 
 .kanban-card[data-priority="Medium"] {
-  border-left: 5px solid var(--status-urgent);
+  border-left: 4px solid var(--status-urgent);
 }
 
 .kanban-card[data-priority="Low"] {
-  border-left: 5px solid var(--cta);
+  border-left: 4px solid var(--cta);
 }
 
 /* Tables (Taste Skill: Rules & Alignment, No Zebra, Numbers Right Aligned) */
@@ -629,10 +613,10 @@ table {
 th {
   padding: 0.75rem 1rem;
   color: var(--text-muted);
-  font-family: 'Fredoka', 'Nunito', sans-serif;
+  font-family: 'Plus Jakarta Sans', sans-serif;
   font-size: 0.8125rem;
   font-weight: 600;
-  border-bottom: 2px solid var(--border-light);
+  border-bottom: 1px solid var(--border);
 }
 
 th.num, td.num {
@@ -663,8 +647,8 @@ tbody tr:hover {
   justify-content: center;
   text-align: center;
   padding: 2.5rem 1.5rem;
-  background: #fffdfb;
-  border: 2px dashed var(--border);
+  background: #ffffff;
+  border: 1px dashed var(--border);
   border-radius: var(--radius-card);
   color: var(--text-muted);
 }
@@ -672,10 +656,10 @@ tbody tr:hover {
 .empty-state-icon {
   width: 44px;
   height: 44px;
-  border-radius: 12px;
-  background: #fff9f5;
-  border: 2px solid var(--border);
-  box-shadow: 2px 2px 0 var(--border);
+  border-radius: 10px;
+  background: var(--surface-cream);
+  border: 1px solid var(--border);
+  box-shadow: none;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -683,7 +667,7 @@ tbody tr:hover {
   margin-bottom: 0.75rem;
 }
 
-/* Toast Notifications (Tactile Overlay) */
+/* Toast Notifications (SaaS Notification Overlay) */
 #toast-container {
   position: fixed;
   top: 1.25rem;
@@ -703,20 +687,21 @@ tbody tr:hover {
   min-width: 280px;
   max-width: 420px;
   background: #ffffff;
-  border: 2.5px solid var(--border);
-  border-radius: 14px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
   padding: 0.75rem 1rem;
-  box-shadow: 4px 4px 0 var(--text);
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
   font-size: 0.875rem;
   font-weight: 600;
   color: var(--text);
 }
 
-/* Modal Dialog (Real Overlay with Chunky Clay Dialog) */
+/* Modal Dialog (Real Overlay with Clean SaaS Container) */
 .modal-overlay {
   position: fixed;
   inset: 0;
-  background: rgba(45, 55, 72, 0.45);
+  background: rgba(15, 23, 42, 0.45);
+  backdrop-filter: blur(4px);
   z-index: 1000;
   display: flex;
   align-items: center;
@@ -739,9 +724,9 @@ tbody tr:hover {
   display: flex;
   flex-direction: column;
   background: #ffffff;
-  border: 3px solid var(--border);
-  border-radius: 20px;
-  box-shadow: 8px 8px 0 var(--text);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
   overflow: hidden;
 }
 

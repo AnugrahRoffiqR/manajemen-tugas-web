@@ -34,11 +34,11 @@
         
         <div style="display: flex; align-items: center; gap: 0.75rem; flex-wrap: wrap;">
           <!-- Dual View Switcher -->
-          <div style="background: #ffffff; border: 2.5px solid var(--border); border-radius: 14px; padding: 4px; display: flex; gap: 4px; box-shadow: 2px 2px 0 var(--border);">
-            <button id="view-kanban-btn" onclick="switchView('kanban')" class="btn-secondary" style="padding: 0.375rem 0.875rem; min-height: 34px; font-size: 0.8125rem; border: none; background: #ea580c; color: #ffffff; box-shadow: none;">
+          <div style="background: #ffffff; border: 1px solid var(--border); border-radius: 8px; padding: 3px; display: flex; gap: 3px;">
+            <button id="view-kanban-btn" onclick="switchView('kanban')" class="btn-secondary" style="padding: 0.35rem 0.875rem; min-height: 32px; font-size: 0.8125rem; border: none; background: #0284c7; color: #ffffff; border-radius: 6px;">
               Kanban
             </button>
-            <button id="view-table-btn" onclick="switchView('table')" class="btn-secondary" style="padding: 0.375rem 0.875rem; min-height: 34px; font-size: 0.8125rem; border: none; background: transparent; color: var(--text-muted); box-shadow: none;">
+            <button id="view-table-btn" onclick="switchView('table')" class="btn-secondary" style="padding: 0.35rem 0.875rem; min-height: 32px; font-size: 0.8125rem; border: none; background: transparent; color: var(--text-muted); border-radius: 6px;">
               Tabel List
             </button>
           </div>
@@ -108,45 +108,45 @@
       <div id="kanban-view" class="kanban-grid">
         
         <!-- Kolom 1: To Do -->
-        <div style="padding: 1.25rem; background: #ffffff; border: 2.5px solid var(--border); border-radius: 18px; box-shadow: 4px 4px 0 var(--border);">
-          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; border-bottom: 2px solid var(--border-light); padding-bottom: 0.75rem;">
+        <div style="padding: 1.25rem; background: var(--surface-cream); border: 1px solid var(--border); border-radius: 12px;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; border-bottom: 1px solid var(--border); padding-bottom: 0.75rem;">
             <div style="display: flex; align-items: center; gap: 0.5rem;">
-              <span style="width: 10px; height: 10px; border-radius: 50%; background: #64748b; display: inline-block;"></span>
-              <h3 style="font-size: 1rem; font-weight: 700; color: var(--text);">Antrean (To Do)</h3>
+              <span style="width: 8px; height: 8px; border-radius: 50%; background: #64748b; display: inline-block;"></span>
+              <h3 style="font-size: 0.9375rem; font-weight: 700; color: var(--text);">Antrean (To Do)</h3>
             </div>
             <div style="display: flex; align-items: center; gap: 6px;">
               <span id="count-todo" class="badge badge-todo font-mono">0</span>
-              <button onclick="openTaskModal('To Do')" class="btn-action-icon" style="width: 28px; height: 28px; font-size: 14px;" title="Tambah tugas ke To Do">+</button>
+              <button onclick="openTaskModal('To Do')" class="btn-action-icon" style="width: 26px; height: 26px; font-size: 13px;" title="Tambah tugas ke To Do">+</button>
             </div>
           </div>
-          <div id="col-todo" style="display: flex; flex-direction: column; gap: 0.875rem; min-height: 140px;"></div>
+          <div id="col-todo" style="display: flex; flex-direction: column; gap: 0.75rem; min-height: 140px;"></div>
         </div>
 
         <!-- Kolom 2: In Progress -->
-        <div style="padding: 1.25rem; background: #ffffff; border: 2.5px solid var(--border); border-radius: 18px; box-shadow: 4px 4px 0 var(--border);">
-          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; border-bottom: 2px solid var(--border-light); padding-bottom: 0.75rem;">
+        <div style="padding: 1.25rem; background: var(--surface-cream); border: 1px solid var(--border); border-radius: 12px;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; border-bottom: 1px solid var(--border); padding-bottom: 0.75rem;">
             <div style="display: flex; align-items: center; gap: 0.5rem;">
-              <span style="width: 10px; height: 10px; border-radius: 50%; background: #0284c7; display: inline-block;"></span>
-              <h3 style="font-size: 1rem; font-weight: 700; color: #0284c7;">Sedang Jalan (In Progress)</h3>
+              <span style="width: 8px; height: 8px; border-radius: 50%; background: #0284c7; display: inline-block;"></span>
+              <h3 style="font-size: 0.9375rem; font-weight: 700; color: #0284c7;">Sedang Jalan (In Progress)</h3>
             </div>
             <div style="display: flex; align-items: center; gap: 6px;">
               <span id="count-inprogress" class="badge badge-in-progress font-mono">0</span>
-              <button onclick="openTaskModal('In Progress')" class="btn-action-icon" style="width: 28px; height: 28px; font-size: 14px;" title="Tambah tugas ke In Progress">+</button>
+              <button onclick="openTaskModal('In Progress')" class="btn-action-icon" style="width: 26px; height: 26px; font-size: 13px;" title="Tambah tugas ke In Progress">+</button>
             </div>
           </div>
-          <div id="col-inprogress" style="display: flex; flex-direction: column; gap: 0.875rem; min-height: 140px;"></div>
+          <div id="col-inprogress" style="display: flex; flex-direction: column; gap: 0.75rem; min-height: 140px;"></div>
         </div>
 
         <!-- Kolom 3: Done -->
-        <div style="padding: 1.25rem; background: #ffffff; border: 2.5px solid var(--border); border-radius: 18px; box-shadow: 4px 4px 0 var(--border);">
-          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; border-bottom: 2px solid var(--border-light); padding-bottom: 0.75rem;">
+        <div style="padding: 1.25rem; background: var(--surface-cream); border: 1px solid var(--border); border-radius: 12px;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; border-bottom: 1px solid var(--border); padding-bottom: 0.75rem;">
             <div style="display: flex; align-items: center; gap: 0.5rem;">
-              <span style="width: 10px; height: 10px; border-radius: 50%; background: var(--cta); display: inline-block;"></span>
-              <h3 style="font-size: 1rem; font-weight: 700; color: var(--cta);">Selesai (Done)</h3>
+              <span style="width: 8px; height: 8px; border-radius: 50%; background: var(--cta); display: inline-block;"></span>
+              <h3 style="font-size: 0.9375rem; font-weight: 700; color: var(--cta);">Selesai (Done)</h3>
             </div>
             <span id="count-done" class="badge badge-done font-mono">0</span>
           </div>
-          <div id="col-done" style="display: flex; flex-direction: column; gap: 0.875rem; min-height: 140px;"></div>
+          <div id="col-done" style="display: flex; flex-direction: column; gap: 0.75rem; min-height: 140px;"></div>
         </div>
 
       </div>
