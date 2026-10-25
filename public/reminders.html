@@ -6,78 +6,97 @@
   <title>Pengingat Deadline — Sistem Manajemen Tugas</title>
   <link rel="stylesheet" href="/css/style.css">
 </head>
-<body style="display: flex; flex-direction: column;">
+<body>
 
+  <!-- Mobile Top Header Bar (< 1024px) -->
   <div id="mobile-header"></div>
 
   <div style="display: flex; min-height: 100dvh;">
+    <!-- Desktop Sidebar (>= 1024px) -->
     <div id="sidebar-container"></div>
 
-    <main style="flex: 1; padding: 2rem; max-width: 1100px; margin: 0 auto; width: 100%; margin-bottom: 70px;">
+    <!-- Main Workspace Area -->
+    <main class="workspace-main">
       
       <div style="margin-bottom: 2rem;">
-        <h1 style="font-size: 1.75rem; font-weight: 700; color: #f8fafc; letter-spacing: -0.02em;">Pengingat & Evaluasi Tenggat Waktu</h1>
+        <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.25rem;">
+          <span class="badge" style="background: rgba(249, 115, 22, 0.15); color: #fb923c; border: 1px solid rgba(249, 115, 22, 0.3);">
+            DEADLINE RADAR
+          </span>
+        </div>
+        <h1 style="font-size: 1.75rem; font-weight: 800; color: #f8fafc; letter-spacing: -0.02em;">Pengingat & Evaluasi Tenggat Waktu</h1>
         <p style="color: #94a3b8; font-size: 0.875rem;">Sistem otomatis mendeteksi tugas yang kritis dan memungkinkan pembuatan jadwal pengingat kustom.</p>
       </div>
 
       <!-- Section 1: Tugas Terlambat (Overdue) -->
-      <div style="margin-bottom: 2rem;">
-        <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 1rem;">
-          <span style="font-size: 1.25rem;">⚠️</span>
-          <h2 style="font-size: 1.125rem; font-weight: 700; color: #f87171;">Tugas Terlewat Tenggat (Overdue)</h2>
+      <div style="margin-bottom: 2.25rem;">
+        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 1rem;">
+          <div style="display: flex; align-items: center; gap: 0.625rem;">
+            <div style="width: 28px; height: 28px; border-radius: 6px; background: rgba(239, 68, 68, 0.15); display: flex; align-items: center; justify-content: center; color: #f87171;">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+            </div>
+            <h2 style="font-size: 1.125rem; font-weight: 700; color: #f87171;">Tugas Terlewat Tenggat (Overdue)</h2>
+          </div>
           <span id="badge-overdue-count" class="badge badge-overdue font-mono">0</span>
         </div>
 
         <div id="overdue-list" style="display: flex; flex-direction: column; gap: 0.875rem;">
-          <p style="font-size: 0.875rem; color: #64748b; padding: 1rem; text-align: center;">Memeriksa data...</p>
+          <p style="font-size: 0.875rem; color: #94a3b8; padding: 1.5rem; text-align: center;">Memeriksa data...</p>
         </div>
       </div>
 
       <!-- Section 2: Tugas Mendekati Deadline (< 24 Jam) -->
       <div style="margin-bottom: 2.5rem;">
-        <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 1rem;">
-          <span style="font-size: 1.25rem;">⚡</span>
-          <h2 style="font-size: 1.125rem; font-weight: 700; color: #fb923c;">Mendesak: Jatuh Tempo Hari Ini (< 24 Jam)</h2>
+        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 1rem;">
+          <div style="display: flex; align-items: center; gap: 0.625rem;">
+            <div style="width: 28px; height: 28px; border-radius: 6px; background: rgba(249, 115, 22, 0.15); display: flex; align-items: center; justify-content: center; color: #fb923c;">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+            </div>
+            <h2 style="font-size: 1.125rem; font-weight: 700; color: #fb923c;">Mendesak: Jatuh Tempo Hari Ini (&lt; 24 Jam)</h2>
+          </div>
           <span id="badge-urgent-count" class="badge badge-urgent font-mono">0</span>
         </div>
 
         <div id="urgent-list" style="display: flex; flex-direction: column; gap: 0.875rem;">
-          <p style="font-size: 0.875rem; color: #64748b; padding: 1rem; text-align: center;">Memeriksa data...</p>
+          <p style="font-size: 0.875rem; color: #94a3b8; padding: 1.5rem; text-align: center;">Memeriksa data...</p>
         </div>
       </div>
 
       <!-- Section 3: Pengingat Kustom (Custom Reminders) -->
       <div class="doppelrand-shell">
         <div class="doppelrand-core" style="padding: 1.5rem;">
-          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.25rem; flex-wrap: wrap; gap: 0.5rem;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.25rem; flex-wrap: wrap; gap: 0.75rem;">
             <div>
               <h3 style="font-size: 1.125rem; font-weight: 700; color: #f8fafc;">Catatan Pengingat Mandiri</h3>
               <p style="font-size: 0.8125rem; color: #94a3b8;">Jadwalkan memo atau alarm pengingat pribadi</p>
             </div>
-            <button onclick="document.getElementById('custom-reminder-form').classList.toggle('hidden')" class="btn-secondary" style="font-size: 0.8125rem; padding: 0.375rem 0.875rem; min-height: 34px;">
+            <button onclick="document.getElementById('custom-reminder-form').classList.toggle('hidden')" class="btn-secondary" style="font-size: 0.8125rem; padding: 0.375rem 0.875rem; min-height: 44px;">
               + Buat Pengingat Baru
             </button>
           </div>
 
           <!-- Form Tambah Custom Reminder (Hidden by default) -->
-          <form id="custom-reminder-form" class="hidden" style="background: rgba(0,0,0,0.25); border: 1px solid var(--border-hairline); border-radius: 0.75rem; padding: 1rem; margin-bottom: 1.5rem;">
-            <div style="display: grid; grid-template-columns: 2fr 1fr auto; gap: 0.75rem; align-items: flex-end;">
+          <form id="custom-reminder-form" class="hidden" style="background: rgba(0,0,0,0.3); border: 1px solid var(--border-hairline); border-radius: 0.875rem; padding: 1.25rem; margin-bottom: 1.5rem;">
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1rem; align-items: flex-end;">
               <div>
-                <label style="display: block; font-size: 0.75rem; color: #cbd5e1; margin-bottom: 0.25rem;">Pesan Pengingat *</label>
-                <input type="text" id="rem-title" class="form-input" placeholder="Contoh: Rapat evaluasi bersama Pak Nugi jam 14:00" required>
+                <label style="display: block; font-size: 0.8125rem; color: #cbd5e1; margin-bottom: 0.375rem; font-weight: 600;">Pesan Pengingat *</label>
+                <input type="text" id="rem-title" class="form-input" placeholder="Contoh: Rapat evaluasi bersama Pak Nugi" required>
               </div>
               <div>
-                <label style="display: block; font-size: 0.75rem; color: #cbd5e1; margin-bottom: 0.25rem;">Waktu Pengingat *</label>
+                <label style="display: block; font-size: 0.8125rem; color: #cbd5e1; margin-bottom: 0.375rem; font-weight: 600;">Waktu Pengingat *</label>
                 <input type="datetime-local" id="rem-time" class="form-input" required>
               </div>
-              <button type="submit" class="btn-island" style="min-height: 42px;">
-                <span>Simpan</span>
-              </button>
+              <div>
+                <button type="submit" class="btn-island" style="width: 100%; justify-content: center;">
+                  <span>Simpan Pengingat</span>
+                  <span class="btn-icon-pill">✓</span>
+                </button>
+              </div>
             </div>
           </form>
 
           <div id="custom-reminders-list" style="display: flex; flex-direction: column; gap: 0.75rem;">
-            <p style="font-size: 0.875rem; color: #64748b; text-align: center; padding: 1.5rem;">Memuat daftar pengingat...</p>
+            <p style="font-size: 0.875rem; color: #94a3b8; text-align: center; padding: 1.5rem;">Memuat daftar pengingat...</p>
           </div>
         </div>
       </div>
@@ -85,6 +104,7 @@
     </main>
   </div>
 
+  <!-- Mobile Bottom Nav (< 1024px) -->
   <div id="mobile-bottom-nav"></div>
 
   <style>
@@ -112,8 +132,9 @@
             overdueContainer.innerHTML = overdue.map(t => createReminderCard(t, 'overdue')).join('');
           } else {
             overdueContainer.innerHTML = `
-              <div style="background: rgba(16, 185, 129, 0.08); border: 1px solid rgba(16, 185, 129, 0.2); border-radius: 0.75rem; padding: 1rem 1.25rem; color: #34d399; font-size: 0.875rem;">
-                ✓ Tidak ada tugas yang terlewat. Semua pekerjaan berjalan sesuai jadwal!
+              <div style="background: rgba(16, 185, 129, 0.08); border: 1px solid rgba(16, 185, 129, 0.25); border-radius: 0.875rem; padding: 1.25rem; color: #34d399; font-size: 0.875rem; display: flex; align-items: center; gap: 0.75rem;">
+                <span style="font-size: 1.25rem;">✓</span>
+                <span>Tidak ada tugas yang terlewat. Semua pekerjaan berjalan sesuai jadwal!</span>
               </div>
             `;
           }
@@ -124,8 +145,9 @@
             urgentContainer.innerHTML = urgent.map(t => createReminderCard(t, 'urgent')).join('');
           } else {
             urgentContainer.innerHTML = `
-              <div style="background: rgba(255, 255, 255, 0.03); border: 1px solid var(--border-hairline); border-radius: 0.75rem; padding: 1rem 1.25rem; color: #94a3b8; font-size: 0.875rem;">
-                ✓ Tidak ada tugas dengan tenggat waktu mendesak hari ini.
+              <div style="background: rgba(255, 255, 255, 0.03); border: 1px solid var(--border-hairline); border-radius: 0.875rem; padding: 1.25rem; color: #94a3b8; font-size: 0.875rem; display: flex; align-items: center; gap: 0.75rem;">
+                <span>✓</span>
+                <span>Tidak ada tugas dengan tenggat waktu mendesak hari ini.</span>
               </div>
             `;
           }
@@ -136,19 +158,19 @@
         const customContainer = document.getElementById('custom-reminders-list');
         if (customRes && customRes.data && customRes.data.length > 0) {
           customContainer.innerHTML = customRes.data.map(r => `
-            <div style="display: flex; align-items: center; justify-content: space-between; background: rgba(255,255,255,0.03); border: 1px solid var(--border-hairline); border-radius: 0.75rem; padding: 0.875rem 1.25rem;">
+            <div style="display: flex; align-items: center; justify-content: space-between; background: rgba(255,255,255,0.03); border: 1px solid var(--border-hairline); border-radius: 0.75rem; padding: 0.875rem 1.25rem; flex-wrap: wrap; gap: 0.75rem;">
               <div>
                 <p style="font-size: 0.9375rem; font-weight: 600; color: #f8fafc;">${r.title}</p>
                 <span style="font-size: 0.75rem; color: #60a5fa;" class="font-mono">⏰ Dijadwalkan: ${formatDateWIB(r.remind_at)}</span>
               </div>
-              <button onclick="deleteCustomReminder(${r.id})" class="btn-danger" style="padding: 4px 10px; min-height: 30px; font-size: 12px;">
+              <button onclick="deleteCustomReminder(${r.id})" class="btn-danger" style="padding: 4px 10px; min-height: 34px; font-size: 12px;">
                 Hapus
               </button>
             </div>
           `).join('');
         } else {
           customContainer.innerHTML = `
-            <p style="font-size: 0.875rem; color: #64748b; text-align: center; padding: 1.5rem;">
+            <p style="font-size: 0.875rem; color: #94a3b8; text-align: center; padding: 1.5rem;">
               Belum ada catatan pengingat kustom. Buat satu untuk memo penting.
             </p>
           `;
@@ -159,22 +181,22 @@
 
     function createReminderCard(task, type) {
       const isOverdue = type === 'overdue';
-      const borderColor = isOverdue ? 'rgba(239, 68, 68, 0.3)' : 'rgba(249, 115, 22, 0.3)';
-      const bgColor = isOverdue ? 'rgba(239, 68, 68, 0.06)' : 'rgba(249, 115, 22, 0.06)';
+      const borderColor = isOverdue ? 'rgba(239, 68, 68, 0.35)' : 'rgba(249, 115, 22, 0.35)';
+      const bgColor = isOverdue ? 'rgba(239, 68, 68, 0.08)' : 'rgba(249, 115, 22, 0.08)';
       const badgeClass = isOverdue ? 'badge-overdue' : 'badge-urgent';
 
       return `
-        <div style="display: flex; align-items: center; justify-content: space-between; background: ${bgColor}; border: 1px solid ${borderColor}; border-radius: 0.875rem; padding: 1rem 1.25rem; flex-wrap: wrap; gap: 0.75rem;">
+        <div style="display: flex; align-items: center; justify-content: space-between; background: ${bgColor}; border: 1px solid ${borderColor}; border-radius: 0.875rem; padding: 1.125rem 1.25rem; flex-wrap: wrap; gap: 1rem;">
           <div>
-            <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.25rem;">
+            <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.375rem;">
               <span class="badge ${badgeClass}">${formatHoursRemaining(task.hours_left)}</span>
-              <span style="font-size: 12px; color: #94a3b8;">${task.category}</span>
+              <span style="font-size: 12px; color: #cbd5e1; font-weight: 600;">${task.category}</span>
             </div>
-            <h4 style="font-size: 1rem; font-weight: 600; color: #f8fafc;">${task.title}</h4>
-            <span style="font-size: 12px; color: #64748b;" class="font-mono">Tenggat: ${formatDateWIB(task.due_date)}</span>
+            <h4 style="font-size: 1rem; font-weight: 700; color: #f8fafc; margin-bottom: 0.25rem;">${task.title}</h4>
+            <span style="font-size: 12px; color: #94a3b8;" class="font-mono">Tenggat: ${formatDateWIB(task.due_date)}</span>
           </div>
 
-          <button onclick="completeTaskNow(${task.id})" class="btn-island" style="min-height: 36px; padding: 0.375rem 0.875rem; font-size: 0.8125rem;">
+          <button onclick="completeTaskNow(${task.id})" class="btn-island" style="min-height: 44px; padding: 0.5rem 1rem; font-size: 0.8125rem;">
             <span>Tandai Selesai</span>
             <span class="btn-icon-pill">✓</span>
           </button>

@@ -6,42 +6,51 @@
   <title>Dashboard — Sistem Manajemen Tugas</title>
   <link rel="stylesheet" href="/css/style.css">
 </head>
-<body style="display: flex; flex-direction: column;">
+<body>
 
-  <!-- Mobile Top Bar (< 1024px) -->
+  <!-- Mobile Top Header Bar (< 1024px) -->
   <div id="mobile-header"></div>
 
   <div style="display: flex; min-height: 100dvh;">
     <!-- Desktop Sidebar (>= 1024px) -->
     <div id="sidebar-container"></div>
 
-    <!-- Main Content Area -->
-    <main style="flex: 1; padding: 2rem; max-width: 1200px; margin: 0 auto; width: 100%; margin-bottom: 70px;">
+    <!-- Main Workspace Area -->
+    <main class="workspace-main">
       
       <!-- Header Dashboard & Greeting -->
       <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 2rem; flex-wrap: wrap; gap: 1rem;">
         <div>
-          <h1 style="font-size: 1.75rem; font-weight: 700; color: #f8fafc; letter-spacing: -0.02em;">Dashboard Utama</h1>
-          <p style="color: #94a3b8; font-size: 0.875rem; margin-top: 0.25rem;">Pantau status tugas tim dan tenggat waktu hari ini secara *real-time*.</p>
+          <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.25rem;">
+            <span class="badge" style="background: rgba(59, 130, 246, 0.15); color: #60a5fa; border: 1px solid rgba(59, 130, 246, 0.3);">
+              OVERVIEW
+            </span>
+          </div>
+          <h1 style="font-size: 1.75rem; font-weight: 800; color: #f8fafc; letter-spacing: -0.02em;">Dashboard Utama</h1>
+          <p style="color: #94a3b8; font-size: 0.875rem;">Pantau status tugas tim dan tenggat waktu hari ini secara real-time.</p>
         </div>
         <button onclick="openCreateTaskModal()" class="btn-island">
           <span>+ Buat Tugas Baru</span>
-          <span class="btn-icon-pill">→</span>
+          <span class="btn-icon-pill">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          </span>
         </button>
       </div>
 
-      <!-- Urgent Alert Banner (Dinamic) -->
+      <!-- Urgent Alert Banner (Dynamic) -->
       <div id="urgent-alert-banner" style="display: none; margin-bottom: 1.75rem;">
         <div class="doppelrand-shell" style="border-color: rgba(249, 115, 22, 0.4); background: rgba(249, 115, 22, 0.08);">
           <div class="doppelrand-core" style="background: rgba(15, 23, 42, 0.9); display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 1rem; padding: 1rem 1.25rem;">
             <div style="display: flex; align-items: center; gap: 0.875rem;">
-              <span style="font-size: 1.5rem;">⚡</span>
+              <div style="width: 36px; height: 36px; border-radius: 10px; background: rgba(249, 115, 22, 0.2); display: flex; align-items: center; justify-content: center; color: #fb923c; flex-shrink: 0;">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+              </div>
               <div>
                 <h4 style="font-size: 0.9375rem; font-weight: 700; color: #fb923c;" id="urgent-banner-title">Perhatian: Ada Tugas Mendesak!</h4>
                 <p style="font-size: 0.8125rem; color: #cbd5e1;" id="urgent-banner-desc">Segera periksa dan selesaikan tugas sebelum melewati tenggat waktu.</p>
               </div>
             </div>
-            <a href="/reminders" class="btn-secondary" style="font-size: 0.8125rem; padding: 0.5rem 1rem; border-color: rgba(249, 115, 22, 0.3); color: #fb923c;">
+            <a href="/reminders" class="btn-secondary" style="font-size: 0.8125rem; padding: 0.5rem 1rem; border-color: rgba(249, 115, 22, 0.35); color: #fb923c;">
               Lihat di Pengingat →
             </a>
           </div>
@@ -49,16 +58,18 @@
       </div>
 
       <!-- Bento Grid Stats (4 Kolom) -->
-      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 1.25rem; margin-bottom: 2.5rem;">
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 1.25rem; margin-bottom: 2rem;">
         <!-- Card 1: Total Tugas -->
         <div class="doppelrand-shell">
           <div class="doppelrand-core">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem;">
-              <span style="font-size: 0.8125rem; font-weight: 600; color: #94a3b8;">TOTAL TUGAS</span>
-              <span style="font-size: 1.25rem;">📋</span>
+              <span style="font-size: 0.75rem; font-weight: 700; color: #94a3b8; letter-spacing: 0.05em;">TOTAL TUGAS</span>
+              <div style="width: 32px; height: 32px; border-radius: 8px; background: rgba(59, 130, 246, 0.15); display: flex; align-items: center; justify-content: center; color: #60a5fa;">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+              </div>
             </div>
-            <h2 id="stat-total" style="font-size: 2rem; font-weight: 800; color: #f8fafc;" class="font-mono">0</h2>
-            <p style="font-size: 0.75rem; color: #64748b; margin-top: 0.25rem;">Tercatat dalam sistem</p>
+            <h2 id="stat-total" style="font-size: 2.25rem; font-weight: 800; color: #f8fafc;" class="font-mono">0</h2>
+            <p style="font-size: 0.75rem; color: #94a3b8; margin-top: 0.25rem;">Tercatat dalam sistem</p>
           </div>
         </div>
 
@@ -66,11 +77,13 @@
         <div class="doppelrand-shell">
           <div class="doppelrand-core">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem;">
-              <span style="font-size: 0.8125rem; font-weight: 600; color: #fbbf24;">SEDANG BERJALAN</span>
-              <span style="font-size: 1.25rem;">⏳</span>
+              <span style="font-size: 0.75rem; font-weight: 700; color: #fbbf24; letter-spacing: 0.05em;">SEDANG BERJALAN</span>
+              <div style="width: 32px; height: 32px; border-radius: 8px; background: rgba(245, 158, 11, 0.15); display: flex; align-items: center; justify-content: center; color: #fbbf24;">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+              </div>
             </div>
-            <h2 id="stat-in-progress" style="font-size: 2rem; font-weight: 800; color: #fbbf24;" class="font-mono">0</h2>
-            <p style="font-size: 0.75rem; color: #64748b; margin-top: 0.25rem;">Status 'In Progress'</p>
+            <h2 id="stat-in-progress" style="font-size: 2.25rem; font-weight: 800; color: #fbbf24;" class="font-mono">0</h2>
+            <p style="font-size: 0.75rem; color: #94a3b8; margin-top: 0.25rem;">Status 'In Progress'</p>
           </div>
         </div>
 
@@ -78,11 +91,13 @@
         <div class="doppelrand-shell">
           <div class="doppelrand-core">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem;">
-              <span style="font-size: 0.8125rem; font-weight: 600; color: #34d399;">SELESAI</span>
-              <span style="font-size: 1.25rem;">✅</span>
+              <span style="font-size: 0.75rem; font-weight: 700; color: #34d399; letter-spacing: 0.05em;">SELESAI</span>
+              <div style="width: 32px; height: 32px; border-radius: 8px; background: rgba(16, 185, 129, 0.15); display: flex; align-items: center; justify-content: center; color: #34d399;">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+              </div>
             </div>
-            <h2 id="stat-done" style="font-size: 2rem; font-weight: 800; color: #34d399;" class="font-mono">0</h2>
-            <p style="font-size: 0.75rem; color: #64748b; margin-top: 0.25rem;">Tugas telah rampung</p>
+            <h2 id="stat-done" style="font-size: 2.25rem; font-weight: 800; color: #34d399;" class="font-mono">0</h2>
+            <p style="font-size: 0.75rem; color: #94a3b8; margin-top: 0.25rem;">Tugas telah rampung</p>
           </div>
         </div>
 
@@ -90,11 +105,29 @@
         <div class="doppelrand-shell">
           <div class="doppelrand-core">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem;">
-              <span style="font-size: 0.8125rem; font-weight: 600; color: #f87171;">TERLAMBAT</span>
-              <span style="font-size: 1.25rem;">⚠️</span>
+              <span style="font-size: 0.75rem; font-weight: 700; color: #f87171; letter-spacing: 0.05em;">TERLAMBAT</span>
+              <div style="width: 32px; height: 32px; border-radius: 8px; background: rgba(239, 68, 68, 0.15); display: flex; align-items: center; justify-content: center; color: #f87171;">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+              </div>
             </div>
-            <h2 id="stat-overdue" style="font-size: 2rem; font-weight: 800; color: #f87171;" class="font-mono">0</h2>
-            <p style="font-size: 0.75rem; color: #64748b; margin-top: 0.25rem;">Melewati tenggat waktu</p>
+            <h2 id="stat-overdue" style="font-size: 2.25rem; font-weight: 800; color: #f87171;" class="font-mono">0</h2>
+            <p style="font-size: 0.75rem; color: #94a3b8; margin-top: 0.25rem;">Melewati tenggat waktu</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Completion Rate Progress Widget -->
+      <div class="doppelrand-shell" style="margin-bottom: 2rem;">
+        <div class="doppelrand-core" style="padding: 1.25rem 1.5rem;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem; flex-wrap: wrap; gap: 0.5rem;">
+            <div>
+              <span style="font-size: 0.8125rem; font-weight: 700; color: #f8fafc;">Rasio Penyelesaian Tugas (Completion Rate)</span>
+              <span id="progress-ratio-label" style="font-size: 0.75rem; color: #94a3b8; margin-left: 0.5rem;">0 dari 0 tugas</span>
+            </div>
+            <span id="progress-percentage-label" class="font-mono" style="font-size: 1.125rem; font-weight: 800; color: #34d399;">0%</span>
+          </div>
+          <div style="width: 100%; height: 8px; background: rgba(255, 255, 255, 0.08); border-radius: 999px; overflow: hidden;">
+            <div id="progress-bar-fill" style="width: 0%; height: 100%; background: linear-gradient(90deg, #3b82f6, #10b981); border-radius: 999px; transition: width 500ms var(--ease-spring);"></div>
           </div>
         </div>
       </div>
@@ -102,31 +135,32 @@
       <!-- Recent Priority Tasks Table -->
       <div class="doppelrand-shell">
         <div class="doppelrand-core" style="padding: 1.5rem;">
-          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.25rem;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.25rem; flex-wrap: wrap; gap: 0.5rem;">
             <div>
               <h3 style="font-size: 1.125rem; font-weight: 700; color: #f8fafc;">Tugas Prioritas Terdekat</h3>
-              <p style="font-size: 0.8125rem; color: #94a3b8;">Daftar tugas yang harus diselesaikan terlebih dahulu</p>
+              <p style="font-size: 0.8125rem; color: #94a3b8;">Daftar tugas aktif yang paling mendekati tenggat waktu</p>
             </div>
-            <a href="/tasks" style="font-size: 0.8125rem; font-weight: 600; color: #60a5fa; text-decoration: none;">
-              Buka Semua Tugas →
+            <a href="/tasks" style="font-size: 0.8125rem; font-weight: 600; color: #60a5fa; text-decoration: none; display: inline-flex; align-items: center; gap: 4px;">
+              <span>Buka Semua Tugas</span>
+              <span>→</span>
             </a>
           </div>
 
           <div style="overflow-x: auto;">
             <table style="width: 100%; border-collapse: collapse; text-align: left;">
               <thead>
-                <tr style="border-bottom: 1px solid var(--border-hairline); color: #64748b; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.05em;">
-                  <th style="padding: 0.75rem 0.5rem; width: 40px;">Status</th>
+                <tr style="border-bottom: 1px solid var(--border-hairline); color: #94a3b8; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.05em;">
+                  <th style="padding: 0.75rem 0.5rem; width: 44px; text-align: center;">Aksi</th>
                   <th style="padding: 0.75rem 1rem;">Judul Tugas</th>
                   <th style="padding: 0.75rem 1rem;">Kategori</th>
                   <th style="padding: 0.75rem 1rem;">Prioritas</th>
                   <th style="padding: 0.75rem 1rem;">Tenggat Waktu</th>
-                  <th style="padding: 0.75rem 1rem; text-align: right;">Aksi</th>
+                  <th style="padding: 0.75rem 1rem; text-align: right;">Kelola</th>
                 </tr>
               </thead>
               <tbody id="priority-task-rows">
                 <tr>
-                  <td colspan="6" style="text-align: center; padding: 2rem; color: #64748b; font-size: 0.875rem;">
+                  <td colspan="6" style="text-align: center; padding: 2rem; color: #94a3b8; font-size: 0.875rem;">
                     Memuat daftar tugas...
                   </td>
                 </tr>
@@ -139,17 +173,17 @@
     </main>
   </div>
 
-  <!-- Mobile Bottom Nav (< 768px) -->
+  <!-- Mobile Bottom Nav (< 1024px) -->
   <div id="mobile-bottom-nav"></div>
 
   <!-- Modal Tambah Tugas Cepat -->
   <div id="task-modal" class="modal-overlay">
     <div class="modal-container">
-      <div style="padding: 1.5rem; border-bottom: 1px solid var(--border-hairline); display: flex; justify-content: space-between; align-items: center;">
+      <div style="padding: 1.25rem 1.5rem; border-bottom: 1px solid var(--border-hairline); display: flex; justify-content: space-between; align-items: center;">
         <h3 style="font-size: 1.125rem; font-weight: 700; color: #f8fafc;">+ Tambah Tugas Baru</h3>
-        <button onclick="closeTaskModal()" style="background: none; border: none; color: #94a3b8; font-size: 1.25rem; cursor: pointer;">✕</button>
+        <button onclick="closeTaskModal()" class="btn-action-icon" style="width: 32px; height: 32px;">✕</button>
       </div>
-      <form id="create-task-form" style="padding: 1.5rem;">
+      <form id="create-task-form" class="modal-body">
         <div style="margin-bottom: 1rem;">
           <label style="display: block; font-size: 0.8125rem; font-weight: 600; color: #cbd5e1; margin-bottom: 0.375rem;">Judul Tugas *</label>
           <input type="text" id="task-title" class="form-input" placeholder="Contoh: Audit PRD & Sistem Desain" required>
@@ -174,9 +208,9 @@
           <div>
             <label style="display: block; font-size: 0.8125rem; font-weight: 600; color: #cbd5e1; margin-bottom: 0.375rem;">Prioritas</label>
             <select id="task-priority" class="form-select">
-              <option value="Low">🟢 Low</option>
-              <option value="Medium" selected>🟡 Medium</option>
-              <option value="High">🔴 High</option>
+              <option value="Low">Low</option>
+              <option value="Medium" selected>Medium</option>
+              <option value="High">High</option>
             </select>
           </div>
         </div>
@@ -204,21 +238,27 @@
 
     async function loadDashboardData() {
       try {
-        // Ambil Data Analitik Ringkas
-        const repRes = await apiFetch('/api/reports/analytics?period=all');
-        if (repRes && repRes.data) {
-          const m = repRes.data.metrics;
-          document.getElementById('stat-total').textContent = m.total_tasks || 0;
-          document.getElementById('stat-in-progress').textContent = m.in_progress_tasks || 0;
-          document.getElementById('stat-done').textContent = m.completed_tasks || 0;
-          document.getElementById('stat-overdue').textContent = m.overdue_tasks || 0;
+        // Ambil Data Metrik Laporan
+        const reportsRes = await apiFetch('/api/reports/kpi');
+        if (reportsRes && reportsRes.data) {
+          const kpi = reportsRes.data;
+          document.getElementById('stat-total').textContent = kpi.total_tasks || 0;
+          document.getElementById('stat-in-progress').textContent = kpi.in_progress_tasks || 0;
+          document.getElementById('stat-done').textContent = kpi.completed_tasks || 0;
+          document.getElementById('stat-overdue').textContent = kpi.overdue_tasks || 0;
+
+          // Progress Widget
+          const compRate = kpi.completion_rate || 0;
+          document.getElementById('progress-percentage-label').textContent = `${compRate}%`;
+          document.getElementById('progress-bar-fill').style.width = `${compRate}%`;
+          document.getElementById('progress-ratio-label').textContent = `${kpi.completed_tasks} dari ${kpi.total_tasks} tugas selesai`;
         }
 
-        // Ambil Data Peringatan Mendesak
+        // Ambil Notifikasi Kritis
         const remRes = await apiFetch('/api/reminders/urgent');
         if (remRes && remRes.data) {
           const urgentBanner = document.getElementById('urgent-alert-banner');
-          const totalUrgent = remRes.data.total_urgent + remRes.data.total_overdue;
+          const totalUrgent = (remRes.data.total_urgent || 0) + (remRes.data.total_overdue || 0);
           if (totalUrgent > 0) {
             urgentBanner.style.display = 'block';
             document.getElementById('urgent-banner-title').textContent = `Perhatian: Ada ${totalUrgent} Tugas Mendesak / Terlambat!`;
@@ -237,8 +277,11 @@
           if (activeTasks.length === 0) {
             rowsContainer.innerHTML = `
               <tr>
-                <td colspan="6" style="text-align: center; padding: 2rem; color: #10b981; font-size: 0.875rem;">
-                  🎉 Hebat! Semua tugas aktif telah diselesaikan.
+                <td colspan="6" style="text-align: center; padding: 2.5rem 1rem; color: #34d399; font-size: 0.875rem;">
+                  <div style="display: flex; flex-direction: column; align-items: center; gap: 0.5rem;">
+                    <span style="font-size: 1.5rem;">✓</span>
+                    <p style="font-weight: 600;">Hebat! Semua tugas aktif telah diselesaikan.</p>
+                  </div>
                 </td>
               </tr>
             `;
@@ -246,17 +289,17 @@
           }
 
           rowsContainer.innerHTML = activeTasks.map(task => {
-            const priorityColors = {
-              High: '#ef4444',
-              Medium: '#f59e0b',
-              Low: '#10b981',
-            };
+            const priorityPill = {
+              High: '<span class="badge" style="background:rgba(239,68,68,0.2); color:#f87171; border:1px solid rgba(239,68,68,0.3);">HIGH</span>',
+              Medium: '<span class="badge" style="background:rgba(245,158,11,0.2); color:#fbbf24; border:1px solid rgba(245,158,11,0.3);">MED</span>',
+              Low: '<span class="badge" style="background:rgba(16,185,129,0.2); color:#34d399; border:1px solid rgba(16,185,129,0.3);">LOW</span>',
+            }[task.priority] || task.priority;
 
             return `
               <tr style="border-bottom: 1px solid var(--border-hairline); font-size: 0.875rem;">
-                <td style="padding: 1rem 0.5rem;">
-                  <button onclick="toggleTaskStatus(${task.id}, 'Done')" title="Tandai Selesai" style="width: 24px; height: 24px; border-radius: 6px; border: 1px solid var(--border-subtle); background: none; color: #10b981; cursor: pointer; display: flex; align-items: center; justify-content: center;">
-                    ${task.completed ? '✓' : ''}
+                <td style="padding: 1rem 0.5rem; text-align: center;">
+                  <button onclick="toggleTaskStatus(${task.id}, 'Done')" title="Tandai Selesai" class="btn-action-icon" style="width: 32px; height: 32px; color: #34d399;">
+                    ✓
                   </button>
                 </td>
                 <td style="padding: 1rem; font-weight: 600; color: #f8fafc;">
@@ -267,9 +310,7 @@
                   ${task.category}
                 </td>
                 <td style="padding: 1rem;">
-                  <span style="font-size: 0.75rem; font-weight: 700; color: ${priorityColors[task.priority] || '#fff'};">
-                    ${task.priority}
-                  </span>
+                  ${priorityPill}
                 </td>
                 <td style="padding: 1rem; color: #94a3b8; font-size: 0.8125rem;" class="font-mono">
                   ${formatDateWIB(task.due_date)}
@@ -285,8 +326,8 @@
         } else {
           rowsContainer.innerHTML = `
             <tr>
-              <td colspan="6" style="text-align: center; padding: 2rem; color: #64748b; font-size: 0.875rem;">
-                Belum ada tugas. Klik tombol '+ Buat Tugas Baru' untuk memulai.
+              <td colspan="6" style="text-align: center; padding: 2.5rem 1rem; color: #94a3b8; font-size: 0.875rem;">
+                Belum ada tugas tercatat. Klik tombol '+ Buat Tugas Baru' untuk memulai.
               </td>
             </tr>
           `;
@@ -309,7 +350,6 @@
 
     // Modal Handlers
     function openCreateTaskModal() {
-      // Set default deadline besok jam 17:00
       const tomorrow = new Date();
       tomorrow.setDate(tomorrow.getDate() + 1);
       tomorrow.setHours(17, 0, 0, 0);
@@ -317,10 +357,12 @@
       const localISOTime = new Date(tomorrow.getTime() - tzOffset).toISOString().slice(0, 16);
       document.getElementById('task-due-date').value = localISOTime;
 
+      document.body.classList.add('modal-open');
       document.getElementById('task-modal').classList.add('active');
     }
 
     function closeTaskModal() {
+      document.body.classList.remove('modal-open');
       document.getElementById('task-modal').classList.remove('active');
     }
 
