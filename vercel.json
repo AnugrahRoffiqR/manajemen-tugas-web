@@ -1,15 +1,41 @@
 {
   "version": 2,
-  "regions": ["sin1"],
+  "regions": [
+    "sin1"
+  ],
   "cleanUrls": true,
   "rewrites": [
-    { "source": "/api/(.*)", "destination": "/api/index.js" },
-    { "source": "/login", "destination": "/login.html" },
-    { "source": "/dashboard", "destination": "/dashboard.html" },
-    { "source": "/tasks", "destination": "/tasks.html" },
-    { "source": "/reminders", "destination": "/reminders.html" },
-    { "source": "/reports", "destination": "/reports.html" },
-    { "source": "/users", "destination": "/users.html" },
-    { "source": "/", "destination": "/index.html" }
+    {
+      "source": "/api/(.*)",
+      "destination": "/api/index.js"
+    },
+    {
+      "source": "/login",
+      "destination": "/login.html"
+    },
+    {
+      "source": "/dashboard",
+      "destination": "/dashboard.html"
+    },
+    {
+      "source": "/tasks",
+      "destination": "/tasks.html"
+    },
+    {
+      "source": "/reminders",
+      "destination": "/reminders.html"
+    },
+    {
+      "source": "/reports",
+      "destination": "/reports.html"
+    },
+    {
+      "source": "/users",
+      "destination": "/users.html"
+    },
+    {
+      "source": "/",
+      "destination": "/index.html"
+    }
   ]
 }
