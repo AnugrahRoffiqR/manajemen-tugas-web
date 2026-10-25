@@ -46,42 +46,65 @@ async function initNavigation(activeKey = '') {
     sidebarContainer.innerHTML = `
       <aside style="width: 260px; height: 100vh; position: sticky; top: 0; background: var(--surface-shell); border-right: 1px solid var(--border-hairline); display: flex; flex-direction: column; justify-content: space-between; padding: 1.5rem 1rem;">
         <div>
-          <!-- Brand Logo -->
-          <div style="display: flex; align-items: center; gap: 0.75rem; padding: 0.5rem 0.5rem 1.75rem;">
-            <div style="width: 38px; height: 38px; border-radius: 10px; background: linear-gradient(135deg, #3b82f6, #1d4ed8); display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 12px rgba(59, 130, 246, 0.4); flex-shrink: 0;">
-              <span style="color: #fff; font-weight: 800; font-size: 18px;">${ICONS.check}</span>
+          <!-- Brand Logo & Workspace Pill -->
+          <div style="padding: 0.5rem 0.5rem 1.25rem;">
+            <div style="display: flex; align-items: center; gap: 0.75rem; margin-bottom: 0.875rem;">
+              <div style="width: 38px; height: 38px; border-radius: 10px; background: linear-gradient(135deg, #3b82f6, #1d4ed8); display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 12px rgba(59, 130, 246, 0.4); flex-shrink: 0;">
+                <span style="color: #fff; font-weight: 800; font-size: 18px;">${ICONS.check}</span>
+              </div>
+              <div>
+                <h2 style="font-size: 15px; font-weight: 700; color: #f8fafc; line-height: 1.2;">Manajemen Tugas</h2>
+                <span style="font-size: 11px; color: #94a3b8; font-weight: 500;">Workspace Tim</span>
+              </div>
             </div>
-            <div>
-              <h2 style="font-size: 15px; font-weight: 700; color: #f8fafc; line-height: 1.2;">Manajemen Tugas</h2>
-              <span style="font-size: 11px; color: #94a3b8; font-weight: 500;">Workspace Tim</span>
+
+            <!-- Workspace Status Pill (high-end-visual-design) -->
+            <div style="display: inline-flex; align-items: center; gap: 6px; padding: 3px 8px; border-radius: 999px; background: rgba(255, 255, 255, 0.04); border: 1px solid var(--border-hairline); font-size: 11px; color: #cbd5e1; width: 100%;">
+              <span style="width: 6px; height: 6px; border-radius: 50%; background: #10b981; box-shadow: 0 0 6px #10b981; display: inline-block;"></span>
+              <span style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-weight: 500;">Kota Bersih • Neon DB</span>
             </div>
           </div>
 
-          <!-- Nav Links -->
+          <!-- Nav Links with Keyboard Shortcuts -->
           <nav style="display: flex; flex-direction: column; gap: 0.375rem;">
             <a href="/dashboard" class="nav-item ${activeKey === 'dashboard' ? 'active' : ''}">
-              <span class="nav-icon">${ICONS.dashboard}</span>
-              <span>Dashboard</span>
+              <div style="display: flex; align-items: center; gap: 0.75rem;">
+                <span class="nav-icon">${ICONS.dashboard}</span>
+                <span>Dashboard</span>
+              </div>
+              <kbd class="nav-kbd">1</kbd>
             </a>
             <a href="/tasks" class="nav-item ${activeKey === 'tasks' ? 'active' : ''}">
-              <span class="nav-icon">${ICONS.tasks}</span>
-              <span>Daftar Tugas</span>
+              <div style="display: flex; align-items: center; gap: 0.75rem;">
+                <span class="nav-icon">${ICONS.tasks}</span>
+                <span>Daftar Tugas</span>
+              </div>
+              <kbd class="nav-kbd">2</kbd>
             </a>
             <a href="/reminders" class="nav-item ${activeKey === 'reminders' ? 'active' : ''}" style="display: flex; justify-content: space-between; align-items: center;">
               <div style="display: flex; align-items: center; gap: 0.75rem;">
                 <span class="nav-icon">${ICONS.reminders}</span>
                 <span>Pengingat</span>
               </div>
-              ${urgentCount > 0 ? `<span style="background: #ef4444; color: #fff; font-size: 11px; font-weight: 700; padding: 2px 7px; border-radius: 999px;">${urgentCount}</span>` : ''}
+              <div style="display: flex; align-items: center; gap: 6px;">
+                ${urgentCount > 0 ? `<span style="background: #ef4444; color: #fff; font-size: 11px; font-weight: 700; padding: 2px 7px; border-radius: 999px;">${urgentCount}</span>` : ''}
+                <kbd class="nav-kbd">3</kbd>
+              </div>
             </a>
             <a href="/reports" class="nav-item ${activeKey === 'reports' ? 'active' : ''}">
-              <span class="nav-icon">${ICONS.reports}</span>
-              <span>Laporan Kinerja</span>
+              <div style="display: flex; align-items: center; gap: 0.75rem;">
+                <span class="nav-icon">${ICONS.reports}</span>
+                <span>Laporan Kinerja</span>
+              </div>
+              <kbd class="nav-kbd">4</kbd>
             </a>
             ${currentUser.role === 'Owner' ? `
             <a href="/users" class="nav-item ${activeKey === 'users' ? 'active' : ''}">
-              <span class="nav-icon">${ICONS.users}</span>
-              <span>Kelola Tim</span>
+              <div style="display: flex; align-items: center; gap: 0.75rem;">
+                <span class="nav-icon">${ICONS.users}</span>
+                <span>Kelola Tim</span>
+              </div>
+              <kbd class="nav-kbd">5</kbd>
             </a>` : ''}
           </nav>
         </div>
@@ -170,12 +193,20 @@ async function initNavigation(activeKey = '') {
 
     // Shortcut 'n' untuk buat tugas baru (kecuali sedang mengetik di input/textarea)
     const isTyping = ['INPUT', 'TEXTAREA', 'SELECT'].includes(document.activeElement?.tagName);
-    if (!isTyping && (e.key === 'n' || e.key === 'N')) {
-      const openModalFn = window.openTaskModal || window.openCreateTaskModal;
-      if (typeof openModalFn === 'function') {
-        e.preventDefault();
-        openModalFn();
+    if (!isTyping) {
+      if (e.key === 'n' || e.key === 'N') {
+        const openModalFn = window.openTaskModal || window.openCreateTaskModal;
+        if (typeof openModalFn === 'function') {
+          e.preventDefault();
+          openModalFn();
+        }
       }
+      // Quick Number Keys (1-5) for Page Navigation
+      if (e.key === '1') window.location.href = '/dashboard';
+      if (e.key === '2') window.location.href = '/tasks';
+      if (e.key === '3') window.location.href = '/reminders';
+      if (e.key === '4') window.location.href = '/reports';
+      if (e.key === '5' && currentUser?.role === 'Owner') window.location.href = '/users';
     }
   });
 
@@ -195,14 +226,15 @@ navStyle.textContent = `
   .nav-item {
     display: flex;
     align-items: center;
-    gap: 0.75rem;
+    justify-content: space-between;
     padding: 0.625rem 0.875rem;
     border-radius: 0.75rem;
     color: var(--text-secondary);
     text-decoration: none;
     font-size: 0.875rem;
     font-weight: 500;
-    transition: transform 120ms var(--ease-out), background-color 140ms var(--ease-out), color 140ms var(--ease-out);
+    border: 1px solid transparent;
+    transition: transform 120ms var(--ease-out), background-color 140ms var(--ease-out), color 140ms var(--ease-out), border-color 140ms var(--ease-out);
   }
   .nav-item:hover {
     background: var(--surface-hover);
@@ -212,10 +244,31 @@ navStyle.textContent = `
     transform: scale(0.97);
   }
   .nav-item.active {
-    background: rgba(59, 130, 246, 0.16);
+    background: linear-gradient(90deg, rgba(59, 130, 246, 0.18) 0%, rgba(59, 130, 246, 0.05) 100%);
     color: #60a5fa;
     font-weight: 600;
     border: 1px solid rgba(59, 130, 246, 0.3);
+    border-left: 3px solid #3b82f6;
+  }
+  .nav-kbd {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    font-weight: 600;
+    color: var(--text-tertiary);
+    background: rgba(255, 255, 255, 0.06);
+    border: 1px solid var(--border-hairline);
+    padding: 1px 5px;
+    border-radius: 4px;
+    opacity: 0.8;
+  }
+  .nav-item:hover .nav-kbd {
+    color: var(--text-secondary);
+    background: rgba(255, 255, 255, 0.1);
+  }
+  .nav-item.active .nav-kbd {
+    color: #60a5fa;
+    border-color: rgba(59, 130, 246, 0.4);
+    background: rgba(59, 130, 246, 0.15);
   }
   .nav-icon {
     display: inline-flex;

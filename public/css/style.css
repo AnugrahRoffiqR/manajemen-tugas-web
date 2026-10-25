@@ -61,6 +61,11 @@ html {
 body {
   font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
   background-color: var(--canvas-bg);
+  background-image: 
+    radial-gradient(1200px 520px at 50% -120px, rgba(59, 130, 246, 0.12) 0%, transparent 70%),
+    radial-gradient(rgba(255, 255, 255, 0.04) 1px, transparent 1px);
+  background-size: 100% 100%, 28px 28px;
+  background-attachment: fixed;
   color: var(--text-primary);
   min-height: 100dvh;
   line-height: 1.55;
@@ -180,16 +185,17 @@ body.modal-open {
 }
 
 /* ==========================================================================
-   DOPPELRAND (DOUBLE-BEZEL) HARDWARE ARCHITECTURE
+   DOPPELRAND (DOUBLE-BEZEL) HARDWARE ARCHITECTURE & AGENCY ACCENTS
    ========================================================================== */
 .doppelrand-shell {
   background: rgba(15, 23, 42, 0.75);
   border: 1px solid var(--border-hairline);
+  border-top: 1px solid rgba(255, 255, 255, 0.20);
   border-radius: 1.25rem;
   padding: 0.375rem;
-  box-shadow: 0 8px 24px -4px rgba(0, 0, 0, 0.6);
+  box-shadow: 0 10px 28px -4px rgba(0, 0, 0, 0.65), inset 0 1px 0 rgba(255, 255, 255, 0.05);
   backdrop-filter: blur(16px);
-  transition: border-color 250ms var(--ease-spring), box-shadow 250ms var(--ease-spring);
+  transition: transform 180ms var(--ease-out), border-color 180ms var(--ease-out), box-shadow 180ms var(--ease-out);
 }
 
 .doppelrand-shell:hover {
@@ -201,6 +207,67 @@ body.modal-open {
   border-radius: calc(1.25rem - 0.375rem);
   padding: 1.25rem;
   box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.03);
+}
+
+/* Stat Bento Cards (Agency Tier with Colored Hairline Sheen) */
+.stat-card {
+  position: relative;
+  overflow: hidden;
+}
+
+.stat-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 14px 32px -6px rgba(0, 0, 0, 0.75);
+}
+
+.stat-card-total {
+  border-top: 2px solid #3b82f6 !important;
+}
+
+.stat-card-progress {
+  border-top: 2px solid #f59e0b !important;
+}
+
+.stat-card-done {
+  border-top: 2px solid #10b981 !important;
+}
+
+.stat-card-overdue {
+  border-top: 2px solid #ef4444 !important;
+}
+
+/* Quick Filter Pills (impeccable & UI/UX Pro Max) */
+.filter-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  padding: 0.375rem 0.875rem;
+  border-radius: 9999px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid var(--border-hairline);
+  color: var(--text-secondary);
+  font-size: 0.75rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: transform 120ms var(--ease-out), background-color 120ms var(--ease-out), border-color 120ms var(--ease-out), color 120ms var(--ease-out);
+  user-select: none;
+}
+
+.filter-chip:hover {
+  background: rgba(255, 255, 255, 0.08);
+  color: var(--text-primary);
+  border-color: var(--border-subtle);
+}
+
+.filter-chip:active {
+  transform: scale(0.96);
+}
+
+.filter-chip.active {
+  background: rgba(59, 130, 246, 0.18);
+  border-color: #3b82f6;
+  color: #60a5fa;
 }
 
 /* ==========================================================================
@@ -448,6 +515,54 @@ button:disabled {
     max-width: 360px;
     scroll-snap-align: center;
   }
+}
+
+.kanban-card {
+  background: var(--surface-core);
+  border: 1px solid var(--border-hairline);
+  border-radius: 0.875rem;
+  padding: 1.125rem;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.35);
+  transition: transform 140ms var(--ease-out), border-color 140ms var(--ease-out), box-shadow 140ms var(--ease-out);
+  position: relative;
+  overflow: hidden;
+}
+
+.kanban-card:hover {
+  border-color: var(--border-subtle);
+  transform: translateY(-2px);
+  box-shadow: 0 10px 24px -4px rgba(0, 0, 0, 0.55);
+}
+
+.kanban-card[data-priority="High"] {
+  border-left: 3px solid #ef4444;
+}
+
+.kanban-card[data-priority="Medium"] {
+  border-left: 3px solid #f59e0b;
+}
+
+.kanban-card[data-priority="Low"] {
+  border-left: 3px solid #10b981;
+}
+
+/* Table Row Hover Enhancements (baseline-ui & impeccable) */
+tbody tr {
+  transition: background-color 120ms var(--ease-out);
+}
+
+tbody tr:hover td {
+  background-color: rgba(255, 255, 255, 0.025);
+}
+
+/* Progress Segmented Track & Milestones */
+.progress-milestone-marker {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 2px;
+  background: rgba(15, 23, 42, 0.8);
+  z-index: 2;
 }
 
 /* ==========================================================================

@@ -50,10 +50,20 @@
         </div>
       </div>
 
-      <!-- Filter Toolbar -->
+      <!-- Filter Toolbar & Quick Filter Chips -->
       <div class="doppelrand-shell" style="margin-bottom: 1.75rem;">
-        <div class="doppelrand-core" style="padding: 1rem 1.25rem;">
-          <div style="display: flex; gap: 1rem; flex-wrap: wrap; align-items: center; justify-content: space-between;">
+        <div class="doppelrand-core" style="padding: 1.25rem;">
+          
+          <!-- Quick Filter Pills (impeccable standard) -->
+          <div style="display: flex; gap: 0.5rem; flex-wrap: wrap; margin-bottom: 1rem; align-items: center;">
+            <span style="font-size: 11px; font-weight: 700; color: #64748b; text-transform: uppercase; letter-spacing: 0.05em; margin-right: 0.25rem;">Filter Cepat:</span>
+            <button type="button" class="filter-chip active" id="chip-all" onclick="applyQuickChip('all')">Semua Tugas</button>
+            <button type="button" class="filter-chip" id="chip-urgent" onclick="applyQuickChip('urgent')">🔥 Prioritas High</button>
+            <button type="button" class="filter-chip" id="chip-inprogress" onclick="applyQuickChip('inprogress')">⏳ Sedang Berjalan</button>
+            <button type="button" class="filter-chip" id="chip-done" onclick="applyQuickChip('done')">✅ Selesai</button>
+          </div>
+
+          <div style="display: flex; gap: 1rem; flex-wrap: wrap; align-items: center; justify-content: space-between; border-top: 1px solid var(--border-hairline); padding-top: 1rem;">
             
             <!-- Search Input -->
             <div style="flex: 1; min-width: 240px;">
@@ -278,11 +288,38 @@
       loadTasks();
     }, 250);
 
+    function applyQuickChip(type) {
+      document.querySelectorAll('.filter-chip').forEach(c => c.classList.remove('active'));
+      const activeBtn = document.getElementById(`chip-${type}`);
+      if (activeBtn) activeBtn.classList.add('active');
+
+      const statusSelect = document.getElementById('filter-status');
+      const prioritySelect = document.getElementById('filter-priority');
+
+      if (type === 'all') {
+        statusSelect.value = 'Semua';
+        prioritySelect.value = 'Semua';
+      } else if (type === 'urgent') {
+        statusSelect.value = 'Semua';
+        prioritySelect.value = 'High';
+      } else if (type === 'inprogress') {
+        statusSelect.value = 'In Progress';
+        prioritySelect.value = 'Semua';
+      } else if (type === 'done') {
+        statusSelect.value = 'Done';
+        prioritySelect.value = 'Semua';
+      }
+      loadTasks();
+    }
+
     function resetFilters() {
       document.getElementById('filter-search').value = '';
       document.getElementById('filter-status').value = 'Semua';
       document.getElementById('filter-priority').value = 'Semua';
       document.getElementById('filter-category').value = 'Semua';
+      document.querySelectorAll('.filter-chip').forEach(c => c.classList.remove('active'));
+      const chipAll = document.getElementById('chip-all');
+      if (chipAll) chipAll.classList.add('active');
       loadTasks();
     }
 
@@ -343,7 +380,7 @@
       }[task.priority] || '';
 
       return `
-        <div style="background: var(--surface-core); border: 1px solid var(--border-hairline); border-radius: 0.875rem; padding: 1.125rem; box-shadow: 0 4px 12px rgba(0,0,0,0.35); transition: transform 140ms var(--ease-out), border-color 140ms var(--ease-out), box-shadow 140ms var(--ease-out);" onmouseover="this.style.borderColor='var(--border-subtle)'; this.style.transform='translateY(-2px)';" onmouseout="this.style.borderColor='var(--border-hairline)'; this.style.transform='translateY(0)';">
+        <div class="kanban-card" data-priority="${task.priority}">
           <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.625rem;">
             ${priorityPill}
             <span style="font-size: 11px; color: #94a3b8; font-weight: 600; text-transform: uppercase;">${task.category}</span>
