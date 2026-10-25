@@ -38,7 +38,7 @@
             </span>
           </div>
           <h1 style="font-size: 1.875rem; font-weight: 800; color: var(--text); letter-spacing: -0.025em; line-height: 1.2;">
-            Selamat Datang, <span id="user-greeting-name" style="color: var(--primary);">Rekan</span> 👋
+            Selamat Datang, <span id="user-greeting-name" style="color: var(--primary);">Rekan</span>
           </h1>
           <p style="color: var(--text-muted); font-size: 0.875rem; margin-top: 0.375rem;">
             Pantau progres siklus kerja tim dan tenggat waktu tugas secara real-time.
@@ -267,7 +267,10 @@
             <!-- Mini Footnote -->
             <div style="border-top: 1px solid var(--border); padding-top: 0.75rem; margin-top: 0.75rem; font-size: 11px; color: var(--text-muted); display: flex; justify-content: space-between;">
               <span>Sinkronisasi Kategori Otomatis</span>
-              <span style="color: var(--cta); font-weight: 600;">✓ Terverifikasi</span>
+              <span style="color: var(--cta); font-weight: 600; display: inline-flex; align-items: center; gap: 4px;">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                Terverifikasi
+              </span>
             </div>
           </div>
 
@@ -287,8 +290,8 @@
           <span id="progress-percentage-label" class="font-mono" style="font-size: 1.375rem; font-weight: 800; color: var(--cta); letter-spacing: -0.02em;">0%</span>
         </div>
 
-        <div style="position: relative; width: 100%; height: 10px; background: #e2e8f0; border-radius: 9999px; overflow: hidden; box-shadow: inset 0 1px 2px rgba(0,0,0,0.06);">
-          <div id="progress-bar-fill" style="width: 0%; height: 100%; background: linear-gradient(90deg, #0080ff 0%, #8b00ff 50%, #22c55e 100%); border-radius: 9999px; transition: width 600ms var(--ease-spring); box-shadow: 0 0 10px rgba(0, 128, 255, 0.4);"></div>
+        <div style="position: relative; width: 100%; height: 10px; background: #e2e8f0; border-radius: 9999px; overflow: hidden;">
+          <div id="progress-bar-fill" style="width: 0%; height: 100%; background: #0080ff; border-radius: 9999px; transition: width 600ms var(--ease-spring);"></div>
         </div>
 
         <div style="display: flex; justify-content: space-between; margin-top: 6px; font-size: 11px; color: var(--text-muted); font-family: 'JetBrains Mono', monospace;">
@@ -347,7 +350,9 @@
     <div class="modal-container glass-card" style="background: #ffffff; border: 1px solid var(--border);">
       <div style="padding: 1.25rem 1.5rem; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center;">
         <h3 style="font-size: 1.125rem; font-weight: 700; color: var(--text);">+ Tambah Tugas Baru</h3>
-        <button onclick="closeTaskModal()" class="btn-action-icon" style="width: 32px; height: 32px;" aria-label="Tutup modal">✕</button>
+        <button onclick="closeTaskModal()" class="btn-action-icon" style="width: 32px; height: 32px;" aria-label="Tutup modal">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </button>
       </div>
       <form id="create-task-form" class="modal-body">
         <div style="margin-bottom: 1rem;">
@@ -390,7 +395,9 @@
           <button type="button" onclick="closeTaskModal()" class="btn-secondary">Batal</button>
           <button type="submit" id="save-task-btn" class="btn-island">
             <span>Simpan Tugas</span>
-            <span class="btn-icon-pill">✓</span>
+            <span class="btn-icon-pill">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+            </span>
           </button>
         </div>
       </form>
@@ -408,7 +415,7 @@
         const dateBadge = document.getElementById('dashboard-date-badge');
         if (dateBadge) {
           const now = new Date();
-          dateBadge.textContent = '📅 ' + new Intl.DateTimeFormat('id-ID', {
+          dateBadge.textContent = new Intl.DateTimeFormat('id-ID', {
             weekday: 'long',
             day: 'numeric',
             month: 'short',
@@ -523,7 +530,9 @@
               <tr>
                 <td colspan="6" style="padding: 2.5rem 1rem;">
                   <div class="empty-state-box">
-                    <div class="empty-state-icon" style="color: var(--cta); background: rgba(34,197,94,0.1); border-color: rgba(34,197,94,0.3);">✓</div>
+                    <div class="empty-state-icon" style="color: var(--cta); background: rgba(34,197,94,0.1); border-color: rgba(34,197,94,0.3);">
+                      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                    </div>
                     <h4 style="font-size: 0.9375rem; font-weight: 700; color: var(--text); margin-bottom: 0.25rem;">Semua Tugas Selesai Dikerjakan!</h4>
                     <p style="font-size: 0.8125rem; color: var(--text-muted); margin-bottom: 1rem;">Tidak ada antrean tugas aktif saat ini. Kerja luar biasa!</p>
                     <button onclick="openCreateTaskModal()" class="btn-island" style="font-size: 0.8125rem;">+ Tambah Tugas Baru</button>
@@ -554,7 +563,7 @@
               <tr style="border-bottom: 1px solid var(--border); font-size: 0.875rem;">
                 <td style="padding: 1rem 0.5rem; text-align: center;">
                   <button onclick="toggleTaskStatus(${task.id}, 'Done')" title="Tandai Selesai" aria-label="Tandai selesai tugas ${task.title}" class="btn-action-icon" style="width: 32px; height: 32px; color: var(--cta); border-color: rgba(34,197,94,0.3);">
-                    ✓
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
                   </button>
                 </td>
                 <td style="padding: 1rem; font-weight: 600; color: var(--text);">
@@ -575,8 +584,9 @@
                   ${deadlineBadge}
                 </td>
                 <td style="padding: 1rem; text-align: right;">
-                  <button onclick="toggleTaskStatus(${task.id}, 'Done')" class="btn-secondary" style="font-size: 0.75rem; padding: 0.375rem 0.75rem; min-height: 32px; color: var(--cta); border-color: rgba(34,197,94,0.4);">
-                    Selesaikan ✓
+                  <button onclick="toggleTaskStatus(${task.id}, 'Done')" class="btn-secondary" style="font-size: 0.75rem; padding: 0.375rem 0.75rem; min-height: 32px; color: var(--cta); border-color: rgba(34,197,94,0.4); display: inline-flex; align-items: center; gap: 4px;">
+                    <span>Selesaikan</span>
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
                   </button>
                 </td>
               </tr>
@@ -587,7 +597,9 @@
             <tr>
               <td colspan="6" style="padding: 2.5rem 1rem;">
                 <div class="empty-state-box">
-                  <div class="empty-state-icon">📋</div>
+                  <div class="empty-state-icon">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+                  </div>
                   <h4 style="font-size: 0.9375rem; font-weight: 700; color: var(--text); margin-bottom: 0.25rem;">Belum Ada Tugas Tercatat</h4>
                   <p style="font-size: 0.8125rem; color: var(--text-muted); margin-bottom: 1rem;">Mulai delegasikan dan kelola siklus kerja tim hari ini.</p>
                   <button onclick="openCreateTaskModal()" class="btn-island" style="font-size: 0.8125rem;">+ Buat Tugas Baru</button>

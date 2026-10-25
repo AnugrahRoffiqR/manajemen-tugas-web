@@ -49,7 +49,7 @@ async function initNavigation(activeKey = '') {
           <!-- Brand Logo & Live Pulse Pill (Sistem Manajemen Tugas) -->
           <div style="padding: 0.5rem 0.5rem 1.25rem;">
             <div style="display: flex; align-items: center; gap: 0.75rem; margin-bottom: 0.875rem;">
-              <div style="width: 38px; height: 38px; border-radius: 10px; background: linear-gradient(135deg, #0080ff, #8b00ff); display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 10px rgba(0, 128, 255, 0.3); flex-shrink: 0;">
+              <div style="width: 38px; height: 38px; border-radius: 10px; background: #0080ff; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
               </div>
               <div>
@@ -117,7 +117,7 @@ async function initNavigation(activeKey = '') {
         <!-- User Profile Card in Sidebar -->
         <div style="background: #ffffff; border: 1px solid var(--border); border-radius: 0.875rem; padding: 0.875rem; display: flex; align-items: center; justify-content: space-between; box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);">
           <div style="display: flex; align-items: center; gap: 0.625rem; overflow: hidden;">
-            <div style="width: 36px; height: 36px; border-radius: 50%; background: linear-gradient(135deg, #0080ff, #8b00ff); display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 14px; color: #fff; flex-shrink: 0; box-shadow: 0 2px 8px rgba(0, 128, 255, 0.25);">
+            <div style="width: 36px; height: 36px; border-radius: 50%; background: #0f172a; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 14px; color: #fff; flex-shrink: 0;">
               ${currentUser.name.charAt(0).toUpperCase()}
             </div>
             <div style="overflow: hidden;">
@@ -139,7 +139,7 @@ async function initNavigation(activeKey = '') {
     mobileHeader.innerHTML = `
       <header style="display: flex; align-items: center; justify-content: space-between; padding: 0.875rem 1rem; background: #ffffff; border-bottom: 1px solid var(--border); position: sticky; top: 0; z-index: 100;">
         <div style="display: flex; align-items: center; gap: 0.625rem;">
-          <div style="width: 32px; height: 32px; border-radius: 8px; background: linear-gradient(135deg, #0080ff, #8b00ff); display: flex; align-items: center; justify-content: center; color: #fff; font-weight: bold; box-shadow: 0 2px 6px rgba(0, 128, 255, 0.25);">
+          <div style="width: 32px; height: 32px; border-radius: 8px; background: #0080ff; display: flex; align-items: center; justify-content: center; color: #fff; font-weight: bold;">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
           </div>
           <span style="font-weight: 700; font-size: 15px; font-family: 'Poppins', sans-serif; color: var(--text);">Manajemen <span style="color: var(--primary);">Tugas</span></span>
@@ -158,7 +158,7 @@ async function initNavigation(activeKey = '') {
   const mobileBottomNav = document.getElementById('mobile-bottom-nav');
   if (mobileBottomNav) {
     mobileBottomNav.innerHTML = `
-      <nav aria-label="Navigasi Utama Mobile" style="position: fixed; bottom: 0; left: 0; right: 0; height: calc(60px + env(safe-area-inset-bottom, 0px)); padding-bottom: env(safe-area-inset-bottom, 0px); background: rgba(255, 255, 255, 0.95); border-top: 1px solid var(--border); display: flex; align-items: center; justify-content: space-around; z-index: 99; backdrop-filter: blur(16px); box-shadow: 0 -4px 16px rgba(0, 0, 0, 0.05);">
+      <nav aria-label="Navigasi Utama Mobile" style="position: fixed; bottom: 0; left: 0; right: 0; height: calc(60px + env(safe-area-inset-bottom, 0px)); padding-bottom: env(safe-area-inset-bottom, 0px); background: #ffffff; border-top: 1px solid var(--border); display: flex; align-items: center; justify-content: space-around; z-index: 99; box-shadow: 0 -1px 3px rgba(0, 0, 0, 0.05);">
         <a href="/dashboard" class="mobile-nav-link ${activeKey === 'dashboard' ? 'active' : ''}" aria-label="Halaman Utama Dashboard">
           <span class="mobile-nav-icon">${ICONS.dashboard}</span>
           <span class="mobile-nav-label">Home</span>
@@ -239,7 +239,7 @@ navStyle.textContent = `
     font-size: 0.875rem;
     font-weight: 500;
     border: 1px solid transparent;
-    transition: all 140ms var(--ease-out);
+    transition: background-color 140ms var(--ease-out), color 140ms var(--ease-out), border-color 140ms var(--ease-out), transform 140ms var(--ease-out);
   }
   .nav-item:hover {
     background: #f1f5f9;

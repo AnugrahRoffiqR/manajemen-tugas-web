@@ -90,7 +90,9 @@
             <div>
               <button type="submit" class="btn-island" style="width: 100%; justify-content: center;">
                 <span>Simpan Pengingat</span>
-                <span class="btn-icon-pill">✓</span>
+                <span class="btn-icon-pill">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                </span>
               </button>
             </div>
           </div>
@@ -129,7 +131,7 @@
           } else {
             overdueContainer.innerHTML = `
               <div style="background: rgba(34, 197, 94, 0.08); border: 1px solid rgba(34, 197, 94, 0.25); border-radius: 0.875rem; padding: 1.25rem; color: var(--cta); font-size: 0.875rem; display: flex; align-items: center; gap: 0.75rem;">
-                <span style="font-size: 1.25rem;">✓</span>
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
                 <span>Tidak ada tugas yang terlewat. Semua pekerjaan berjalan sesuai jadwal!</span>
               </div>
             `;
@@ -142,7 +144,7 @@
           } else {
             urgentContainer.innerHTML = `
               <div style="background: #ffffff; border: 1px solid var(--border); border-radius: 0.875rem; padding: 1.25rem; color: var(--text-muted); font-size: 0.875rem; display: flex; align-items: center; gap: 0.75rem;">
-                <span style="color: var(--cta);">✓</span>
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--cta)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
                 <span>Tidak ada tugas dengan tenggat waktu mendesak hari ini.</span>
               </div>
             `;
@@ -157,7 +159,7 @@
             <div style="display: flex; align-items: center; justify-content: space-between; background: #ffffff; border: 1px solid var(--border); border-radius: 0.75rem; padding: 0.875rem 1.25rem; flex-wrap: wrap; gap: 0.75rem;">
               <div>
                 <p style="font-size: 0.9375rem; font-weight: 600; color: var(--text);">${r.title}</p>
-                <span style="font-size: 0.75rem; color: var(--primary);" class="font-mono">⏰ Dijadwalkan: ${formatDateWIB(r.remind_at)}</span>
+                <span style="font-size: 0.75rem; color: var(--primary);" class="font-mono">Dijadwalkan: ${formatDateWIB(r.remind_at)}</span>
               </div>
               <button onclick="deleteCustomReminder(${r.id})" aria-label="Hapus pengingat ${r.title}" class="btn-danger" style="padding: 4px 10px; min-height: 32px; font-size: 12px;">
                 Hapus
@@ -167,7 +169,9 @@
         } else {
           customContainer.innerHTML = `
             <div class="empty-state-box" style="padding: 2rem 1rem;">
-              <div class="empty-state-icon">⏰</div>
+              <div class="empty-state-icon">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+              </div>
               <p style="font-size: 0.8125rem; color: var(--text-muted);">Belum ada catatan pengingat kustom.</p>
             </div>
           `;
@@ -194,16 +198,18 @@
               </span>
             </div>
             <h4 style="font-size: 1rem; font-weight: 700; color: var(--text); margin-bottom: 0.25rem;">${task.title}</h4>
-            <span style="font-size: 12px; color: var(--text-secondary);" class="font-mono">📅 Tenggat: ${formatDateWIB(task.due_date)}</span>
+            <span style="font-size: 12px; color: var(--text-secondary);" class="font-mono">Tenggat: ${formatDateWIB(task.due_date)}</span>
           </div>
 
           <div style="display: flex; gap: 0.5rem; align-items: center;">
             <a href="/tasks" class="btn-secondary" style="font-size: 0.8125rem; min-height: 40px; padding: 0.5rem 0.875rem;">
-              Buka di Board ↗
+              Buka di Board
             </a>
             <button onclick="completeTaskNow(${task.id})" aria-label="Tandai selesai tugas ${task.title}" class="btn-island" style="min-height: 40px; padding: 0.5rem 1rem; font-size: 0.8125rem;">
               <span>Tandai Selesai</span>
-              <span class="btn-icon-pill">✓</span>
+              <span class="btn-icon-pill">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+              </span>
             </button>
           </div>
         </div>

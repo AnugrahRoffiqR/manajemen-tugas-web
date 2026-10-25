@@ -26,7 +26,7 @@
             </span>
           </div>
           <h1 style="font-size: 1.875rem; font-weight: 800; color: var(--text); letter-spacing: -0.025em;">
-            Manajemen Tim & <span class="gradient-text">Hak Akses</span>
+            Manajemen Tim & <span style="color: var(--primary);">Hak Akses</span>
           </h1>
           <p style="color: var(--text-muted); font-size: 0.875rem;">Kelola hak akses anggota tim, pendaftaran akun baru, dan kontrol status aktif.</p>
         </div>
@@ -75,7 +75,9 @@
     <div class="modal-container glass-card" style="background: #ffffff; border: 1px solid var(--border);">
       <div style="padding: 1.25rem 1.5rem; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center;">
         <h3 style="font-size: 1.125rem; font-weight: 700; color: var(--text);">+ Daftarkan Anggota Tim Baru</h3>
-        <button onclick="closeAddUserModal()" class="btn-action-icon" style="width: 32px; height: 32px;" aria-label="Tutup modal">✕</button>
+        <button onclick="closeAddUserModal()" class="btn-action-icon" style="width: 32px; height: 32px;" aria-label="Tutup modal">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </button>
       </div>
       <form id="add-user-form" class="modal-body">
         <div style="margin-bottom: 1rem;">
@@ -105,7 +107,9 @@
           <button type="button" onclick="closeAddUserModal()" class="btn-secondary">Batal</button>
           <button type="submit" id="save-user-btn" class="btn-island">
             <span>Daftarkan Anggota</span>
-            <span class="btn-icon-pill">✓</span>
+            <span class="btn-icon-pill">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+            </span>
           </button>
         </div>
       </form>
@@ -116,8 +120,10 @@
   <div id="edit-user-modal" class="modal-overlay">
     <div class="modal-container glass-card" style="background: #ffffff; border: 1px solid var(--border);">
       <div style="padding: 1.25rem 1.5rem; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center;">
-        <h3 style="font-size: 1.125rem; font-weight: 700; color: var(--text);">✏️ Edit Data & Akses Pengguna</h3>
-        <button onclick="closeEditUserModal()" class="btn-action-icon" style="width: 32px; height: 32px;" aria-label="Tutup modal">✕</button>
+        <h3 style="font-size: 1.125rem; font-weight: 700; color: var(--text);">Edit Data & Akses Pengguna</h3>
+        <button onclick="closeEditUserModal()" class="btn-action-icon" style="width: 32px; height: 32px;" aria-label="Tutup modal">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </button>
       </div>
       <form id="edit-user-form" class="modal-body">
         <input type="hidden" id="edit-user-id" value="">
@@ -152,7 +158,9 @@
           <button type="button" onclick="closeEditUserModal()" class="btn-secondary">Batal</button>
           <button type="submit" id="update-user-btn" class="btn-island">
             <span>Simpan Perubahan</span>
-            <span class="btn-icon-pill">✓</span>
+            <span class="btn-icon-pill">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+            </span>
           </button>
         </div>
       </form>
@@ -200,7 +208,7 @@
         const isOwner = u.role === 'Owner';
         const roleBadgeBg = isOwner ? 'rgba(0, 128, 255, 0.1)' : 'rgba(100, 116, 139, 0.1)';
         const roleColor = isOwner ? 'var(--primary)' : 'var(--text-muted)';
-        const avatarBg = isOwner ? 'linear-gradient(135deg, #0080ff, #8b00ff)' : 'linear-gradient(135deg, #64748b, #475569)';
+        const avatarBg = isOwner ? '#0080ff' : '#64748b';
         const statusColor = u.status === 'Active' ? 'var(--cta)' : '#ef4444';
         const statusBg = u.status === 'Active' ? 'rgba(34, 197, 94, 0.12)' : 'rgba(239, 68, 68, 0.12)';
         const taskPercent = u.total_tasks > 0 ? Math.round((u.completed_tasks / u.total_tasks) * 100) : 0;
@@ -209,7 +217,7 @@
           <tr style="border-bottom: 1px solid var(--border); font-size: 0.875rem;">
             <td style="padding: 1rem;">
               <div style="display: flex; align-items: center; gap: 0.75rem;">
-                <div style="width: 38px; height: 38px; border-radius: 50%; background: ${avatarBg}; display: flex; align-items: center; justify-content: center; color: #fff; font-weight: 700; font-size: 14px; flex-shrink: 0; box-shadow: 0 2px 8px rgba(0,0,0,0.1); border: 1px solid rgba(255,255,255,0.4);">
+                <div style="width: 38px; height: 38px; border-radius: 50%; background: ${avatarBg}; display: flex; align-items: center; justify-content: center; color: #fff; font-weight: 700; font-size: 14px; flex-shrink: 0;">
                   ${u.name.charAt(0).toUpperCase()}
                 </div>
                 <div>
@@ -239,7 +247,7 @@
                   <span style="color: var(--text-muted);">${taskPercent}%</span>
                 </div>
                 <div style="width: 90px; height: 6px; background: #e2e8f0; border-radius: 999px; overflow: hidden;">
-                  <div style="width: ${taskPercent}%; height: 100%; background: linear-gradient(90deg, #0080ff, #22c55e); border-radius: 999px; transition: width 400ms ease;"></div>
+                  <div style="width: ${taskPercent}%; height: 100%; background: #0080ff; border-radius: 999px; transition: width 400ms ease;"></div>
                 </div>
               </div>
             </td>
