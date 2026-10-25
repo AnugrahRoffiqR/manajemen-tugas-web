@@ -157,7 +157,7 @@ async function initNavigation(activeKey = '') {
   const mobileBottomNav = document.getElementById('mobile-bottom-nav');
   if (mobileBottomNav) {
     mobileBottomNav.innerHTML = `
-      <nav aria-label="Navigasi Utama Mobile" style="position: fixed; bottom: 0; left: 0; right: 0; height: calc(60px + env(safe-area-inset-bottom, 0px)); padding-bottom: env(safe-area-inset-bottom, 0px); background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(12px); border-top: 1px solid var(--border); display: flex; align-items: center; justify-content: space-around; z-index: 99; box-shadow: 0 -1px 3px rgba(0, 0, 0, 0.03);">
+      <nav aria-label="Navigasi Utama Mobile" style="position: fixed; bottom: 0; left: 0; right: 0; height: calc(60px + env(safe-area-inset-bottom, 0px)); padding-bottom: env(safe-area-inset-bottom, 0px); background: #ffffff; border-top: 1px solid var(--border); display: flex; align-items: center; justify-content: space-around; z-index: 99; box-shadow: 0 -1px 3px rgba(0, 0, 0, 0.03);">
         <a href="/dashboard" class="mobile-nav-link ${activeKey === 'dashboard' ? 'active' : ''}" aria-label="Halaman Utama Dashboard">
           <span class="mobile-nav-icon">${ICONS.dashboard}</span>
           <span class="mobile-nav-label">Home</span>
