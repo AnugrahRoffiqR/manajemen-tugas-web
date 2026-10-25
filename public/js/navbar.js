@@ -169,7 +169,7 @@ async function initNavigation(activeKey = '') {
         <a href="/reminders" class="mobile-nav-link ${activeKey === 'reminders' ? 'active' : ''}" aria-label="Halaman Pengingat Deadline" style="position: relative;">
           <span class="mobile-nav-icon">${ICONS.reminders}</span>
           <span class="mobile-nav-label">Ingat</span>
-          ${urgentCount > 0 ? `<span style="position: absolute; top: 8px; right: 25%; width: 8px; height: 8px; border-radius: 50%; background: #ef4444;"></span>` : ''}
+          ${urgentCount > 0 ? `<span style="position: absolute; top: 8px; right: 25%; width: 8px; height: 8px; border-radius: 50%; background: #b91c1c;"></span>` : ''}
         </a>
         <a href="/reports" class="mobile-nav-link ${activeKey === 'reports' ? 'active' : ''}" aria-label="Halaman Laporan Kinerja">
           <span class="mobile-nav-icon">${ICONS.reports}</span>

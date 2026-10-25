@@ -376,9 +376,9 @@
 
     function createKanbanCard(task) {
       const priorityPill = {
-        High: '<span class="badge" style="background:rgba(239,68,68,0.12); color:#ef4444; border:1px solid rgba(239,68,68,0.25);">HIGH</span>',
-        Medium: '<span class="badge" style="background:rgba(245,158,11,0.12); color:#d97706; border:1px solid rgba(245,158,11,0.25);">MED</span>',
-        Low: '<span class="badge" style="background:rgba(34,197,94,0.12); color:#16a34a; border:1px solid rgba(34,197,94,0.25);">LOW</span>',
+        High: '<span class="badge" style="background:#fef2f2; color:#b91c1c; border:1px solid #fecaca;">HIGH</span>',
+        Medium: '<span class="badge" style="background:#fffbeb; color:#b45309; border:1px solid #fde68a;">MED</span>',
+        Low: '<span class="badge" style="background:#f0fdf4; color:#15803d; border:1px solid #bbf7d0;">LOW</span>',
       }[task.priority] || '';
 
       const catClass = `cat-${(task.category || 'umum').toLowerCase()}`;
@@ -416,7 +416,7 @@
               ${task.status !== 'In Progress' ? `<button onclick="updateTaskStatus(${task.id}, 'In Progress')" title="Pindah ke In Progress" aria-label="Pindahkan tugas ke In Progress" class="btn-action-icon" style="width: 28px; height: 28px; font-size: 11px; color: var(--primary);">Jalan</button>` : ''}
               ${task.status !== 'Done' ? `<button onclick="updateTaskStatus(${task.id}, 'Done')" title="Tandai Selesai" aria-label="Tandai tugas telah selesai" class="btn-action-icon" style="width: 28px; height: 28px; font-size: 11px; color: var(--cta); border-color: rgba(34,197,94,0.3);"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></button>` : ''}
               <button onclick="openEditTaskModal(${task.id})" title="Edit Rincian" aria-label="Edit rincian data tugas" class="btn-action-icon" style="width: 28px; height: 28px; font-size: 11px; color: var(--primary);"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg></button>
-              <button onclick="deleteTask(${task.id})" title="Hapus Tugas" aria-label="Hapus tugas secara permanen" class="btn-action-icon" style="width: 28px; height: 28px; font-size: 11px; color: #ef4444; border-color: rgba(239,68,68,0.3);"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg></button>
+              <button onclick="deleteTask(${task.id})" title="Hapus Tugas" aria-label="Hapus tugas secara permanen" class="btn-action-icon" style="width: 28px; height: 28px; font-size: 11px; color: #b91c1c; border-color: #fecaca;"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg></button>
             </div>
           </div>
         </div>
@@ -468,7 +468,7 @@
               </span>
             </td>
             <td style="padding: 0.875rem 1rem;">
-              <span style="font-weight: 700; font-size: 0.75rem; color: ${t.priority === 'High' ? '#ef4444' : t.priority === 'Medium' ? '#d97706' : '#16a34a'};">
+              <span style="font-weight: 700; font-size: 0.75rem; color: ${t.priority === 'High' ? '#b91c1c' : t.priority === 'Medium' ? '#b45309' : '#15803d'};">
                 ${t.priority}
               </span>
             </td>

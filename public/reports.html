@@ -228,9 +228,9 @@
           const catContainer = document.getElementById('category-bars');
           const cats = res.data.category_distribution || [];
           const catColorMap = {
-            Teknis: '#0080ff',
-            Operasional: '#f59e0b',
-            Bisnis: '#22c55e',
+            Teknis: '#0369a1',
+            Operasional: '#b45309',
+            Bisnis: '#15803d',
             Administrasi: '#0284c7',
             Umum: '#64748b'
           };
@@ -249,7 +249,7 @@
                     <span style="color:var(--text); font-weight:600;" class="font-mono">${c.count} tugas (${Math.round((c.count/m.total_tasks)*100 || 0)}%)</span>
                   </div>
                   <div style="width:100%; height:8px; background:#e2e8f0; border-radius:999px; overflow:hidden;">
-                    <div style="width:${(c.count/maxCat)*100}%; height:100%; background:${barColor}; border-radius:999px; transition: width 600ms var(--ease-spring); box-shadow: 0 0 8px ${barColor}66;"></div>
+                    <div style="width:${(c.count/maxCat)*100}%; height:100%; background:${barColor}; border-radius:999px; transition: width 400ms ease;"></div>
                   </div>
                 </div>
               `;
@@ -263,7 +263,7 @@
           const prios = res.data.priority_distribution || [];
           if (prios.length) {
             const maxPrio = Math.max(...prios.map(p => parseInt(p.count, 10)), 1);
-            const prioColors = { High: '#ef4444', Medium: '#f59e0b', Low: '#22c55e' };
+            const prioColors = { High: '#b91c1c', Medium: '#b45309', Low: '#15803d' };
 
             prioContainer.innerHTML = prios.map(p => {
               const pColor = prioColors[p.priority] || 'var(--primary)';
@@ -271,7 +271,7 @@
                 <div>
                   <div style="display:flex; justify-content:space-between; align-items:center; font-size:12px; margin-bottom:6px;">
                     <span style="color:${pColor}; font-weight:700; display:inline-flex; align-items:center; gap:6px;">
-                      <span style="width:6px; height:6px; border-radius:50%; background:${pColor}; box-shadow:0 0 6px ${pColor};"></span>
+                      <span style="width:6px; height:6px; border-radius:50%; background:${pColor};"></span>
                       ${p.priority}
                     </span>
                     <span style="color:var(--text); font-weight:600;" class="font-mono">${p.count} tugas (${Math.round((p.count/m.total_tasks)*100 || 0)}%)</span>

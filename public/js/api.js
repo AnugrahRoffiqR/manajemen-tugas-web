@@ -22,10 +22,10 @@ function showToast(message, type = 'info') {
   };
 
   const colors = {
-    success: '#22c55e',
-    error: '#ef4444',
-    warning: '#f59e0b',
-    info: '#0080ff',
+    success: '#15803d',
+    error: '#b91c1c',
+    warning: '#b45309',
+    info: '#0369a1',
   };
 
   toast.innerHTML = `

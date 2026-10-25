@@ -7,12 +7,12 @@
 @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700&family=Poppins:wght@600;700;800&display=swap');
 
 :root {
-  /* Reference A (SaaS Analytics UI) Main Interface Colors */
-  --primary: #0284c7;
-  --primary-dark: #0369a1;
+  /* Reference A (SaaS Analytics UI) Main Interface Colors - WCAG AA Contrast Compliant */
+  --primary: #0369a1;
+  --primary-dark: #075985;
   --primary-tint: #f0f9ff;
-  --cta: #16a34a;
-  --cta-dark: #15803d;
+  --cta: #15803d;
+  --cta-dark: #166534;
   --cta-tint: #f0fdf4;
 
   /* Reference B (Educational Platform) Background Atmosphere & Pastel Layers */
@@ -32,15 +32,15 @@
   /* Borders & Rules */
   --border: #e2e8f0;
   --border-subtle: #f1f5f9;
-  --border-focus: #0284c7;
+  --border-focus: #0369a1;
   --rule: #f1f5f9;
 
   /* Status Colors */
   --status-todo: #64748b;
-  --status-in-progress: #0284c7;
-  --status-done: #16a34a;
-  --status-urgent: #d97706;
-  --status-overdue: #dc2626;
+  --status-in-progress: #0369a1;
+  --status-done: #15803d;
+  --status-urgent: #b45309;
+  --status-overdue: #b91c1c;
 
   /* Sizing Tokens */
   --radius-card: 0.875rem;
@@ -167,7 +167,7 @@ body.modal-open {
 
 .stat-card-progress {
   background: #ffffff;
-  border-top: 3px solid #f59e0b;
+  border-top: 3px solid var(--status-urgent);
 }
 
 .stat-card-done {
@@ -429,11 +429,11 @@ body.modal-open {
 }
 
 .cat-teknis {
-  background: #eff6ff;
-  color: #1d4ed8;
-  border: 1px solid #bfdbfe;
+  background: #f0f9ff;
+  color: #0369a1;
+  border: 1px solid #bae6fd;
 }
-.cat-teknis .cat-dot { background: #2563eb; }
+.cat-teknis .cat-dot { background: #0284c7; }
 
 .cat-operasional {
   background: #fffbeb;
