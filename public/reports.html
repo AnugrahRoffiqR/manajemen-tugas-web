@@ -4,6 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Laporan Kinerja — Sistem Manajemen Tugas</title>
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml">
   <link rel="stylesheet" href="/css/style.css">
 </head>
 <body>
@@ -11,174 +12,117 @@
   <!-- Mobile Top Header Bar (< 1024px) -->
   <div id="mobile-header"></div>
 
-  <div style="display: flex; min-height: 100dvh;">
+  <div class="app-shell">
     <!-- Desktop Sidebar (>= 1024px) -->
     <div id="sidebar-container"></div>
 
-    <!-- Main Workspace Area -->
     <main class="workspace-main">
-      
-      <!-- Formal Print Header (Only visible on window.print()) -->
-      <div class="print-header" style="display: none;">
-        <h1 style="font-size: 18pt; font-weight: bold; margin-bottom: 4px;">LAPORAN AKUNTABILITAS & KINERJA TUGAS</h1>
-        <p style="font-size: 10pt; color: #555;">Sistem Manajemen Tugas • Dicetak pada: <span id="print-timestamp" class="font-mono"></span></p>
+
+      <!-- Print-only header -->
+      <div class="print-only" style="margin-bottom: 16pt;">
+        <h1 style="font-size: 16pt;">Laporan Kinerja Tugas</h1>
+        <p style="font-size: 10pt;">Sistem Manajemen Tugas · Periode: <span id="print-period"></span> · Dicetak: <span id="print-timestamp" class="font-mono"></span></p>
       </div>
 
-      <!-- Header Action Bar -->
-      <div class="no-print" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; flex-wrap: wrap; gap: 1rem;">
+      <header class="page-head no-print">
         <div>
-          <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.375rem;">
-            <span class="badge" style="background: rgba(0, 128, 255, 0.1); color: var(--primary); border: 1px solid rgba(0, 128, 255, 0.25);">
-              PERFORMANCE KPI
-            </span>
-          </div>
-          <h1 style="font-size: 2.125rem; font-weight: 700; color: var(--text); letter-spacing: -0.01em;">
-            Laporan & <span style="color: #ea580c;">Analitik Kinerja</span>
-          </h1>
-          <p style="color: var(--text-muted); font-size: 0.9375rem;">Pantau metrik rasio penyelesaian tugas, target KPI, dan ekspor dokumen cetak.</p>
+          <h1 class="page-title">Laporan Kinerja</h1>
+          <p class="page-sub">Rasio penyelesaian, ketepatan waktu, dan distribusi tugas per periode.</p>
         </div>
-
-        <div style="display: flex; gap: 0.75rem; align-items: center;">
-          <button onclick="window.print()" class="btn-island" aria-label="Cetak atau ekspor dokumen laporan ke format PDF">
-            <span>Cetak / Ekspor PDF</span>
-            <span class="btn-icon-pill">
-              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
-            </span>
+        <div class="page-actions">
+          <button type="button" onclick="window.print()" class="btn-primary">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
+            Cetak / PDF
           </button>
         </div>
+      </header>
+
+      <!-- Period filter -->
+      <div class="segmented no-print" role="group" aria-label="Periode" style="margin-bottom: 1.5rem;">
+        <button type="button" id="btn-period-all" onclick="changePeriod('all')" aria-pressed="true">Semua Waktu</button>
+        <button type="button" id="btn-period-month" onclick="changePeriod('month')" aria-pressed="false">Bulan Ini</button>
+        <button type="button" id="btn-period-week" onclick="changePeriod('week')" aria-pressed="false">Minggu Ini</button>
+        <button type="button" id="btn-period-today" onclick="changePeriod('today')" aria-pressed="false">Hari Ini</button>
       </div>
 
-      <!-- Period Filter Tabs (Reference A SaaS Tablist) -->
-      <div role="tablist" aria-label="Filter Periode Waktu" class="no-print" style="background: #ffffff; border: 1px solid var(--border); border-radius: 8px; padding: 3px; display: inline-flex; gap: 3px; margin-bottom: 2rem; flex-wrap: wrap;">
-        <button role="tab" aria-selected="true" id="btn-period-all" onclick="changePeriod('all')" class="btn-secondary" style="padding: 0.35rem 0.875rem; min-height: 32px; font-size: 0.8125rem; border: none; background: #0284c7; color: #fff; border-radius: 6px;">
-          Semua Waktu
-        </button>
-        <button role="tab" aria-selected="false" id="btn-period-month" onclick="changePeriod('month')" class="btn-secondary" style="padding: 0.35rem 0.875rem; min-height: 32px; font-size: 0.8125rem; border: none; background: transparent; color: var(--text-muted); border-radius: 6px;">
-          Bulan Ini
-        </button>
-        <button role="tab" aria-selected="false" id="btn-period-week" onclick="changePeriod('week')" class="btn-secondary" style="padding: 0.35rem 0.875rem; min-height: 32px; font-size: 0.8125rem; border: none; background: transparent; color: var(--text-muted); border-radius: 6px;">
-          Minggu Ini
-        </button>
-        <button role="tab" aria-selected="false" id="btn-period-today" onclick="changePeriod('today')" class="btn-secondary" style="padding: 0.35rem 0.875rem; min-height: 32px; font-size: 0.8125rem; border: none; background: transparent; color: var(--text-muted); border-radius: 6px;">
-          Hari Ini
-        </button>
-      </div>
-
-      <!-- KPI Summary Cards (Tactile Clay Blocks) -->
-      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1.25rem; margin-bottom: 2rem;">
-        <!-- Card 1: Completion Rate -->
-        <div class="glass-card stat-card stat-card-done" style="padding: 1.25rem 1.5rem;">
-          <span style="font-size: 0.75rem; font-weight: 700; color: #15803d; letter-spacing: 0.05em;">COMPLETION RATE</span>
-          <h2 id="kpi-completion-rate" style="font-size: 2.25rem; font-weight: 800; color: #15803d; margin: 0.25rem 0;" class="font-mono">0%</h2>
-          <p style="font-size: 0.75rem; color: var(--text-muted);">Persentase tugas diselesaikan</p>
-        </div>
-
-        <!-- Card 2: On-Time Rate -->
-        <div class="glass-card stat-card stat-card-total" style="padding: 1.25rem 1.5rem;">
-          <span style="font-size: 0.75rem; font-weight: 700; color: #0284c7; letter-spacing: 0.05em;">ON-TIME DELIVERY</span>
-          <h2 id="kpi-ontime-rate" style="font-size: 2.25rem; font-weight: 800; color: #0284c7; margin: 0.25rem 0;" class="font-mono">100%</h2>
-          <p style="font-size: 0.75rem; color: var(--text-muted);">Selesai sebelum deadline</p>
-        </div>
-
-        <!-- Card 3: Tasks Breakdown -->
-        <div class="glass-card stat-card stat-card-progress" style="padding: 1.25rem 1.5rem;">
-          <span style="font-size: 0.75rem; font-weight: 700; color: #c2410c; letter-spacing: 0.05em;">VOLUME TUGAS</span>
-          <div style="display: flex; align-items: baseline; gap: 0.5rem; margin: 0.25rem 0;">
-            <h2 id="kpi-completed-tasks" style="font-size: 2.25rem; font-weight: 800; color: var(--text);" class="font-mono">0</h2>
-            <span style="color: var(--text-muted); font-size: 0.875rem;">/ <span id="kpi-total-tasks">0</span> Total</span>
+      <!-- KPI Summary -->
+      <section class="grid-stats" aria-label="Ringkasan kinerja" aria-live="polite">
+        <div class="card stat-card">
+          <div class="stat-top">
+            <span class="stat-label">Tingkat Penyelesaian</span>
+            <span class="tile tile-mint"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg></span>
           </div>
-          <p style="font-size: 0.75rem; color: var(--text-muted);">Tugas yang rampung dikerjakan</p>
+          <p id="kpi-completion-rate" class="stat-value" style="color: var(--cta);">–</p>
+          <p class="stat-note">Tugas selesai dari total</p>
         </div>
-
-        <!-- Card 4: Overdue Count -->
-        <div class="glass-card stat-card stat-card-overdue" style="padding: 1.25rem 1.5rem;">
-          <span style="font-size: 0.75rem; font-weight: 700; color: #b91c1c; letter-spacing: 0.05em;">TUGAS TERLAMBAT</span>
-          <h2 id="kpi-overdue-tasks" style="font-size: 2.25rem; font-weight: 800; color: #b91c1c; margin: 0.25rem 0;" class="font-mono">0</h2>
-          <p style="font-size: 0.75rem; color: var(--text-muted);">Melewati tenggat waktu</p>
+        <div class="card stat-card">
+          <div class="stat-top">
+            <span class="stat-label">Tepat Waktu</span>
+            <span class="tile tile-sky"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></span>
+          </div>
+          <p id="kpi-ontime-rate" class="stat-value" style="color: var(--primary);">–</p>
+          <p class="stat-note">Selesai sebelum tenggat</p>
         </div>
-      </div>
+        <div class="card stat-card">
+          <div class="stat-top">
+            <span class="stat-label">Volume Tugas</span>
+            <span class="tile tile-peach"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg></span>
+          </div>
+          <p class="stat-value"><span id="kpi-completed-tasks">–</span> <small>/ <span id="kpi-total-tasks">–</span></small></p>
+          <p class="stat-note">Selesai dari total tugas</p>
+        </div>
+        <div class="card stat-card">
+          <div class="stat-top">
+            <span class="stat-label">Terlambat</span>
+            <span class="tile tile-rose"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg></span>
+          </div>
+          <p id="kpi-overdue-tasks" class="stat-value" style="color: var(--status-overdue);">–</p>
+          <p class="stat-note">Belum selesai, lewat tenggat</p>
+        </div>
+      </section>
 
-      <!-- Area Trend Curve Visualizer (Analytics Performance) -->
-      <div class="glass-card" style="padding: 1.5rem; margin-bottom: 2rem;">
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.25rem; flex-wrap: wrap; gap: 0.5rem;">
+      <!-- Trend + status (real data, follows the period filter) -->
+      <section class="card card-pad" style="margin-bottom: 1.5rem;" aria-labelledby="trend-title">
+        <div class="section-head" style="align-items: flex-start;">
           <div>
-            <h3 style="font-size: 1.125rem; font-weight: 700; color: var(--text);">Tren Kinerja & Akuntabilitas</h3>
-            <p style="font-size: 0.8125rem; color: var(--text-muted);">Progres kumulatif dan kecepatan penyelesaian beban kerja</p>
+            <h2 id="trend-title" class="section-title">Tren Tugas Dibuat vs Selesai</h2>
+            <p id="trend-sub" class="section-sub">Memuat…</p>
           </div>
-          <div style="display: flex; align-items: center; gap: 1rem; font-size: 0.8125rem;">
-            <span style="display: inline-flex; align-items: center; gap: 6px; color: var(--text-secondary);">
-              <span style="width: 10px; height: 10px; border-radius: 50%; background: var(--primary);"></span>
-              Output Selesai
-            </span>
-            <span style="display: inline-flex; align-items: center; gap: 6px; color: var(--text-secondary);">
-              <span style="width: 10px; height: 10px; border-radius: 50%; background: var(--secondary);"></span>
-              Target Progres
-            </span>
+          <div class="chart-key">
+            <span><i style="background: var(--primary);" aria-hidden="true"></i>Dibuat <b id="trend-created">–</b></span>
+            <span><i style="background: var(--cta);" aria-hidden="true"></i>Selesai <b id="trend-completed">–</b></span>
           </div>
         </div>
+        <div id="trend-chart" class="chart-trend"><div class="chart-empty">Memuat…</div></div>
+        <p class="sr-only chart-summary" aria-live="polite"></p>
+      </section>
 
-        <div style="position: relative; height: 180px; width: 100%; background: var(--bg-subtle); border: 1px solid var(--border); border-radius: 0.875rem; padding: 1.25rem;">
-          <svg viewBox="0 0 400 160" style="width: 100%; height: 100%; overflow: visible;" preserveAspectRatio="none">
-            <defs>
-              <linearGradient id="reportsGradient" x1="0%" y1="0%" x2="0%" y2="100%">
-                <stop offset="0%" stop-color="#0080ff" stop-opacity="0.25"></stop>
-                <stop offset="100%" stop-color="#0080ff" stop-opacity="0"></stop>
-              </linearGradient>
-            </defs>
-            <line x1="0" y1="20" x2="400" y2="20" stroke="#e2e8f0" stroke-width="1" stroke-dasharray="4,4"></line>
-            <line x1="0" y1="60" x2="400" y2="60" stroke="#e2e8f0" stroke-width="1" stroke-dasharray="4,4"></line>
-            <line x1="0" y1="100" x2="400" y2="100" stroke="#e2e8f0" stroke-width="1" stroke-dasharray="4,4"></line>
-            <line x1="0" y1="140" x2="400" y2="140" stroke="#e2e8f0" stroke-width="1" stroke-dasharray="4,4"></line>
-
-            <path d="M0,130 C60,120 120,95 180,85 C240,75 300,50 360,35 L400,22 L400,150 L0,150 Z" fill="url(#reportsGradient)"></path>
-            <path d="M0,130 C60,120 120,95 180,85 C240,75 300,50 360,35 L400,22" fill="none" stroke="var(--primary)" stroke-width="3" stroke-linecap="round"></path>
-            <path d="M0,145 C60,140 120,125 180,115 C240,105 300,90 360,75 L400,65" fill="none" stroke="var(--secondary)" stroke-width="2.5" stroke-linecap="round" stroke-dasharray="6,4"></path>
-
-            <circle cx="180" cy="85" r="4.5" fill="#ffffff" stroke="var(--primary)" stroke-width="2.5"></circle>
-            <circle cx="360" cy="35" r="4.5" fill="#ffffff" stroke="var(--primary)" stroke-width="2.5"></circle>
-            <circle cx="400" cy="22" r="5" fill="var(--cta)" stroke="#ffffff" stroke-width="2.5"></circle>
-          </svg>
-          <div style="display: flex; justify-content: space-between; margin-top: 8px; font-size: 11px; color: var(--text-muted); font-family: 'JetBrains Mono', monospace;">
-            <span>Awal Periode</span>
-            <span>25%</span>
-            <span>50%</span>
-            <span>75%</span>
-            <span>Selesai (100%)</span>
-          </div>
-        </div>
+      <!-- Distribution -->
+      <div class="grid-2 grid-3">
+        <section class="card card-pad" aria-labelledby="status-title">
+          <div class="section-head"><h2 id="status-title" class="section-title">Komposisi Status</h2></div>
+          <div id="status-chart"><div class="chart-empty">Memuat…</div></div>
+        </section>
+        <section class="card card-pad" aria-labelledby="cat-title">
+          <div class="section-head"><h2 id="cat-title" class="section-title">Distribusi per Kategori</h2></div>
+          <div id="category-bars" class="bar-list"><p class="muted" style="font-size: 0.8125rem;">Memuat…</p></div>
+        </section>
+        <section class="card card-pad" aria-labelledby="prio-title">
+          <div class="section-head"><h2 id="prio-title" class="section-title">Distribusi per Prioritas</h2></div>
+          <div id="priority-bars" class="bar-list"><p class="muted" style="font-size: 0.8125rem;">Memuat…</p></div>
+        </section>
       </div>
 
-      <!-- Distribution Breakdown (2 Kolom) -->
-      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 1.5rem; margin-bottom: 2rem;">
-        
-        <!-- Breakdown Kategori -->
-        <div class="glass-card" style="padding: 1.5rem;">
-          <h3 style="font-size: 1rem; font-weight: 700; color: var(--text); margin-bottom: 1.25rem;">Distribusi per Kategori</h3>
-          <div id="category-bars" style="display: flex; flex-direction: column; gap: 1rem;">
-            <p style="font-size: 12px; color: var(--text-muted);">Memuat data...</p>
-          </div>
-        </div>
-
-        <!-- Breakdown Prioritas -->
-        <div class="glass-card" style="padding: 1.5rem;">
-          <h3 style="font-size: 1rem; font-weight: 700; color: var(--text); margin-bottom: 1.25rem;">Distribusi per Prioritas</h3>
-          <div id="priority-bars" style="display: flex; flex-direction: column; gap: 1rem;">
-            <p style="font-size: 12px; color: var(--text-muted);">Memuat data...</p>
-          </div>
-        </div>
-
-      </div>
-
-      <!-- Formal Signature Block (Only visible on print) -->
-      <div class="print-header" style="display: none; margin-top: 40px; page-break-inside: avoid;">
-        <div style="display: flex; justify-content: space-between; text-align: center;">
+      <!-- Print-only signature block -->
+      <div class="print-only" style="margin-top: 40pt; break-inside: avoid;">
+        <div style="display: flex; justify-content: space-between; text-align: center; font-size: 10pt;">
           <div style="width: 200px;">
-            <p style="font-size: 10pt; margin-bottom: 50px;">Mengetahui,<br><b>Owner / Manajer Tim</b></p>
-            <p style="font-size: 10pt; border-top: 1px solid #000; padding-top: 4px;">(.......................................)</p>
+            <p style="margin-bottom: 50pt;">Mengetahui,<br><b>Owner / Manajer Tim</b></p>
+            <p style="border-top: 1px solid #000; padding-top: 4px;">&nbsp;</p>
           </div>
           <div style="width: 200px;">
-            <p style="font-size: 10pt; margin-bottom: 50px;">Disusun Oleh,<br><b>Pelaksana Tugas</b></p>
-            <p style="font-size: 10pt; border-top: 1px solid #000; padding-top: 4px;">(.......................................)</p>
+            <p style="margin-bottom: 50pt;">Disusun oleh,<br><b>Pelaksana Tugas</b></p>
+            <p style="border-top: 1px solid #000; padding-top: 4px;">&nbsp;</p>
           </div>
         </div>
       </div>
@@ -191,101 +135,133 @@
 
   <script src="/js/api.js"></script>
   <script src="/js/navbar.js"></script>
+  <script src="/js/charts.js"></script>
   <script>
     initNavigation('reports');
+
+    const PERIOD_LABELS = { all: 'Semua Waktu', month: 'Bulan Ini', week: 'Minggu Ini', today: 'Hari Ini' };
+    const CAT_COLORS = { Teknis: '#0284c7', Operasional: '#d97706', Bisnis: '#16a34a', Administrasi: '#7c3aed', Umum: '#64748b' };
+    const PRIO_COLORS = { High: '#b91c1c', Medium: '#b45309', Low: '#15803d' };
+    const STATUS_SEGMENTS = [
+      { key: 'todo_tasks', label: 'To Do', color: 'var(--status-todo)' },
+      { key: 'in_progress_tasks', label: 'In Progress', color: 'var(--status-in-progress)' },
+      { key: 'completed_tasks', label: 'Done', color: 'var(--status-done)' },
+    ];
 
     let currentPeriod = 'all';
 
     function changePeriod(period) {
       currentPeriod = period;
-      ['all', 'month', 'week', 'today'].forEach(p => {
-        const btn = document.getElementById(`btn-period-${p}`);
-        if (p === period) {
-          btn.style.background = '#0284c7';
-          btn.style.color = '#fff';
-        } else {
-          btn.style.background = 'transparent';
-          btn.style.color = 'var(--text-muted)';
-        }
+      Object.keys(PERIOD_LABELS).forEach(p => {
+        document.getElementById(`btn-period-${p}`).setAttribute('aria-pressed', String(p === period));
       });
       loadReportsData();
     }
 
+    // Bar width is relative to the largest group; label shows share of total.
+    function renderBars(el, rows, total, labelFn, colorFn) {
+      if (!rows.length) {
+        el.innerHTML = '<p class="muted" style="font-size: 0.8125rem;">Belum ada data tugas pada periode ini.</p>';
+        return;
+      }
+      const max = Math.max(...rows.map(r => parseInt(r.count, 10)), 1);
+      el.innerHTML = rows.map(r => {
+        const count = parseInt(r.count, 10);
+        const share = total > 0 ? Math.round((count / total) * 100) : 0;
+        return `
+          <div>
+            <div class="bar-row-head">
+              ${labelFn(r)}
+              <span class="font-mono">${count} · ${share}%</span>
+            </div>
+            <div class="bar-track"><div class="bar-fill" style="width: ${(count / max) * 100}%; background: ${colorFn(r)};"></div></div>
+          </div>`;
+      }).join('');
+    }
+
+    // Same period boundaries as /api/reports/analytics (local time).
+    function periodStart(period, tasks) {
+      const now = new Date();
+      if (period === 'today') return new Date(now.getFullYear(), now.getMonth(), now.getDate());
+      if (period === 'week') {
+        const monday = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+        monday.setDate(monday.getDate() - ((monday.getDay() + 6) % 7));
+        return monday;
+      }
+      if (period === 'month') return new Date(now.getFullYear(), now.getMonth(), 1);
+      const times = tasks.map(t => new Date(t.created_at).getTime()).filter(Number.isFinite);
+      if (!times.length) return new Date(now.getFullYear(), now.getMonth(), now.getDate());
+      const first = new Date(Math.min(...times));
+      first.setHours(0, 0, 0, 0);
+      return first;
+    }
+
+    function renderTrend(tasks) {
+      const to = new Date();
+      const from = periodStart(currentPeriod, tasks);
+      // Show at least 7 days so a fresh week/month still reads as a line, not a dot.
+      if (currentPeriod !== 'today' && (to - from) < 6 * 86400000) {
+        from.setDate(from.getDate() - 6 + Math.floor((to - from) / 86400000));
+      }
+      const unit = ChartKit.pickUnit(from, to);
+      const unitText = { hour: 'per jam', day: 'per hari', week: 'per minggu', month: 'per bulan' }[unit];
+      document.getElementById('trend-sub').textContent = `${PERIOD_LABELS[currentPeriod]}, ${unitText}. Selesai dihitung dari tanggal penyelesaian.`;
+      const totals = ChartKit.trend(document.getElementById('trend-chart'), {
+        tasks, from, to, unit,
+        ariaLabel: `Tren tugas ${PERIOD_LABELS[currentPeriod].toLowerCase()}`,
+        emptyText: 'Belum ada tugas dibuat atau diselesaikan pada periode ini.',
+      });
+      document.getElementById('trend-created').textContent = totals.created;
+      document.getElementById('trend-completed').textContent = totals.completed;
+    }
+
+    let loadSeq = 0;
+
     async function loadReportsData() {
       document.getElementById('print-timestamp').textContent = new Date().toLocaleString('id-ID');
+      document.getElementById('print-period').textContent = PERIOD_LABELS[currentPeriod];
+      const seq = ++loadSeq;
 
       try {
-        const res = await apiFetch(`/api/reports/analytics?period=${currentPeriod}`);
-        if (res && res.data) {
-          const m = res.data.metrics;
-          document.getElementById('kpi-completion-rate').textContent = `${m.completion_rate}%`;
-          document.getElementById('kpi-ontime-rate').textContent = `${m.on_time_rate}%`;
-          document.getElementById('kpi-completed-tasks').textContent = m.completed_tasks;
-          document.getElementById('kpi-total-tasks').textContent = m.total_tasks;
-          document.getElementById('kpi-overdue-tasks').textContent = m.overdue_tasks;
+        const [res, tasksRes] = await Promise.all([
+          apiFetch(`/api/reports/analytics?period=${currentPeriod}`),
+          apiFetch('/api/tasks'),
+        ]);
+        // Ignore responses from an older period click that resolved late.
+        if (seq !== loadSeq || !res || !res.data) return;
 
-          // Render Kategori
-          const catContainer = document.getElementById('category-bars');
-          const cats = res.data.category_distribution || [];
-          const catColorMap = {
-            Teknis: '#0369a1',
-            Operasional: '#b45309',
-            Bisnis: '#15803d',
-            Administrasi: '#0284c7',
-            Umum: '#64748b'
-          };
-          if (cats.length) {
-            const maxCat = Math.max(...cats.map(c => parseInt(c.count, 10)), 1);
-            catContainer.innerHTML = cats.map(c => {
-              const catClass = `cat-${(c.category || 'umum').toLowerCase()}`;
-              const barColor = catColorMap[c.category] || 'var(--primary)';
-              return `
-                <div>
-                  <div style="display:flex; justify-content:space-between; align-items:center; font-size:12px; margin-bottom:6px;">
-                    <span class="cat-badge ${catClass}">
-                      <span class="cat-dot"></span>
-                      <span>${c.category}</span>
-                    </span>
-                    <span style="color:var(--text); font-weight:600;" class="font-mono">${c.count} tugas (${Math.round((c.count/m.total_tasks)*100 || 0)}%)</span>
-                  </div>
-                  <div style="width:100%; height:8px; background:#e2e8f0; border-radius:999px; overflow:hidden;">
-                    <div style="width:${(c.count/maxCat)*100}%; height:100%; background:${barColor}; border-radius:999px; transition: width 400ms ease;"></div>
-                  </div>
-                </div>
-              `;
-            }).join('');
-          } else {
-            catContainer.innerHTML = '<p style="font-size:12px; color:var(--text-muted);">Belum ada data tugas.</p>';
-          }
+        renderTrend((tasksRes && tasksRes.data) || []);
 
-          // Render Prioritas
-          const prioContainer = document.getElementById('priority-bars');
-          const prios = res.data.priority_distribution || [];
-          if (prios.length) {
-            const maxPrio = Math.max(...prios.map(p => parseInt(p.count, 10)), 1);
-            const prioColors = { High: '#b91c1c', Medium: '#b45309', Low: '#15803d' };
+        const m = res.data.metrics;
+        const total = parseInt(m.total_tasks, 10) || 0;
+        document.getElementById('kpi-completion-rate').textContent = `${m.completion_rate}%`;
+        document.getElementById('kpi-ontime-rate').textContent = parseInt(m.completed_tasks, 10) > 0 ? `${m.on_time_rate}%` : '–';
+        document.getElementById('kpi-completed-tasks').textContent = m.completed_tasks;
+        document.getElementById('kpi-total-tasks').textContent = m.total_tasks;
+        document.getElementById('kpi-overdue-tasks').textContent = m.overdue_tasks;
 
-            prioContainer.innerHTML = prios.map(p => {
-              const pColor = prioColors[p.priority] || 'var(--primary)';
-              return `
-                <div>
-                  <div style="display:flex; justify-content:space-between; align-items:center; font-size:12px; margin-bottom:6px;">
-                    <span style="color:${pColor}; font-weight:700; display:inline-flex; align-items:center; gap:6px;">
-                      <span style="width:6px; height:6px; border-radius:50%; background:${pColor};"></span>
-                      ${p.priority}
-                    </span>
-                    <span style="color:var(--text); font-weight:600;" class="font-mono">${p.count} tugas (${Math.round((p.count/m.total_tasks)*100 || 0)}%)</span>
-                  </div>
-                  <div style="width:100%; height:8px; background:#e2e8f0; border-radius:999px; overflow:hidden;">
-                    <div style="width:${(p.count/maxPrio)*100}%; height:100%; background:${pColor}; border-radius:999px; transition: width 600ms var(--ease-spring); box-shadow: 0 0 8px ${pColor}66;"></div>
-                  </div>
-                </div>
-              `;
-            }).join('');
-          } else {
-            prioContainer.innerHTML = '<p style="font-size:12px; color:var(--text-muted);">Belum ada data tugas.</p>';
-          }
-        }
+        ChartKit.donut(document.getElementById('status-chart'), {
+          segments: STATUS_SEGMENTS.map(s => ({ label: s.label, value: m[s.key], color: s.color })),
+          centerValue: `${Math.round(m.completion_rate || 0)}%`,
+          centerLabel: 'selesai',
+          ariaLabel: 'Komposisi status tugas',
+          emptyText: 'Belum ada tugas pada periode ini.',
+        });
+
+        renderBars(
+          document.getElementById('category-bars'),
+          res.data.category_distribution || [],
+          total,
+          c => categoryBadge(c.category),
+          c => CAT_COLORS[c.category] || 'var(--primary)',
+        );
+        renderBars(
+          document.getElementById('priority-bars'),
+          res.data.priority_distribution || [],
+          total,
+          p => priorityBadge(p.priority) || escapeHtml(p.priority),
+          p => PRIO_COLORS[p.priority] || 'var(--primary)',
+        );
       } catch (err) {}
     }
 

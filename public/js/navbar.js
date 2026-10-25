@@ -1,18 +1,26 @@
 /**
  * NAVBAR.JS — Universal Shell Navigation, Clean SVG Icons & Session Guard
- * Adheres to: antislop-ui, antislop-human (WCAG AA), high-end-visual-design
+ * Styles live in /css/style.css (.sidebar, .nav-item, .mobile-topbar, .bottom-nav).
  */
 
-// Crisp SVG Icons (Clean Phosphor/Lucide Line Style)
+// Crisp SVG Icons (Lucide line style). Decorative: always rendered next to visible text or an aria-label.
+const svg = (size, body) => `<svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${body}</svg>`;
 const ICONS = {
-  dashboard: `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="9" rx="1"/><rect x="14" y="3" width="7" height="5" rx="1"/><rect x="14" y="12" width="7" height="9" rx="1"/><rect x="3" y="16" width="7" height="5" rx="1"/></svg>`,
-  tasks: `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>`,
-  reminders: `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>`,
-  reports: `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>`,
-  users: `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>`,
-  logout: `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>`,
-  check: `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>`
+  dashboard: svg(18, '<rect x="3" y="3" width="7" height="9" rx="1"/><rect x="14" y="3" width="7" height="5" rx="1"/><rect x="14" y="12" width="7" height="9" rx="1"/><rect x="3" y="16" width="7" height="5" rx="1"/>'),
+  tasks: svg(18, '<path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/>'),
+  reminders: svg(18, '<circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>'),
+  reports: svg(18, '<line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/>'),
+  users: svg(18, '<path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>'),
+  logout: svg(16, '<path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/>'),
+  check: svg(18, '<polyline points="20 6 9 17 4 12"/>'),
 };
+
+const BRAND_HTML = `
+  <div class="brand-mark">${ICONS.check}</div>
+  <div>
+    <div class="brand-name">Manajemen Tugas</div>
+    <div class="brand-sub">Workspace Tim</div>
+  </div>`;
 
 async function initNavigation(activeKey = '') {
   // 1. Validasi Sesi Pengguna
@@ -40,91 +48,43 @@ async function initNavigation(activeKey = '') {
     }
   } catch (e) {}
 
+  const isOwner = currentUser.role === 'Owner';
+  const safeName = escapeHtml(currentUser.name);
+  const initial = escapeHtml(currentUser.name.charAt(0).toUpperCase());
+  const current = (key) => (activeKey === key ? ' active" aria-current="page' : '');
+
+  const links = [
+    { key: 'dashboard', href: '/dashboard', label: 'Dashboard', short: 'Home', shortcut: '1' },
+    { key: 'tasks', href: '/tasks', label: 'Daftar Tugas', short: 'Tugas', shortcut: '2' },
+    { key: 'reminders', href: '/reminders', label: 'Pengingat', short: 'Ingat', shortcut: '3' },
+    { key: 'reports', href: '/reports', label: 'Laporan Kinerja', short: 'Rekap', shortcut: '4' },
+    ...(isOwner ? [{ key: 'users', href: '/users', label: 'Kelola Tim', short: 'Tim', shortcut: '5' }] : []),
+  ];
+
   // 3. Render Desktop Sidebar (>= 1024px)
   const sidebarContainer = document.getElementById('sidebar-container');
   if (sidebarContainer) {
     sidebarContainer.innerHTML = `
-      <aside style="width: 260px; height: 100vh; position: sticky; top: 0; background: #ffffff; border-right: 1px solid var(--border); display: flex; flex-direction: column; justify-content: space-between; padding: 1.5rem 1rem;">
+      <aside class="sidebar">
         <div>
-          <!-- Brand Logo & Live Pulse Pill (Sistem Manajemen Tugas) -->
-          <div style="padding: 0.5rem 0.5rem 1.25rem;">
-            <div style="display: flex; align-items: center; gap: 0.75rem; margin-bottom: 0.875rem;">
-              <div style="width: 38px; height: 38px; border-radius: 10px; background: #fff7ed; border: 1px solid #fed7aa; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#ea580c" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
-              </div>
-              <div>
-                <h2 style="font-size: 15px; font-weight: 700; font-family: 'Poppins', 'Plus Jakarta Sans', sans-serif; color: var(--text); line-height: 1.2;">
-                  Manajemen <span style="color: #ea580c;">Tugas</span>
-                </h2>
-                <span style="font-size: 11px; color: var(--text-muted); font-weight: 500;">Workspace Tim</span>
-              </div>
-            </div>
-
-            <!-- Workspace Status Pill with Refined Border -->
-            <div style="display: inline-flex; align-items: center; gap: 8px; padding: 6px 10px; border-radius: 8px; background: #f0fdf4; border: 1px solid #bbf7d0; font-size: 11px; color: #166534; width: 100%;">
-              <span style="position: relative; display: flex; width: 8px; height: 8px;">
-                <span style="position: relative; display: inline-flex; border-radius: 50%; width: 8px; height: 8px; background: #16a34a;"></span>
-              </span>
-              <span style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-weight: 600; font-family: 'Plus Jakarta Sans', sans-serif;">Real-time Cloud Sync</span>
-            </div>
-          </div>
-
-          <!-- Nav Links with Keyboard Shortcuts -->
-          <nav style="display: flex; flex-direction: column; gap: 0.375rem;">
-            <a href="/dashboard" class="nav-item ${activeKey === 'dashboard' ? 'active' : ''}">
-              <div style="display: flex; align-items: center; gap: 0.75rem;">
-                <span class="nav-icon">${ICONS.dashboard}</span>
-                <span>Dashboard</span>
-              </div>
-              <kbd class="nav-kbd">1</kbd>
-            </a>
-            <a href="/tasks" class="nav-item ${activeKey === 'tasks' ? 'active' : ''}">
-              <div style="display: flex; align-items: center; gap: 0.75rem;">
-                <span class="nav-icon">${ICONS.tasks}</span>
-                <span>Daftar Tugas</span>
-              </div>
-              <kbd class="nav-kbd">2</kbd>
-            </a>
-            <a href="/reminders" class="nav-item ${activeKey === 'reminders' ? 'active' : ''}" style="display: flex; justify-content: space-between; align-items: center;">
-              <div style="display: flex; align-items: center; gap: 0.75rem;">
-                <span class="nav-icon">${ICONS.reminders}</span>
-                <span>Pengingat</span>
-              </div>
-              <div style="display: flex; align-items: center; gap: 6px;">
-                ${urgentCount > 0 ? `<span style="background: #dc2626; color: #fff; font-size: 11px; font-weight: 700; padding: 1px 7px; border-radius: 999px; border: 1px solid #b91c1c;">${urgentCount}</span>` : ''}
-                <kbd class="nav-kbd">3</kbd>
-              </div>
-            </a>
-            <a href="/reports" class="nav-item ${activeKey === 'reports' ? 'active' : ''}">
-              <div style="display: flex; align-items: center; gap: 0.75rem;">
-                <span class="nav-icon">${ICONS.reports}</span>
-                <span>Laporan Kinerja</span>
-              </div>
-              <kbd class="nav-kbd">4</kbd>
-            </a>
-            ${currentUser.role === 'Owner' ? `
-            <a href="/users" class="nav-item ${activeKey === 'users' ? 'active' : ''}">
-              <div style="display: flex; align-items: center; gap: 0.75rem;">
-                <span class="nav-icon">${ICONS.users}</span>
-                <span>Kelola Tim</span>
-              </div>
-              <kbd class="nav-kbd">5</kbd>
-            </a>` : ''}
+          <div class="brand">${BRAND_HTML}</div>
+          <nav class="nav-list" aria-label="Navigasi utama">
+            ${links.map((l) => `
+              <a href="${l.href}" class="nav-item${current(l.key)}" aria-keyshortcuts="${l.shortcut}">
+                <span class="nav-icon">${ICONS[l.key]}</span>
+                <span>${l.label}</span>
+                ${l.key === 'reminders' && urgentCount > 0 ? `<span class="nav-count" aria-label="${urgentCount} tugas mendesak">${urgentCount}</span>` : ''}
+              </a>`).join('')}
           </nav>
         </div>
 
-        <!-- User Profile Card in Sidebar -->
-        <div style="background: #ffffff; border: 1px solid var(--border); border-radius: 12px; padding: 0.75rem; display: flex; align-items: center; justify-content: space-between; box-shadow: none;">
-          <div style="display: flex; align-items: center; gap: 0.625rem; overflow: hidden;">
-            <div style="width: 34px; height: 34px; border-radius: 8px; background: #fff7ed; border: 1px solid #fed7aa; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 14px; color: #ea580c; font-family: 'Poppins', sans-serif; flex-shrink: 0;">
-              ${currentUser.name.charAt(0).toUpperCase()}
-            </div>
-            <div style="overflow: hidden;">
-              <p style="font-size: 13px; font-weight: 600; color: #0f172a; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-family: 'Plus Jakarta Sans', sans-serif;">${currentUser.name}</p>
-              <span style="font-size: 11px; color: ${currentUser.role === 'Owner' ? '#ea580c' : '#64748b'}; font-weight: 600;">${currentUser.role}</span>
-            </div>
+        <div class="profile">
+          <div class="avatar" aria-hidden="true">${initial}</div>
+          <div class="profile-meta">
+            <p class="profile-name">${safeName}</p>
+            <span class="profile-role">${isOwner ? 'Owner' : 'User'}</span>
           </div>
-          <button onclick="handleLogout()" title="Keluar dari akun" aria-label="Keluar dari akun" class="btn-action-icon" style="flex-shrink: 0; width: 32px; height: 32px;">
+          <button type="button" onclick="handleLogout()" title="Keluar dari akun" aria-label="Keluar dari akun" class="btn-action-icon">
             ${ICONS.logout}
           </button>
         </div>
@@ -136,16 +96,11 @@ async function initNavigation(activeKey = '') {
   const mobileHeader = document.getElementById('mobile-header');
   if (mobileHeader) {
     mobileHeader.innerHTML = `
-      <header style="display: flex; align-items: center; justify-content: space-between; padding: 0.75rem 1rem; background: rgba(255, 255, 255, 0.9); backdrop-filter: blur(12px); border-bottom: 1px solid var(--border); position: sticky; top: 0; z-index: 100;">
-        <div style="display: flex; align-items: center; gap: 0.625rem;">
-          <div style="width: 32px; height: 32px; border-radius: 8px; background: #fff7ed; border: 1px solid #fed7aa; display: flex; align-items: center; justify-content: center; color: #ea580c; font-weight: bold;">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#ea580c" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
-          </div>
-          <span style="font-weight: 700; font-size: 15px; font-family: 'Poppins', 'Plus Jakarta Sans', sans-serif; color: var(--text);">Manajemen <span style="color: #ea580c;">Tugas</span></span>
-        </div>
-        <div style="display: flex; align-items: center; gap: 0.625rem;">
-          <span style="font-size: 12px; color: #0f172a; font-weight: 600; font-family: 'Plus Jakarta Sans', sans-serif;">${currentUser.name.split(' ')[0]}</span>
-          <button onclick="handleLogout()" class="btn-action-icon" title="Keluar dari akun" aria-label="Keluar dari akun" style="width: 32px; height: 32px;">
+      <header class="mobile-topbar">
+        <div class="brand">${BRAND_HTML}</div>
+        <div class="mobile-user">
+          <span>${escapeHtml(currentUser.name.split(' ')[0])}</span>
+          <button type="button" onclick="handleLogout()" class="btn-action-icon" title="Keluar dari akun" aria-label="Keluar dari akun">
             ${ICONS.logout}
           </button>
         </div>
@@ -157,34 +112,18 @@ async function initNavigation(activeKey = '') {
   const mobileBottomNav = document.getElementById('mobile-bottom-nav');
   if (mobileBottomNav) {
     mobileBottomNav.innerHTML = `
-      <nav aria-label="Navigasi Utama Mobile" style="position: fixed; bottom: 0; left: 0; right: 0; height: calc(60px + env(safe-area-inset-bottom, 0px)); padding-bottom: env(safe-area-inset-bottom, 0px); background: #ffffff; border-top: 1px solid var(--border); display: flex; align-items: center; justify-content: space-around; z-index: 99; box-shadow: 0 -1px 3px rgba(0, 0, 0, 0.03);">
-        <a href="/dashboard" class="mobile-nav-link ${activeKey === 'dashboard' ? 'active' : ''}" aria-label="Halaman Utama Dashboard">
-          <span class="mobile-nav-icon">${ICONS.dashboard}</span>
-          <span class="mobile-nav-label">Home</span>
-        </a>
-        <a href="/tasks" class="mobile-nav-link ${activeKey === 'tasks' ? 'active' : ''}" aria-label="Halaman Daftar Tugas">
-          <span class="mobile-nav-icon">${ICONS.tasks}</span>
-          <span class="mobile-nav-label">Tugas</span>
-        </a>
-        <a href="/reminders" class="mobile-nav-link ${activeKey === 'reminders' ? 'active' : ''}" aria-label="Halaman Pengingat Deadline" style="position: relative;">
-          <span class="mobile-nav-icon">${ICONS.reminders}</span>
-          <span class="mobile-nav-label">Ingat</span>
-          ${urgentCount > 0 ? `<span style="position: absolute; top: 8px; right: 25%; width: 8px; height: 8px; border-radius: 50%; background: #b91c1c;"></span>` : ''}
-        </a>
-        <a href="/reports" class="mobile-nav-link ${activeKey === 'reports' ? 'active' : ''}" aria-label="Halaman Laporan Kinerja">
-          <span class="mobile-nav-icon">${ICONS.reports}</span>
-          <span class="mobile-nav-label">Rekap</span>
-        </a>
-        ${currentUser.role === 'Owner' ? `
-        <a href="/users" class="mobile-nav-link ${activeKey === 'users' ? 'active' : ''}" aria-label="Halaman Kelola Tim">
-          <span class="mobile-nav-icon">${ICONS.users}</span>
-          <span class="mobile-nav-label">Tim</span>
-        </a>` : ''}
+      <nav class="bottom-nav" aria-label="Navigasi utama">
+        ${links.map((l) => `
+          <a href="${l.href}" class="mobile-nav-link${current(l.key)}">
+            ${ICONS[l.key]}
+            <span>${l.short}</span>
+            ${l.key === 'reminders' && urgentCount > 0 ? `<span class="mobile-nav-dot"></span><span class="sr-only">${urgentCount} tugas mendesak</span>` : ''}
+          </a>`).join('')}
       </nav>
     `;
   }
 
-  // 6. Global Shortcuts & Modal Escape (web-design-guidelines & baseline-ui)
+  // 6. Global Shortcuts & Modal Escape
   document.addEventListener('keydown', (e) => {
     // Tutup Modal via Escape
     if (e.key === 'Escape') {
@@ -195,23 +134,12 @@ async function initNavigation(activeKey = '') {
       }
     }
 
-    // Shortcut 'n' untuk buat tugas baru (kecuali sedang mengetik di input/textarea)
+    // Shortcut hanya saat tidak mengetik dan tanpa modifier
     const isTyping = ['INPUT', 'TEXTAREA', 'SELECT'].includes(document.activeElement?.tagName);
-    if (!isTyping) {
-      if (e.key === 'n' || e.key === 'N') {
-        const openModalFn = window.openTaskModal || window.openCreateTaskModal;
-        if (typeof openModalFn === 'function') {
-          e.preventDefault();
-          openModalFn();
-        }
-      }
-      // Quick Number Keys (1-5) for Page Navigation
-      if (e.key === '1') window.location.href = '/dashboard';
-      if (e.key === '2') window.location.href = '/tasks';
-      if (e.key === '3') window.location.href = '/reminders';
-      if (e.key === '4') window.location.href = '/reports';
-      if (e.key === '5' && currentUser?.role === 'Owner') window.location.href = '/users';
-    }
+    if (isTyping || e.ctrlKey || e.metaKey || e.altKey || document.querySelector('.modal-overlay.active')) return;
+
+    const target = links.find((l) => l.shortcut === e.key);
+    if (target) window.location.href = target.href;
   });
 
   document.querySelectorAll('.modal-overlay').forEach((modal) => {
@@ -223,87 +151,3 @@ async function initNavigation(activeKey = '') {
     });
   });
 }
-
-// Injeksi CSS Navigasi & Micro-Animations
-const navStyle = document.createElement('style');
-navStyle.textContent = `
-  .nav-item {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 0.625rem 0.875rem;
-    border-radius: 0.75rem;
-    color: #475569;
-    text-decoration: none;
-    font-size: 0.875rem;
-    font-weight: 500;
-    border: 1px solid transparent;
-    transition: background-color 140ms var(--ease-out), color 140ms var(--ease-out), border-color 140ms var(--ease-out), transform 140ms var(--ease-out);
-  }
-  .nav-item:hover {
-    background: #f1f5f9;
-    color: #0080ff;
-  }
-  .nav-item:active {
-    transform: scale(0.97);
-  }
-  .nav-item.active {
-    background: rgba(0, 128, 255, 0.08);
-    color: #0080ff;
-    font-weight: 700;
-    border: 1px solid rgba(0, 128, 255, 0.2);
-    border-left: 3px solid #0080ff;
-  }
-  .nav-kbd {
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 10px;
-    font-weight: 600;
-    color: #64748b;
-    background: #f1f5f9;
-    border: 1px solid #e2e8f0;
-    padding: 1px 5px;
-    border-radius: 4px;
-  }
-  .nav-item:hover .nav-kbd {
-    color: #0080ff;
-    background: #e2e8f0;
-  }
-  .nav-item.active .nav-kbd {
-    color: #0080ff;
-    border-color: rgba(0, 128, 255, 0.3);
-    background: rgba(0, 128, 255, 0.12);
-  }
-  .nav-icon {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    width: 20px;
-    height: 20px;
-  }
-  .mobile-nav-link {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    color: #64748b;
-    text-decoration: none;
-    flex: 1;
-    height: 100%;
-    gap: 2px;
-    transition: color 150ms ease;
-  }
-  .mobile-nav-link:hover, .mobile-nav-link.active {
-    color: #0080ff;
-  }
-  .mobile-nav-icon {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-  }
-  .mobile-nav-label {
-    font-size: 10px;
-    font-weight: 600;
-    letter-spacing: 0.02em;
-  }
-`;
-document.head.appendChild(navStyle);

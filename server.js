@@ -20,21 +20,100 @@ const db = require('./lib/db');
 const {
   COOKIE_NAME,
   COOKIE_OPTIONS,
+  PASSWORD_MIN_LENGTH,
   hashPassword,
   comparePassword,
   generateToken,
   authMiddleware,
   ownerOnlyMiddleware,
+  sameOriginMiddleware,
+  loginRateLimit,
+  recordLoginFailure,
+  clearLoginFailures,
 } = require('./lib/auth');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
 
+// Trust the first proxy hop (Vercel) so req.ip is the real client IP for rate limiting.
+app.set('trust proxy', 1);
+
 // Middleware
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
+app.use(express.json({ limit: '100kb' }));
+app.use(express.urlencoded({ extended: true, limit: '100kb' }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
+app.use('/api', sameOriginMiddleware);
+
+// Reject non-numeric :id before it reaches SQL (otherwise Postgres throws -> 500).
+app.param('id', (req, res, next, value) => {
+  if (!/^\d+$/.test(value) || Number(value) > 2147483647) {
+    return res.status(400).json({ success: false, error: 'BAD_REQUEST', message: 'ID tidak valid.' });
+  }
+  next();
+});
+
+function isValidPassword(password) {
+  return typeof password === 'string' && password.trim().length >= PASSWORD_MIN_LENGTH;
+}
+
+// ==========================================
+// INPUT VALIDATION HELPERS
+// ==========================================
+const TASK_STATUSES = ['To Do', 'In Progress', 'Done'];
+const TASK_PRIORITIES = ['Low', 'Medium', 'High'];
+const USER_ROLES = ['Owner', 'User'];
+const USER_STATUSES = ['Active', 'Inactive'];
+const MAX_INT = 2147483647;
+
+function badRequest(res, message) {
+  return res.status(400).json({ success: false, error: 'BAD_REQUEST', message });
+}
+
+// Repeated query keys (?a=1&a=2) arrive as arrays; treat anything but a string as absent.
+function queryString(value) {
+  return typeof value === 'string' ? value : undefined;
+}
+
+function isPositiveIntLike(value) {
+  return /^\d+$/.test(String(value)) && Number(value) > 0 && Number(value) <= MAX_INT;
+}
+
+function parseDateInput(value) {
+  if (typeof value !== 'string' || !value.trim()) return null;
+  const date = new Date(value);
+  return Number.isNaN(date.getTime()) ? null : date;
+}
+
+function isBlankOptional(value) {
+  return value === undefined || value === null || value === '';
+}
+
+/** Returns an error message, or null when the task body is valid. */
+function validateTaskBody(body, isCreate) {
+  const { title, description, category, priority, status, due_date, user_id } = body;
+  if (isCreate || title !== undefined) {
+    if (typeof title !== 'string' || !title.trim()) return 'Judul tugas wajib diisi.';
+  }
+  if (description !== undefined && description !== null && typeof description !== 'string') return 'Deskripsi tidak valid.';
+  if (category !== undefined && (typeof category !== 'string' || !category.trim() || category.trim().length > 50)) {
+    return 'Kategori tidak valid (maksimal 50 karakter).';
+  }
+  if (priority !== undefined && !TASK_PRIORITIES.includes(priority)) return 'Prioritas harus Low, Medium, atau High.';
+  if (status !== undefined && !TASK_STATUSES.includes(status)) return 'Status harus To Do, In Progress, atau Done.';
+  if (isCreate && isBlankOptional(due_date)) return 'Tenggat waktu (deadline) wajib diisi.';
+  if (!isBlankOptional(due_date) && !parseDateInput(due_date)) return 'Format tenggat waktu tidak valid.';
+  if (!isBlankOptional(user_id) && !isPositiveIntLike(user_id)) return 'Penanggung jawab tugas tidak valid.';
+  return null;
+}
+
+/** Owner may assign tasks to any active user; returns the id, or null if the target is invalid. */
+async function resolveAssignee(req, rawUserId, fallbackId) {
+  if (req.user.role !== 'Owner' || isBlankOptional(rawUserId)) return fallbackId;
+  const id = Number(rawUserId);
+  const result = await db.query(`SELECT id FROM users WHERE id = $1 AND status = 'Active'`, [id]);
+  return result.rows.length ? id : null;
+}
 
 // ==========================================
 // AUTO-SEED LOGIC (Akun Owner & Data Awal)
@@ -95,11 +174,11 @@ app.get('/api/health', (req, res) => {
 // ==========================================
 // MODUL AUTENTIKASI API (/api/auth)
 // ==========================================
-app.post('/api/auth/login', async (req, res) => {
+app.post('/api/auth/login', loginRateLimit, async (req, res) => {
   try {
-    const { email, password } = req.body;
+    const { email, password } = req.body || {};
 
-    if (!email || !password) {
+    if (typeof email !== 'string' || typeof password !== 'string' || !email || !password) {
       return res.status(400).json({
         success: false,
         error: 'BAD_REQUEST',
@@ -113,6 +192,7 @@ app.post('/api/auth/login', async (req, res) => {
     );
 
     if (userRes.rows.length === 0) {
+      recordLoginFailure(req.ip);
       return res.status(401).json({
         success: false,
         error: 'INVALID_CREDENTIALS',
@@ -122,6 +202,17 @@ app.post('/api/auth/login', async (req, res) => {
 
     const user = userRes.rows[0];
 
+    const isMatch = await comparePassword(password, user.password);
+    if (!isMatch) {
+      recordLoginFailure(req.ip);
+      return res.status(401).json({
+        success: false,
+        error: 'INVALID_CREDENTIALS',
+        message: 'Email atau kata sandi tidak sesuai. Silakan periksa kembali.',
+      });
+    }
+
+    // Checked after the password so account status is not revealed to guessers.
     if (user.status !== 'Active') {
       return res.status(403).json({
         success: false,
@@ -130,15 +221,7 @@ app.post('/api/auth/login', async (req, res) => {
       });
     }
 
-    const isMatch = await comparePassword(password, user.password);
-    if (!isMatch) {
-      return res.status(401).json({
-        success: false,
-        error: 'INVALID_CREDENTIALS',
-        message: 'Email atau kata sandi tidak sesuai. Silakan periksa kembali.',
-      });
-    }
-
+    clearLoginFailures(req.ip);
     const token = generateToken(user);
     res.cookie(COOKIE_NAME, token, COOKIE_OPTIONS);
 
@@ -182,8 +265,16 @@ app.get('/api/auth/me', authMiddleware, (req, res) => {
 // ==========================================
 app.get('/api/tasks', authMiddleware, async (req, res) => {
   try {
-    const { status, priority, category, search, user_id } = req.query;
+    const status = queryString(req.query.status);
+    const priority = queryString(req.query.priority);
+    const category = queryString(req.query.category);
+    const search = queryString(req.query.search);
+    const user_id = queryString(req.query.user_id);
     const isOwner = req.user.role === 'Owner';
+
+    if (isOwner && user_id && !isPositiveIntLike(user_id)) {
+      return badRequest(res, 'Filter pengguna tidak valid.');
+    }
 
     let queryText = `
       SELECT t.*, u.name AS assignee_name, u.email AS assignee_email
@@ -237,21 +328,14 @@ app.get('/api/tasks', authMiddleware, async (req, res) => {
 
 app.post('/api/tasks', authMiddleware, async (req, res) => {
   try {
-    const { title, description, category, priority, due_date, user_id } = req.body;
+    const body = req.body || {};
+    const { title, description, category, priority, due_date, user_id } = body;
 
-    if (!title || title.trim().length === 0) {
-      return res.status(400).json({ success: false, message: 'Judul tugas wajib diisi.' });
-    }
+    const validationError = validateTaskBody(body, true);
+    if (validationError) return badRequest(res, validationError);
 
-    if (!due_date) {
-      return res.status(400).json({ success: false, message: 'Tenggat waktu (deadline) wajib diisi.' });
-    }
-
-    // Tentukan assignee
-    let assigneeId = req.user.id;
-    if (req.user.role === 'Owner' && user_id) {
-      assigneeId = parseInt(user_id, 10);
-    }
+    const assigneeId = await resolveAssignee(req, user_id, req.user.id);
+    if (assigneeId === null) return badRequest(res, 'Penanggung jawab tidak ditemukan atau tidak aktif.');
 
     const insertRes = await db.query(
       `INSERT INTO tasks (user_id, title, description, category, priority, status, due_date, completed)
@@ -261,9 +345,9 @@ app.post('/api/tasks', authMiddleware, async (req, res) => {
         assigneeId,
         title.trim(),
         description ? description.trim() : null,
-        category || 'Umum',
+        category ? category.trim() : 'Umum',
         priority || 'Medium',
-        new Date(due_date),
+        parseDateInput(due_date),
       ]
     );
 
@@ -281,7 +365,11 @@ app.post('/api/tasks', authMiddleware, async (req, res) => {
 app.put('/api/tasks/:id', authMiddleware, async (req, res) => {
   try {
     const taskId = parseInt(req.params.id, 10);
-    const { title, description, category, priority, status, due_date, user_id } = req.body;
+    const body = req.body || {};
+    const { title, description, category, priority, status, due_date, user_id } = body;
+
+    const validationError = validateTaskBody(body, false);
+    if (validationError) return badRequest(res, validationError);
 
     // Cek kepemilikan task
     const checkRes = await db.query('SELECT * FROM tasks WHERE id = $1', [taskId]);
@@ -300,7 +388,8 @@ app.put('/api/tasks/:id', authMiddleware, async (req, res) => {
     let isCompleted = existingTask.completed;
     let completedAt = existingTask.completed_at;
 
-    if (status !== undefined) {
+    // Only a real status change touches completed_at, so re-saving a Done task keeps its original timestamp.
+    if (status !== undefined && status !== existingTask.status) {
       if (newStatus === 'Done') {
         isCompleted = true;
         completedAt = new Date();
@@ -311,11 +400,14 @@ app.put('/api/tasks/:id', authMiddleware, async (req, res) => {
     }
 
     const updatedTitle = title !== undefined ? title.trim() : existingTask.title;
-    const updatedDesc = description !== undefined ? description.trim() : existingTask.description;
-    const updatedCategory = category !== undefined ? category : existingTask.category;
+    const updatedDesc = description === undefined
+      ? existingTask.description
+      : (description ? description.trim() || null : null);
+    const updatedCategory = category !== undefined ? category.trim() : existingTask.category;
     const updatedPriority = priority !== undefined ? priority : existingTask.priority;
-    const updatedDueDate = due_date ? new Date(due_date) : existingTask.due_date;
-    const updatedUserId = (isOwner && user_id) ? parseInt(user_id, 10) : existingTask.user_id;
+    const updatedDueDate = isBlankOptional(due_date) ? existingTask.due_date : parseDateInput(due_date);
+    const updatedUserId = await resolveAssignee(req, user_id, existingTask.user_id);
+    if (updatedUserId === null) return badRequest(res, 'Penanggung jawab tidak ditemukan atau tidak aktif.');
 
     const updateRes = await db.query(
       `UPDATE tasks
@@ -438,16 +530,30 @@ app.get('/api/reminders', authMiddleware, async (req, res) => {
 
 app.post('/api/reminders', authMiddleware, async (req, res) => {
   try {
-    const { title, remind_at, task_id } = req.body;
-    if (!title || !remind_at) {
-      return res.status(400).json({ success: false, message: 'Catatan pengingat dan waktu wajib diisi.' });
+    const { title, remind_at, task_id } = req.body || {};
+    if (typeof title !== 'string' || !title.trim() || isBlankOptional(remind_at)) {
+      return badRequest(res, 'Catatan pengingat dan waktu wajib diisi.');
+    }
+    if (title.trim().length > 255) return badRequest(res, 'Catatan pengingat maksimal 255 karakter.');
+
+    const remindAt = parseDateInput(remind_at);
+    if (!remindAt) return badRequest(res, 'Format waktu pengingat tidak valid.');
+
+    let taskId = null;
+    if (!isBlankOptional(task_id)) {
+      if (!isPositiveIntLike(task_id)) return badRequest(res, 'Tugas terkait tidak valid.');
+      taskId = Number(task_id);
+      const taskRes = await db.query('SELECT user_id FROM tasks WHERE id = $1', [taskId]);
+      const canLink = taskRes.rows.length
+        && (req.user.role === 'Owner' || taskRes.rows[0].user_id === req.user.id);
+      if (!canLink) return badRequest(res, 'Tugas terkait tidak ditemukan.');
     }
 
     const insertRes = await db.query(
       `INSERT INTO reminders (user_id, task_id, title, remind_at)
        VALUES ($1, $2, $3, $4)
        RETURNING *`,
-      [req.user.id, task_id || null, title.trim(), new Date(remind_at)]
+      [req.user.id, taskId, title.trim(), remindAt]
     );
 
     return res.status(201).json({
@@ -464,7 +570,10 @@ app.post('/api/reminders', authMiddleware, async (req, res) => {
 app.delete('/api/reminders/:id', authMiddleware, async (req, res) => {
   try {
     const id = parseInt(req.params.id, 10);
-    await db.query('DELETE FROM reminders WHERE id = $1 AND user_id = $2', [id, req.user.id]);
+    const delRes = await db.query('DELETE FROM reminders WHERE id = $1 AND user_id = $2', [id, req.user.id]);
+    if (delRes.rowCount === 0) {
+      return res.status(404).json({ success: false, message: 'Pengingat tidak ditemukan.' });
+    }
     return res.json({ success: true, message: 'Pengingat berhasil dihapus.' });
   } catch (err) {
     console.error('[API REMINDERS DELETE]', err);
@@ -480,21 +589,19 @@ app.get('/api/reports/analytics', authMiddleware, async (req, res) => {
     const { period } = req.query; // 'today', 'week', 'month', 'all'
     const isOwner = req.user.role === 'Owner';
 
-    let dateFilter = '1970-01-01';
-    const now = new Date();
+    // Period boundaries in WIB (UTC+7, no DST) regardless of the host timezone (Vercel runs in UTC).
+    const WIB_OFFSET_MS = 7 * 3600 * 1000;
+    const wib = new Date(Date.now() + WIB_OFFSET_MS); // UTC getters now read WIB wall-clock
+    const wibMidnight = (y, m, d) => new Date(Date.UTC(y, m, d) - WIB_OFFSET_MS).toISOString();
+    const [y, m, d] = [wib.getUTCFullYear(), wib.getUTCMonth(), wib.getUTCDate()];
 
+    let dateFilter = '1970-01-01T00:00:00Z';
     if (period === 'today') {
-      const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-      dateFilter = today.toISOString();
+      dateFilter = wibMidnight(y, m, d);
     } else if (period === 'week') {
-      const day = now.getDay() || 7;
-      const monday = new Date(now);
-      monday.setHours(0, 0, 0, 0);
-      monday.setDate(now.getDate() - day + 1);
-      dateFilter = monday.toISOString();
+      dateFilter = wibMidnight(y, m, d - ((wib.getUTCDay() + 6) % 7)); // Monday
     } else if (period === 'month') {
-      const firstDay = new Date(now.getFullYear(), now.getMonth(), 1);
-      dateFilter = firstDay.toISOString();
+      dateFilter = wibMidnight(y, m, 1);
     }
 
     const params = [dateFilter];
@@ -593,10 +700,18 @@ app.get('/api/users', authMiddleware, ownerOnlyMiddleware, async (req, res) => {
 
 app.post('/api/users', authMiddleware, ownerOnlyMiddleware, async (req, res) => {
   try {
-    const { name, email, password, role } = req.body;
+    const { name, email, password, role } = req.body || {};
 
-    if (!name || !email || !password) {
+    if (typeof name !== 'string' || !name.trim() || typeof email !== 'string' || !email.trim() || !password) {
       return res.status(400).json({ success: false, message: 'Nama, email, dan kata sandi wajib diisi.' });
+    }
+    if (name.trim().length > 100) return badRequest(res, 'Nama maksimal 100 karakter.');
+    if (email.trim().length > 150 || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())) {
+      return badRequest(res, 'Format email tidak valid.');
+    }
+    if (role !== undefined && !USER_ROLES.includes(role)) return badRequest(res, 'Peran harus Owner atau User.');
+    if (!isValidPassword(password)) {
+      return res.status(400).json({ success: false, message: `Kata sandi minimal ${PASSWORD_MIN_LENGTH} karakter.` });
     }
 
     // Cek duplikasi email
@@ -627,7 +742,16 @@ app.post('/api/users', authMiddleware, ownerOnlyMiddleware, async (req, res) => 
 app.put('/api/users/:id', authMiddleware, ownerOnlyMiddleware, async (req, res) => {
   try {
     const targetId = parseInt(req.params.id, 10);
-    const { name, role, status, password } = req.body;
+    const { name, role, status, password } = req.body || {};
+
+    if (name !== undefined && (typeof name !== 'string' || !name.trim() || name.trim().length > 100)) {
+      return badRequest(res, 'Nama wajib diisi (maksimal 100 karakter).');
+    }
+    if (role !== undefined && !USER_ROLES.includes(role)) return badRequest(res, 'Peran harus Owner atau User.');
+    if (status !== undefined && !USER_STATUSES.includes(status)) return badRequest(res, 'Status harus Active atau Inactive.');
+    if (password !== undefined && password !== null && typeof password !== 'string') {
+      return badRequest(res, 'Kata sandi tidak valid.');
+    }
 
     // Proteksi Self-Lockout
     if (targetId === req.user.id) {
@@ -651,6 +775,9 @@ app.put('/api/users/:id', authMiddleware, ownerOnlyMiddleware, async (req, res) 
 
     let newPassword = user.password;
     if (password && password.trim().length > 0) {
+      if (!isValidPassword(password)) {
+        return res.status(400).json({ success: false, message: `Kata sandi minimal ${PASSWORD_MIN_LENGTH} karakter.` });
+      }
       newPassword = await hashPassword(password.trim());
     }
 
@@ -682,7 +809,10 @@ app.delete('/api/users/:id', authMiddleware, ownerOnlyMiddleware, async (req, re
       return res.status(400).json({ success: false, message: 'Owner dilarang menghapus akun sendiri!' });
     }
 
-    await db.query('DELETE FROM users WHERE id = $1', [targetId]);
+    const delRes = await db.query('DELETE FROM users WHERE id = $1', [targetId]);
+    if (delRes.rowCount === 0) {
+      return res.status(404).json({ success: false, message: 'Pengguna tidak ditemukan.' });
+    }
     return res.json({ success: true, message: 'Akun pengguna berhasil dihapus secara permanen.' });
   } catch (err) {
     console.error('[API USERS DELETE]', err);
@@ -721,9 +851,34 @@ app.get('/users', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'users.html'));
 });
 
+// Unknown API routes answer in JSON so apiFetch can show a readable message.
+app.use('/api', (req, res) => {
+  res.status(404).json({ success: false, error: 'NOT_FOUND', message: 'Endpoint API tidak ditemukan.' });
+});
+
+// Central error handler: malformed JSON, oversized bodies, and unexpected errors.
+app.use((err, req, res, next) => {
+  if (res.headersSent) return next(err);
+  const isClientError = err.type === 'entity.parse.failed' || err.type === 'entity.too.large';
+  const status = isClientError ? (err.status || 400) : 500;
+  if (!isClientError) console.error('[UNHANDLED ROUTE ERROR]', err);
+  const message = err.type === 'entity.too.large'
+    ? 'Ukuran data yang dikirim terlalu besar.'
+    : isClientError ? 'Format data tidak valid.' : 'Terjadi kesalahan sistem internal.';
+  if (req.path.startsWith('/api')) {
+    return res.status(status).json({ success: false, error: isClientError ? 'BAD_REQUEST' : 'SERVER_ERROR', message });
+  }
+  return res.status(status).send(message);
+});
+
 // Jalankan server jika dipanggil lokal
 if (require.main === module) {
-  app.listen(PORT, async () => {
+  app.listen(PORT, async (err) => {
+    // Express 5 passes listen errors (e.g. EADDRINUSE) here instead of throwing.
+    if (err) {
+      console.error(`[SERVER] Gagal berjalan di port ${PORT}: ${err.code || err.message}`);
+      process.exit(1);
+    }
     console.log(`=================================================`);
     console.log(`🚀 Website Manajemen Tugas Berjalan Aktif!`);
     console.log(`📡 URL Akses Lokal : http://localhost:${PORT}`);

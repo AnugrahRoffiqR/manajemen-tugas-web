@@ -4,6 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Daftar Tugas — Sistem Manajemen Tugas</title>
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml">
   <link rel="stylesheet" href="/css/style.css">
 </head>
 <body>
@@ -11,83 +12,62 @@
   <!-- Mobile Top Header Bar (< 1024px) -->
   <div id="mobile-header"></div>
 
-  <div style="display: flex; min-height: 100dvh;">
+  <div class="app-shell">
     <!-- Desktop Sidebar (>= 1024px) -->
     <div id="sidebar-container"></div>
 
-    <!-- Main Workspace Area -->
     <main class="workspace-main">
-      
-      <!-- Top Action Bar -->
-      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.75rem; flex-wrap: wrap; gap: 1rem;">
-        <div>
-          <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.375rem;">
-            <span class="badge" style="background: rgba(0, 128, 255, 0.1); color: var(--primary); border: 1px solid rgba(0, 128, 255, 0.25);">
-              TASKS WORKSPACE
-            </span>
-          </div>
-          <h1 style="font-size: 2rem; font-weight: 700; color: var(--text); letter-spacing: -0.01em;">
-            Daftar <span style="color: #ea580c;">Tugas Tim</span>
-          </h1>
-          <p style="color: var(--text-muted); font-size: 0.9375rem;">Kelola siklus pekerjaan tim, ubah status antrean, dan pantau tenggat waktu.</p>
-        </div>
-        
-        <div style="display: flex; align-items: center; gap: 0.75rem; flex-wrap: wrap;">
-          <!-- Dual View Switcher -->
-          <div style="background: #ffffff; border: 1px solid var(--border); border-radius: 8px; padding: 3px; display: flex; gap: 3px;">
-            <button id="view-kanban-btn" onclick="switchView('kanban')" class="btn-secondary" style="padding: 0.35rem 0.875rem; min-height: 32px; font-size: 0.8125rem; border: none; background: #0284c7; color: #ffffff; border-radius: 6px;">
-              Kanban
-            </button>
-            <button id="view-table-btn" onclick="switchView('table')" class="btn-secondary" style="padding: 0.35rem 0.875rem; min-height: 32px; font-size: 0.8125rem; border: none; background: transparent; color: var(--text-muted); border-radius: 6px;">
-              Tabel List
-            </button>
-          </div>
 
-          <button onclick="openTaskModal()" class="btn-island" aria-label="Buat tugas baru (Shortcut N)">
-            <span>+ Buat Tugas <kbd style="font-size: 10px; opacity: 0.85; background: rgba(0,0,0,0.2); padding: 1px 5px; border-radius: 4px; margin-left: 4px;">N</kbd></span>
-            <span class="btn-icon-pill">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-            </span>
+      <header class="page-head">
+        <div>
+          <h1 class="page-title">Daftar Tugas</h1>
+          <p class="page-sub">Kelola siklus pekerjaan tim, ubah status antrean, dan pantau tenggat waktu.</p>
+        </div>
+        <div class="page-actions">
+          <div class="segmented" role="group" aria-label="Tampilan">
+            <button type="button" id="view-kanban-btn" onclick="switchView('kanban')" aria-pressed="true">Kanban</button>
+            <button type="button" id="view-table-btn" onclick="switchView('table')" aria-pressed="false">Tabel</button>
+          </div>
+          <button type="button" onclick="openTaskModal()" class="btn-primary" aria-keyshortcuts="n">
+            Buat Tugas <kbd class="key-hint">N</kbd>
           </button>
         </div>
-      </div>
+      </header>
 
-      <!-- Filter Toolbar & Quick Filter Chips -->
-      <div class="glass-card" style="padding: 1.25rem; margin-bottom: 2rem;">
-        
-        <!-- Quick Filter Pills -->
-        <div style="display: flex; gap: 0.5rem; flex-wrap: wrap; margin-bottom: 1rem; align-items: center;">
-          <span style="font-size: 11px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; margin-right: 0.25rem;">Filter Cepat:</span>
-          <button type="button" class="filter-chip active" id="chip-all" onclick="applyQuickChip('all')">Semua Tugas</button>
-          <button type="button" class="filter-chip" id="chip-urgent" onclick="applyQuickChip('urgent')">Prioritas High</button>
-          <button type="button" class="filter-chip" id="chip-inprogress" onclick="applyQuickChip('inprogress')">Sedang Berjalan</button>
-          <button type="button" class="filter-chip" id="chip-done" onclick="applyQuickChip('done')">Selesai</button>
+      <!-- Filter Toolbar -->
+      <section class="card toolbar" aria-label="Filter tugas">
+        <div class="chip-row" role="group" aria-label="Filter cepat">
+          <button type="button" class="filter-chip active" id="chip-all" onclick="applyQuickChip('all')" aria-pressed="true">Semua Tugas</button>
+          <button type="button" class="filter-chip" id="chip-urgent" onclick="applyQuickChip('urgent')" aria-pressed="false">Prioritas High</button>
+          <button type="button" class="filter-chip" id="chip-inprogress" onclick="applyQuickChip('inprogress')" aria-pressed="false">Sedang Berjalan</button>
+          <button type="button" class="filter-chip" id="chip-done" onclick="applyQuickChip('done')" aria-pressed="false">Selesai</button>
         </div>
 
-        <div style="display: flex; gap: 1rem; flex-wrap: wrap; align-items: center; justify-content: space-between; border-top: 1px solid var(--border); padding-top: 1rem;">
-          
-          <!-- Search Input -->
-          <div style="flex: 1; min-width: 240px;">
-            <input type="text" id="filter-search" class="form-input" placeholder="Cari judul atau rincian tugas..." oninput="handleSearch()">
+        <div class="toolbar-row">
+          <div class="toolbar-search">
+            <label for="filter-search" class="sr-only">Cari tugas</label>
+            <input type="search" id="filter-search" class="form-input" placeholder="Cari judul atau rincian tugas…" oninput="handleSearch()" autocomplete="off">
           </div>
 
-          <!-- Filter Controls -->
-          <div style="display: flex; gap: 0.75rem; flex-wrap: wrap; align-items: center;">
-            <select id="filter-status" class="form-select" style="width: auto; padding: 0.5rem 0.875rem;" onchange="loadTasks()">
+          <div class="toolbar-filters">
+            <label for="filter-status" class="sr-only">Status</label>
+            <select id="filter-status" class="form-select auto" onchange="loadTasks()">
               <option value="Semua">Semua Status</option>
               <option value="To Do">To Do</option>
               <option value="In Progress">In Progress</option>
               <option value="Done">Done</option>
             </select>
 
-            <select id="filter-priority" class="form-select" style="width: auto; padding: 0.5rem 0.875rem;" onchange="loadTasks()">
+            <label for="filter-priority" class="sr-only">Prioritas</label>
+            <select id="filter-priority" class="form-select auto" onchange="loadTasks()">
               <option value="Semua">Semua Prioritas</option>
               <option value="High">High</option>
               <option value="Medium">Medium</option>
               <option value="Low">Low</option>
             </select>
 
-            <select id="filter-category" class="form-select" style="width: auto; padding: 0.5rem 0.875rem;" onchange="loadTasks()">
+            <label for="filter-category" class="sr-only">Kategori</label>
+            <select id="filter-category" class="form-select auto" onchange="loadTasks()">
               <option value="Semua">Semua Kategori</option>
               <option value="Operasional">Operasional</option>
               <option value="Teknis">Teknis</option>
@@ -96,87 +76,70 @@
               <option value="Umum">Umum</option>
             </select>
 
-            <button onclick="resetFilters()" class="btn-secondary" style="padding: 0.5rem 0.875rem; min-height: 42px; font-size: 0.8125rem;">
-              Reset
-            </button>
+            <button type="button" onclick="resetFilters()" class="btn-secondary">Reset</button>
           </div>
-
         </div>
-      </div>
+      </section>
 
       <!-- VIEW 1: KANBAN BOARD -->
       <div id="kanban-view" class="kanban-grid">
-        
-        <!-- Kolom 1: To Do -->
-        <div style="padding: 1.25rem; background: var(--surface-cream); border: 1px solid var(--border); border-radius: 12px;">
-          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; border-bottom: 1px solid var(--border); padding-bottom: 0.75rem;">
-            <div style="display: flex; align-items: center; gap: 0.5rem;">
-              <span style="width: 8px; height: 8px; border-radius: 50%; background: #64748b; display: inline-block;"></span>
-              <h3 style="font-size: 0.9375rem; font-weight: 700; color: var(--text);">Antrean (To Do)</h3>
-            </div>
-            <div style="display: flex; align-items: center; gap: 6px;">
+        <section class="kanban-col" aria-labelledby="col-todo-title">
+          <div class="kanban-col-head">
+            <h2 id="col-todo-title" class="kanban-col-title"><span class="status-dot" style="background: var(--status-todo);" aria-hidden="true"></span>To Do</h2>
+            <div class="cell-actions" style="align-items: center;">
               <span id="count-todo" class="badge badge-todo font-mono">0</span>
-              <button onclick="openTaskModal('To Do')" class="btn-action-icon" style="width: 26px; height: 26px; font-size: 13px;" title="Tambah tugas ke To Do">+</button>
+              <button type="button" onclick="openTaskModal('To Do')" class="btn-action-icon" aria-label="Tambah tugas ke To Do" title="Tambah tugas ke To Do">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+              </button>
             </div>
           </div>
-          <div id="col-todo" style="display: flex; flex-direction: column; gap: 0.75rem; min-height: 140px;"></div>
-        </div>
+          <div id="col-todo" class="kanban-list"></div>
+        </section>
 
-        <!-- Kolom 2: In Progress -->
-        <div style="padding: 1.25rem; background: var(--surface-cream); border: 1px solid var(--border); border-radius: 12px;">
-          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; border-bottom: 1px solid var(--border); padding-bottom: 0.75rem;">
-            <div style="display: flex; align-items: center; gap: 0.5rem;">
-              <span style="width: 8px; height: 8px; border-radius: 50%; background: #0284c7; display: inline-block;"></span>
-              <h3 style="font-size: 0.9375rem; font-weight: 700; color: #0284c7;">Sedang Jalan (In Progress)</h3>
-            </div>
-            <div style="display: flex; align-items: center; gap: 6px;">
+        <section class="kanban-col" aria-labelledby="col-inprogress-title">
+          <div class="kanban-col-head">
+            <h2 id="col-inprogress-title" class="kanban-col-title"><span class="status-dot" style="background: var(--status-in-progress);" aria-hidden="true"></span>In Progress</h2>
+            <div class="cell-actions" style="align-items: center;">
               <span id="count-inprogress" class="badge badge-in-progress font-mono">0</span>
-              <button onclick="openTaskModal('In Progress')" class="btn-action-icon" style="width: 26px; height: 26px; font-size: 13px;" title="Tambah tugas ke In Progress">+</button>
+              <button type="button" onclick="openTaskModal('In Progress')" class="btn-action-icon" aria-label="Tambah tugas ke In Progress" title="Tambah tugas ke In Progress">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+              </button>
             </div>
           </div>
-          <div id="col-inprogress" style="display: flex; flex-direction: column; gap: 0.75rem; min-height: 140px;"></div>
-        </div>
+          <div id="col-inprogress" class="kanban-list"></div>
+        </section>
 
-        <!-- Kolom 3: Done -->
-        <div style="padding: 1.25rem; background: var(--surface-cream); border: 1px solid var(--border); border-radius: 12px;">
-          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; border-bottom: 1px solid var(--border); padding-bottom: 0.75rem;">
-            <div style="display: flex; align-items: center; gap: 0.5rem;">
-              <span style="width: 8px; height: 8px; border-radius: 50%; background: var(--cta); display: inline-block;"></span>
-              <h3 style="font-size: 0.9375rem; font-weight: 700; color: var(--cta);">Selesai (Done)</h3>
-            </div>
+        <section class="kanban-col" aria-labelledby="col-done-title">
+          <div class="kanban-col-head">
+            <h2 id="col-done-title" class="kanban-col-title"><span class="status-dot" style="background: var(--status-done);" aria-hidden="true"></span>Done</h2>
             <span id="count-done" class="badge badge-done font-mono">0</span>
           </div>
-          <div id="col-done" style="display: flex; flex-direction: column; gap: 0.75rem; min-height: 140px;"></div>
-        </div>
-
+          <div id="col-done" class="kanban-list"></div>
+        </section>
       </div>
 
-      <!-- VIEW 2: TABEL LIST -->
-      <div id="table-view" class="glass-card" style="display: none; padding: 1.5rem;">
-        <div style="overflow-x: auto;">
-          <table style="width: 100%; border-collapse: collapse; text-align: left;">
+      <!-- VIEW 2: TABLE -->
+      <section id="table-view" class="card card-pad" style="display: none;" aria-label="Tabel tugas">
+        <div class="table-wrap">
+          <table>
             <thead>
-              <tr style="border-bottom: 1px solid var(--border); color: var(--text-muted); font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.05em;">
-                <th style="padding: 0.75rem 0.5rem; width: 44px; text-align: center;">Status</th>
-                <th style="padding: 0.75rem 1rem;">Judul Tugas</th>
-                <th style="padding: 0.75rem 1rem;">Kategori</th>
-                <th style="padding: 0.75rem 1rem;">Prioritas</th>
-                <th style="padding: 0.75rem 1rem;">Status</th>
-                <th style="padding: 0.75rem 1rem;">Tenggat Waktu</th>
-                <th style="padding: 0.75rem 1rem;">Pemilik Akun</th>
-                <th style="padding: 0.75rem 1rem; text-align: right;">Aksi</th>
+              <tr>
+                <th class="center"><span class="sr-only">Selesai</span></th>
+                <th>Judul Tugas</th>
+                <th>Kategori</th>
+                <th>Prioritas</th>
+                <th>Status</th>
+                <th>Tenggat Waktu</th>
+                <th>Pemilik</th>
+                <th class="right"><span class="sr-only">Aksi</span></th>
               </tr>
             </thead>
             <tbody id="task-table-rows">
-              <tr>
-                <td colspan="8" style="text-align: center; padding: 2.5rem 1rem; color: var(--text-muted);">
-                  Memuat data tugas...
-                </td>
-              </tr>
+              <tr><td colspan="8" class="loading-text">Memuat data tugas…</td></tr>
             </tbody>
           </table>
         </div>
-      </div>
+      </section>
 
     </main>
   </div>
@@ -186,29 +149,29 @@
 
   <!-- Modal Buat / Edit Tugas -->
   <div id="task-modal" class="modal-overlay">
-    <div class="modal-container glass-card" style="background: #ffffff; border: 1px solid var(--border);">
-      <div style="padding: 1.25rem 1.5rem; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center;">
-        <h3 id="modal-title" style="font-size: 1.125rem; font-weight: 700; color: var(--text);">+ Tambah Tugas Baru</h3>
-        <button onclick="closeTaskModal()" class="btn-action-icon" style="width: 32px; height: 32px;" aria-label="Tutup modal">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+    <div class="modal-container" role="dialog" aria-modal="true" aria-labelledby="modal-title">
+      <div class="modal-head">
+        <h2 id="modal-title" class="modal-title">Tambah Tugas Baru</h2>
+        <button type="button" onclick="closeTaskModal()" class="btn-action-icon" aria-label="Tutup">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
         </button>
       </div>
       <form id="task-form" class="modal-body">
         <input type="hidden" id="edit-task-id" value="">
 
-        <div style="margin-bottom: 1rem;">
-          <label for="task-title" style="display: block; font-size: 0.8125rem; font-weight: 600; color: var(--text); margin-bottom: 0.375rem;">Judul Tugas *</label>
-          <input type="text" id="task-title" class="form-input" placeholder="Contoh: Implementasi Audit Desain Antislop" required>
+        <div class="field">
+          <label for="task-title" class="field-label">Judul Tugas *</label>
+          <input type="text" id="task-title" class="form-input" required>
         </div>
 
-        <div style="margin-bottom: 1rem;">
-          <label for="task-desc" style="display: block; font-size: 0.8125rem; font-weight: 600; color: var(--text); margin-bottom: 0.375rem;">Deskripsi / Catatan Tambahan</label>
-          <textarea id="task-desc" class="form-textarea" rows="3" placeholder="Rincian informasi tugas..."></textarea>
+        <div class="field">
+          <label for="task-desc" class="field-label">Deskripsi</label>
+          <textarea id="task-desc" class="form-textarea" rows="3"></textarea>
         </div>
 
-        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem;">
-          <div>
-            <label for="task-category" style="display: block; font-size: 0.8125rem; font-weight: 600; color: var(--text); margin-bottom: 0.375rem;">Kategori</label>
+        <div class="field-row">
+          <div class="field">
+            <label for="task-category" class="field-label">Kategori</label>
             <select id="task-category" class="form-select">
               <option value="Operasional">Operasional</option>
               <option value="Teknis">Teknis</option>
@@ -217,8 +180,8 @@
               <option value="Umum" selected>Umum</option>
             </select>
           </div>
-          <div>
-            <label for="task-priority" style="display: block; font-size: 0.8125rem; font-weight: 600; color: var(--text); margin-bottom: 0.375rem;">Prioritas</label>
+          <div class="field">
+            <label for="task-priority" class="field-label">Prioritas</label>
             <select id="task-priority" class="form-select">
               <option value="Low">Low</option>
               <option value="Medium" selected>Medium</option>
@@ -227,28 +190,24 @@
           </div>
         </div>
 
-        <div style="margin-bottom: 1rem;">
-          <label for="task-status" style="display: block; font-size: 0.8125rem; font-weight: 600; color: var(--text); margin-bottom: 0.375rem;">Status</label>
-          <select id="task-status" class="form-select">
-            <option value="To Do">To Do (Antrean)</option>
-            <option value="In Progress">In Progress (Sedang Jalan)</option>
-            <option value="Done">Done (Selesai)</option>
-          </select>
+        <div class="field-row">
+          <div class="field">
+            <label for="task-status" class="field-label">Status</label>
+            <select id="task-status" class="form-select">
+              <option value="To Do">To Do</option>
+              <option value="In Progress">In Progress</option>
+              <option value="Done">Done</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="task-due-date" class="field-label">Tenggat Waktu *</label>
+            <input type="datetime-local" id="task-due-date" class="form-input" required>
+          </div>
         </div>
 
-        <div style="margin-bottom: 1.5rem;">
-          <label for="task-due-date" style="display: block; font-size: 0.8125rem; font-weight: 600; color: var(--text); margin-bottom: 0.375rem;">Tenggat Waktu *</label>
-          <input type="datetime-local" id="task-due-date" class="form-input" required>
-        </div>
-
-        <div style="display: flex; justify-content: flex-end; gap: 0.75rem;">
+        <div class="form-actions">
           <button type="button" onclick="closeTaskModal()" class="btn-secondary">Batal</button>
-          <button type="submit" id="save-task-btn" class="btn-island">
-            <span id="save-task-btn-text">Simpan Tugas</span>
-            <span class="btn-icon-pill">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
-            </span>
-          </button>
+          <button type="submit" id="save-task-btn" class="btn-primary"><span id="save-task-btn-text">Simpan Tugas</span></button>
         </div>
       </form>
     </div>
@@ -262,55 +221,48 @@
     let allTasks = [];
     let currentView = 'kanban';
 
+    const ICON = {
+      todo: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"/></svg>',
+      progress: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polygon points="6 4 20 12 6 20 6 4"/></svg>',
+      done: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg>',
+      edit: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>',
+      trash: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>',
+    };
+
+    const STATUS_BADGE = { 'To Do': 'badge-todo', 'In Progress': 'badge-in-progress', Done: 'badge-done' };
+
     function switchView(view) {
       currentView = view;
-      const kanbanBtn = document.getElementById('view-kanban-btn');
-      const tableBtn = document.getElementById('view-table-btn');
-      const kanbanView = document.getElementById('kanban-view');
-      const tableView = document.getElementById('table-view');
-
-      if (view === 'kanban') {
-        kanbanView.style.display = 'grid';
-        tableView.style.display = 'none';
-        kanbanBtn.style.background = '#ea580c';
-        kanbanBtn.style.color = '#fff';
-        tableBtn.style.background = 'transparent';
-        tableBtn.style.color = 'var(--text-muted)';
-      } else {
-        kanbanView.style.display = 'none';
-        tableView.style.display = 'block';
-        tableBtn.style.background = '#ea580c';
-        tableBtn.style.color = '#fff';
-        kanbanBtn.style.background = 'transparent';
-        kanbanBtn.style.color = 'var(--text-muted)';
-      }
+      const isKanban = view === 'kanban';
+      document.getElementById('kanban-view').style.display = isKanban ? '' : 'none';
+      document.getElementById('table-view').style.display = isKanban ? 'none' : 'block';
+      document.getElementById('view-kanban-btn').setAttribute('aria-pressed', String(isKanban));
+      document.getElementById('view-table-btn').setAttribute('aria-pressed', String(!isKanban));
     }
 
     const handleSearch = debounce(() => {
       loadTasks();
     }, 250);
 
+    function setActiveChip(type) {
+      document.querySelectorAll('.filter-chip').forEach(c => {
+        const on = c.id === `chip-${type}`;
+        c.classList.toggle('active', on);
+        c.setAttribute('aria-pressed', String(on));
+      });
+    }
+
     function applyQuickChip(type) {
-      document.querySelectorAll('.filter-chip').forEach(c => c.classList.remove('active'));
-      const activeBtn = document.getElementById(`chip-${type}`);
-      if (activeBtn) activeBtn.classList.add('active');
-
-      const statusSelect = document.getElementById('filter-status');
-      const prioritySelect = document.getElementById('filter-priority');
-
-      if (type === 'all') {
-        statusSelect.value = 'Semua';
-        prioritySelect.value = 'Semua';
-      } else if (type === 'urgent') {
-        statusSelect.value = 'Semua';
-        prioritySelect.value = 'High';
-      } else if (type === 'inprogress') {
-        statusSelect.value = 'In Progress';
-        prioritySelect.value = 'Semua';
-      } else if (type === 'done') {
-        statusSelect.value = 'Done';
-        prioritySelect.value = 'Semua';
-      }
+      setActiveChip(type);
+      const presets = {
+        all: ['Semua', 'Semua'],
+        urgent: ['Semua', 'High'],
+        inprogress: ['In Progress', 'Semua'],
+        done: ['Done', 'Semua'],
+      };
+      const [status, priority] = presets[type] || presets.all;
+      document.getElementById('filter-status').value = status;
+      document.getElementById('filter-priority').value = priority;
       loadTasks();
     }
 
@@ -319,9 +271,7 @@
       document.getElementById('filter-status').value = 'Semua';
       document.getElementById('filter-priority').value = 'Semua';
       document.getElementById('filter-category').value = 'Semua';
-      document.querySelectorAll('.filter-chip').forEach(c => c.classList.remove('active'));
-      const chipAll = document.getElementById('chip-all');
-      if (chipAll) chipAll.classList.add('active');
+      setActiveChip('all');
       loadTasks();
     }
 
@@ -348,146 +298,89 @@
     }
 
     function renderKanban(tasks) {
-      const colTodo = document.getElementById('col-todo');
-      const colInProg = document.getElementById('col-inprogress');
-      const colDone = document.getElementById('col-done');
-
-      const todos = tasks.filter(t => t.status === 'To Do');
-      const inProgs = tasks.filter(t => t.status === 'In Progress');
-      const dones = tasks.filter(t => t.status === 'Done');
-
-      document.getElementById('count-todo').textContent = todos.length;
-      document.getElementById('count-inprogress').textContent = inProgs.length;
-      document.getElementById('count-done').textContent = dones.length;
-
-      colTodo.innerHTML = todos.length ? todos.map(t => createKanbanCard(t)).join('') : `
-        <div class="empty-state-box" style="padding: 1.75rem 1rem;">
-          <p style="font-size: 12px; color: var(--text-muted); font-weight: 500;">Antrean bersih</p>
-        </div>`;
-      colInProg.innerHTML = inProgs.length ? inProgs.map(t => createKanbanCard(t)).join('') : `
-        <div class="empty-state-box" style="padding: 1.75rem 1rem;">
-          <p style="font-size: 12px; color: var(--text-muted); font-weight: 500;">Tidak ada tugas aktif</p>
-        </div>`;
-      colDone.innerHTML = dones.length ? dones.map(t => createKanbanCard(t)).join('') : `
-        <div class="empty-state-box" style="padding: 1.75rem 1rem;">
-          <p style="font-size: 12px; color: var(--text-muted); font-weight: 500;">Belum ada tugas selesai</p>
-        </div>`;
+      const groups = [
+        ['To Do', 'col-todo', 'count-todo', 'Tidak ada tugas di antrean'],
+        ['In Progress', 'col-inprogress', 'count-inprogress', 'Tidak ada tugas berjalan'],
+        ['Done', 'col-done', 'count-done', 'Belum ada tugas selesai'],
+      ];
+      groups.forEach(([status, colId, countId, emptyText]) => {
+        const items = tasks.filter(t => t.status === status);
+        document.getElementById(countId).textContent = items.length;
+        document.getElementById(colId).innerHTML = items.length
+          ? items.map(createKanbanCard).join('')
+          : `<div class="empty-state-box compact">${emptyText}</div>`;
+      });
     }
 
     function createKanbanCard(task) {
-      const priorityPill = {
-        High: '<span class="badge" style="background:#fef2f2; color:#b91c1c; border:1px solid #fecaca;">HIGH</span>',
-        Medium: '<span class="badge" style="background:#fffbeb; color:#b45309; border:1px solid #fde68a;">MED</span>',
-        Low: '<span class="badge" style="background:#f0fdf4; color:#15803d; border:1px solid #bbf7d0;">LOW</span>',
-      }[task.priority] || '';
-
-      const catClass = `cat-${(task.category || 'umum').toLowerCase()}`;
-      const diffHours = (new Date(task.due_date) - new Date()) / 3600000;
-      let deadlineBadge = '';
-      if (diffHours < 0) {
-        deadlineBadge = `<span class="badge badge-overdue" style="font-size: 10px; margin-top: 4px; display: inline-flex;">${formatHoursRemaining(diffHours)}</span>`;
-      } else if (diffHours < 24) {
-        deadlineBadge = `<span class="badge badge-urgent" style="font-size: 10px; margin-top: 4px; display: inline-flex;">${formatHoursRemaining(diffHours)}</span>`;
-      }
+      const id = Number(task.id);
+      const title = escapeHtml(task.title);
+      const moveBtn = (status, icon, label, extra = '') =>
+        `<button type="button" onclick="updateTaskStatus(${id}, '${status}')" class="btn-action-icon${extra}" aria-label="${label}: ${title}" title="${label}">${icon}</button>`;
 
       return `
-        <div class="kanban-card" data-priority="${task.priority}">
-          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.625rem;">
-            ${priorityPill}
-            <span class="cat-badge ${catClass}">
-              <span class="cat-dot"></span>
-              <span>${task.category}</span>
-            </span>
+        <article class="kanban-card" data-priority="${escapeHtml(task.priority)}">
+          <div class="kanban-card-tags">
+            ${priorityBadge(task.priority)}
+            ${categoryBadge(task.category)}
           </div>
-
-          <h4 style="font-size: 0.9375rem; font-weight: 700; color: var(--text); margin-bottom: 0.375rem; line-height: 1.35; ${task.completed ? 'text-decoration: line-through; opacity: 0.65;' : ''}">${task.title}</h4>
-          ${task.description ? `<p style="font-size: 0.8125rem; color: var(--text-muted); margin-bottom: 0.875rem; line-height: 1.45;">${task.description}</p>` : ''}
-
-          <div style="display: flex; flex-direction: column; gap: 4px; margin-bottom: 0.75rem;">
-            <span style="font-size: 11px; color: var(--text-muted);" class="font-mono">${formatDateWIB(task.due_date)}</span>
-            ${deadlineBadge}
+          <h3 class="kanban-card-title${task.completed ? ' is-complete' : ''}">${title}</h3>
+          ${task.description ? `<p class="kanban-card-desc">${escapeHtml(task.description)}</p>` : ''}
+          <div class="kanban-card-due">
+            <span class="font-mono">${formatDateWIB(task.due_date)}</span>
+            ${task.completed ? '' : deadlineBadge(task.due_date)}
           </div>
-
-          <div style="display: flex; align-items: center; justify-content: space-between; border-top: 1px solid var(--border); padding-top: 0.75rem; flex-wrap: wrap; gap: 0.5rem;">
-            <span style="font-size: 11px; color: var(--text-muted); font-weight: 600;">${task.assignee_name ? task.assignee_name.split(' ')[0] : ''}</span>
-            
-            <div style="display: flex; gap: 4px; align-items: center;">
-              ${task.status !== 'To Do' ? `<button onclick="updateTaskStatus(${task.id}, 'To Do')" title="Pindah ke To Do" aria-label="Pindahkan tugas ke antrean To Do" class="btn-action-icon" style="width: 28px; height: 28px; font-size: 11px;">To Do</button>` : ''}
-              ${task.status !== 'In Progress' ? `<button onclick="updateTaskStatus(${task.id}, 'In Progress')" title="Pindah ke In Progress" aria-label="Pindahkan tugas ke In Progress" class="btn-action-icon" style="width: 28px; height: 28px; font-size: 11px; color: var(--primary);">Jalan</button>` : ''}
-              ${task.status !== 'Done' ? `<button onclick="updateTaskStatus(${task.id}, 'Done')" title="Tandai Selesai" aria-label="Tandai tugas telah selesai" class="btn-action-icon" style="width: 28px; height: 28px; font-size: 11px; color: var(--cta); border-color: rgba(34,197,94,0.3);"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></button>` : ''}
-              <button onclick="openEditTaskModal(${task.id})" title="Edit Rincian" aria-label="Edit rincian data tugas" class="btn-action-icon" style="width: 28px; height: 28px; font-size: 11px; color: var(--primary);"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg></button>
-              <button onclick="deleteTask(${task.id})" title="Hapus Tugas" aria-label="Hapus tugas secara permanen" class="btn-action-icon" style="width: 28px; height: 28px; font-size: 11px; color: #b91c1c; border-color: #fecaca;"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg></button>
+          <div class="kanban-card-foot">
+            <span class="muted" style="font-size: 0.75rem; font-weight: 600;">${escapeHtml(task.assignee_name ? task.assignee_name.split(' ')[0] : '')}</span>
+            <div class="kanban-card-actions">
+              ${task.status !== 'To Do' ? moveBtn('To Do', ICON.todo, 'Pindah ke To Do') : ''}
+              ${task.status !== 'In Progress' ? moveBtn('In Progress', ICON.progress, 'Pindah ke In Progress') : ''}
+              ${task.status !== 'Done' ? moveBtn('Done', ICON.done, 'Tandai selesai', ' is-done') : ''}
+              <button type="button" onclick="openEditTaskModal(${id})" class="btn-action-icon" aria-label="Edit: ${title}" title="Edit">${ICON.edit}</button>
+              <button type="button" onclick="deleteTask(${id})" class="btn-action-icon is-danger" aria-label="Hapus: ${title}" title="Hapus">${ICON.trash}</button>
             </div>
           </div>
-        </div>
-      `;
+        </article>`;
     }
 
     function renderTable(tasks) {
       const tbody = document.getElementById('task-table-rows');
       if (!tasks.length) {
         tbody.innerHTML = `
-          <tr>
-            <td colspan="8" style="padding: 2.5rem 1rem;">
-              <div class="empty-state-box">
-                <div class="empty-state-icon">
-                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
-                </div>
-                <h4 style="font-size: 0.9375rem; font-weight: 700; color: var(--text); margin-bottom: 0.25rem;">Tidak Ada Tugas Ditemukan</h4>
-                <p style="font-size: 0.8125rem; color: var(--text-muted); margin-bottom: 1rem;">Coba sesuaikan kata kunci pencarian atau reset filter.</p>
-                <button onclick="resetFilters()" class="btn-secondary" style="font-size: 0.75rem; min-height: 34px;">Reset Filter</button>
-              </div>
-            </td>
-          </tr>
-        `;
+          <tr><td colspan="8">
+            <div class="empty-state-box">
+              <h4>Tidak ada tugas ditemukan</h4>
+              <p>Sesuaikan kata kunci pencarian atau reset filter.</p>
+              <button type="button" onclick="resetFilters()" class="btn-secondary btn-sm">Reset Filter</button>
+            </div>
+          </td></tr>`;
         return;
       }
 
       tbody.innerHTML = tasks.map(t => {
-        const catClass = `cat-${(t.category || 'umum').toLowerCase()}`;
-        const diffHours = (new Date(t.due_date) - new Date()) / 3600000;
-        let deadlineBadge = '';
-        if (diffHours < 0) {
-          deadlineBadge = `<span class="badge badge-overdue" style="font-size: 10px; margin-left: 6px;">${formatHoursRemaining(diffHours)}</span>`;
-        } else if (diffHours < 24) {
-          deadlineBadge = `<span class="badge badge-urgent" style="font-size: 10px; margin-left: 6px;">${formatHoursRemaining(diffHours)}</span>`;
-        }
-
+        const id = Number(t.id);
+        const title = escapeHtml(t.title);
         return `
-          <tr style="border-bottom: 1px solid var(--border); font-size: 0.875rem;">
-            <td style="padding: 0.875rem 0.5rem; text-align: center;">
-              <input type="checkbox" ${t.completed ? 'checked' : ''} aria-label="Tandai status selesai untuk ${t.title}" onchange="updateTaskStatus(${t.id}, this.checked ? 'Done' : 'In Progress')" style="width: 20px; height: 20px; cursor: pointer; accent-color: var(--cta);">
+          <tr>
+            <td class="center">
+              <input type="checkbox" class="table-check" ${t.completed ? 'checked' : ''} aria-label="Tandai selesai: ${title}" onchange="updateTaskStatus(${id}, this.checked ? 'Done' : 'In Progress')">
             </td>
-            <td style="padding: 0.875rem 1rem; font-weight: 600; color: var(--text); ${t.completed ? 'text-decoration: line-through; opacity: 0.65;' : ''}">
-              ${t.title}
+            <td class="cell-title${t.completed ? ' is-complete' : ''}">${title}</td>
+            <td>${categoryBadge(t.category)}</td>
+            <td>${priorityBadge(t.priority)}</td>
+            <td><span class="badge ${STATUS_BADGE[t.status] || 'badge-todo'}">${escapeHtml(t.status)}</span></td>
+            <td class="nowrap">
+              <span class="font-mono" style="font-size: 0.8125rem;">${formatDateWIB(t.due_date)}</span>
+              ${t.completed ? '' : `<div style="margin-top: 4px;">${deadlineBadge(t.due_date)}</div>`}
             </td>
-            <td style="padding: 0.875rem 1rem;">
-              <span class="cat-badge ${catClass}">
-                <span class="cat-dot"></span>
-                <span>${t.category}</span>
-              </span>
+            <td class="muted">${escapeHtml(t.assignee_name || '–')}</td>
+            <td class="right">
+              <div class="cell-actions">
+                <button type="button" onclick="openEditTaskModal(${id})" class="btn-action-icon" aria-label="Edit: ${title}" title="Edit">${ICON.edit}</button>
+                <button type="button" onclick="deleteTask(${id})" class="btn-action-icon is-danger" aria-label="Hapus: ${title}" title="Hapus">${ICON.trash}</button>
+              </div>
             </td>
-            <td style="padding: 0.875rem 1rem;">
-              <span style="font-weight: 700; font-size: 0.75rem; color: ${t.priority === 'High' ? '#b91c1c' : t.priority === 'Medium' ? '#b45309' : '#15803d'};">
-                ${t.priority}
-              </span>
-            </td>
-            <td style="padding: 0.875rem 1rem;">
-              <span class="badge ${t.status === 'Done' ? 'badge-done' : t.status === 'In Progress' ? 'badge-in-progress' : 'badge-todo'}">
-                ${t.status}
-              </span>
-            </td>
-            <td style="padding: 0.875rem 1rem; color: var(--text-secondary); font-size: 0.8125rem;">
-              <span class="font-mono">${formatDateWIB(t.due_date)}</span>
-              ${deadlineBadge}
-            </td>
-            <td style="padding: 0.875rem 1rem; color: var(--text-muted); font-size: 0.8125rem;">${t.assignee_name || '-'}</td>
-            <td style="padding: 0.875rem 1rem; text-align: right; white-space: nowrap;">
-              <button onclick="openEditTaskModal(${t.id})" aria-label="Edit tugas ${t.title}" class="btn-secondary" style="padding: 4px 10px; min-height: 32px; font-size: 12px; margin-right: 4px;">Edit</button>
-              <button onclick="deleteTask(${t.id})" aria-label="Hapus tugas ${t.title}" class="btn-danger" style="padding: 4px 10px; min-height: 32px; font-size: 12px;">Hapus</button>
-            </td>
-          </tr>
-        `;
+          </tr>`;
       }).join('');
     }
 
@@ -511,25 +404,33 @@
       } catch (e) {}
     }
 
+    function toLocalInputValue(date) {
+      const tzOffset = date.getTimezoneOffset() * 60000;
+      return new Date(date.getTime() - tzOffset).toISOString().slice(0, 16);
+    }
+
+    function showModal() {
+      document.body.classList.add('modal-open');
+      document.getElementById('task-modal').classList.add('active');
+      document.getElementById('task-title').focus();
+    }
+
     // Modal Create / Edit
     function openTaskModal(defaultStatus = 'To Do') {
       document.getElementById('task-form').reset();
       document.getElementById('edit-task-id').value = '';
-      document.getElementById('modal-title').textContent = '+ Tambah Tugas Baru';
+      document.getElementById('modal-title').textContent = 'Tambah Tugas Baru';
       document.getElementById('save-task-btn-text').textContent = 'Simpan Tugas';
-      if (document.getElementById('task-status')) {
-        document.getElementById('task-status').value = defaultStatus;
-      }
+      document.getElementById('task-status').value = defaultStatus;
 
       const tomorrow = new Date();
       tomorrow.setDate(tomorrow.getDate() + 1);
       tomorrow.setHours(17, 0, 0, 0);
-      const tzOffset = tomorrow.getTimezoneOffset() * 60000;
-      document.getElementById('task-due-date').value = new Date(tomorrow.getTime() - tzOffset).toISOString().slice(0, 16);
+      document.getElementById('task-due-date').value = toLocalInputValue(tomorrow);
 
-      document.body.classList.add('modal-open');
-      document.getElementById('task-modal').classList.add('active');
+      showModal();
     }
+    window.openTaskModal = openTaskModal;
 
     function openEditTaskModal(id) {
       const task = allTasks.find(t => t.id === id);
@@ -541,16 +442,12 @@
       document.getElementById('task-category').value = task.category;
       document.getElementById('task-priority').value = task.priority;
       document.getElementById('task-status').value = task.status;
+      document.getElementById('task-due-date').value = toLocalInputValue(task.due_date ? new Date(task.due_date) : new Date());
 
-      const dateObj = task.due_date ? new Date(task.due_date) : new Date();
-      const tzOffset = dateObj.getTimezoneOffset() * 60000;
-      document.getElementById('task-due-date').value = new Date(dateObj.getTime() - tzOffset).toISOString().slice(0, 16);
-
-      document.getElementById('modal-title').textContent = 'Edit Data Tugas';
+      document.getElementById('modal-title').textContent = 'Edit Tugas';
       document.getElementById('save-task-btn-text').textContent = 'Simpan Perubahan';
 
-      document.body.classList.add('modal-open');
-      document.getElementById('task-modal').classList.add('active');
+      showModal();
     }
 
     function closeTaskModal() {
@@ -558,14 +455,13 @@
       document.getElementById('task-modal').classList.remove('active');
     }
 
-    // Keyboard shortcut 'N' for new task
+    // Keyboard shortcut 'N' for new task (Escape is handled globally in navbar.js)
     window.addEventListener('keydown', (e) => {
-      if ((e.key === 'n' || e.key === 'N') && !['INPUT', 'TEXTAREA', 'SELECT'].includes(document.activeElement.tagName)) {
+      if ((e.key === 'n' || e.key === 'N') && !e.ctrlKey && !e.metaKey && !e.altKey
+        && !['INPUT', 'TEXTAREA', 'SELECT'].includes(document.activeElement.tagName)
+        && !document.querySelector('.modal-overlay.active')) {
         e.preventDefault();
         openTaskModal();
-      }
-      if (e.key === 'Escape') {
-        closeTaskModal();
       }
     });
 
@@ -575,25 +471,21 @@
       saveBtn.disabled = true;
 
       const editId = document.getElementById('edit-task-id').value;
-      const title = document.getElementById('task-title').value;
-      const description = document.getElementById('task-desc').value;
-      const category = document.getElementById('task-category').value;
-      const priority = document.getElementById('task-priority').value;
-      const status = document.getElementById('task-status').value;
-      const due_date = document.getElementById('task-due-date').value;
+      const payload = {
+        title: document.getElementById('task-title').value,
+        description: document.getElementById('task-desc').value,
+        category: document.getElementById('task-category').value,
+        priority: document.getElementById('task-priority').value,
+        status: document.getElementById('task-status').value,
+        due_date: document.getElementById('task-due-date').value,
+      };
 
       try {
         if (editId) {
-          await apiFetch(`/api/tasks/${editId}`, {
-            method: 'PUT',
-            body: JSON.stringify({ title, description, category, priority, status, due_date }),
-          });
+          await apiFetch(`/api/tasks/${editId}`, { method: 'PUT', body: JSON.stringify(payload) });
           showToast('Data tugas berhasil diperbarui!', 'success');
         } else {
-          await apiFetch('/api/tasks', {
-            method: 'POST',
-            body: JSON.stringify({ title, description, category, priority, status, due_date }),
-          });
+          await apiFetch('/api/tasks', { method: 'POST', body: JSON.stringify(payload) });
           showToast('Tugas baru berhasil disimpan!', 'success');
         }
         closeTaskModal();

@@ -47,6 +47,9 @@ async function runTests() {
   let memberCookie = '';
   let testTaskId = null;
   let testMemberId = null;
+  let testUser2Id = null;
+
+  const jsonHeaders = (cookie) => ({ 'Content-Type': 'application/json', 'Cookie': cookie });
 
   try {
     // ----------------------------------------------------
@@ -175,11 +178,12 @@ async function runTests() {
     // ----------------------------------------------------
     // Buat akun User kedua
     const user2Email = `tester2_${Date.now()}@perusahaan.com`;
-    await fetch(`${BASE_URL}/api/users`, {
+    const createUser2Res = await fetch(`${BASE_URL}/api/users`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'Cookie': ownerCookie },
       body: JSON.stringify({ name: 'User 2', email: user2Email, password: 'User123!', role: 'User' }),
     });
+    testUser2Id = (await createUser2Res.json()).data?.id || null;
     const loginUser2 = await fetch(`${BASE_URL}/api/auth/login`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -261,16 +265,54 @@ async function runTests() {
     });
     assert(inactiveLoginRes.status === 403, 'TC-03', 'Akun berstatus Inactive ditolak login (403 Forbidden)');
 
-    // Clean up test task
-    if (testTaskId) {
-      await fetch(`${BASE_URL}/api/tasks/${testTaskId}`, {
-        method: 'DELETE',
-        headers: { 'Cookie': ownerCookie },
+    // Sesi lama milik akun yang dinonaktifkan harus langsung dicabut
+    const revokedRes = await fetch(`${BASE_URL}/api/tasks`, { headers: { 'Cookie': memberCookie } });
+    assert(revokedRes.status === 401, 'TC-03b', 'Cookie sesi akun Inactive langsung ditolak (401)');
+
+    // ----------------------------------------------------
+    // TC-15: Validasi Input API (harus 400/404, bukan 500)
+    // ----------------------------------------------------
+    const due = new Date(Date.now() + 3600000).toISOString();
+    const badCases = [
+      ['TC-15a', 'POST', '/api/tasks', { title: 'X', due_date: due, status: 'Selesai' }, 400, 'Status tugas di luar enum ditolak'],
+      ['TC-15b', 'POST', '/api/tasks', { title: 'X', due_date: due, priority: 'Urgent' }, 400, 'Prioritas di luar enum ditolak'],
+      ['TC-15c', 'POST', '/api/tasks', { title: 'X', due_date: 'bukan-tanggal' }, 400, 'Tanggal tidak valid ditolak'],
+      ['TC-15d', 'POST', '/api/tasks', { title: 'X', due_date: due, description: 123 }, 400, 'Deskripsi non-string ditolak'],
+      ['TC-15e', 'POST', '/api/tasks', { title: 'X', due_date: due, user_id: 2147483000 }, 400, 'Assignee yang tidak ada ditolak'],
+      ['TC-15f', 'POST', '/api/users', { name: 'X', email: 'x@y.z', password: 'Password1', role: 'Admin' }, 400, 'Role di luar enum ditolak'],
+      ['TC-15g', 'POST', '/api/reminders', { title: 'X', remind_at: 'kemarin' }, 400, 'Waktu pengingat tidak valid ditolak'],
+      ['TC-15h', 'POST', '/api/reminders', { title: 'X', remind_at: due, task_id: 2147483000 }, 400, 'task_id pengingat yang tidak ada ditolak'],
+      ['TC-15i', 'DELETE', '/api/users/2147483000', undefined, 404, 'Hapus user yang tidak ada → 404'],
+      ['TC-15j', 'DELETE', '/api/reminders/2147483000', undefined, 404, 'Hapus pengingat yang tidak ada → 404'],
+      ['TC-15k', 'GET', '/api/tasks?status=Done&status=To%20Do', undefined, 200, 'Query param ganda tidak membuat 500'],
+    ];
+    for (const [id, method, url, body, expected, desc] of badCases) {
+      const r = await fetch(`${BASE_URL}${url}`, {
+        method,
+        headers: jsonHeaders(ownerCookie),
+        body: body ? JSON.stringify(body) : undefined,
       });
+      assert(r.status === expected, id, `${desc} (dapat ${r.status})`);
     }
 
   } catch (err) {
     console.error('Fatal Test Exception:', err);
+    failed++;
+  } finally {
+    // Hapus semua data uji; tugas ikut terhapus via ON DELETE CASCADE.
+    const cleanup = [
+      testTaskId && `/api/tasks/${testTaskId}`,
+      testMemberId && `/api/users/${testMemberId}`,
+      testUser2Id && `/api/users/${testUser2Id}`,
+    ].filter(Boolean);
+    for (const url of cleanup) {
+      const r = await fetch(`${BASE_URL}${url}`, { method: 'DELETE', headers: { 'Cookie': ownerCookie } }).catch(() => null);
+      // 404 berarti sudah terhapus (mis. tugas ikut cascade); selain itu laporkan.
+      if (!r || (r.status !== 200 && r.status !== 404)) {
+        console.error(`⚠️  Cleanup gagal untuk ${url} (status ${r?.status ?? 'network error'})`);
+      }
+    }
+    if (serverInstance) await new Promise((resolve) => serverInstance.close(resolve));
   }
 
   console.log('\n====================================================');

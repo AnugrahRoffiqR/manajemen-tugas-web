@@ -11,8 +11,13 @@ function showToast(message, type = 'info') {
     document.body.appendChild(container);
   }
 
+  if (!container.hasAttribute('role')) {
+    container.setAttribute('role', 'status');
+    container.setAttribute('aria-live', 'polite');
+  }
+
   const toast = document.createElement('div');
-  toast.className = 'toast';
+  toast.className = `toast toast-${type}`;
 
   const icons = {
     success: '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>',
@@ -21,19 +26,9 @@ function showToast(message, type = 'info') {
     info: '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>',
   };
 
-  const colors = {
-    success: '#15803d',
-    error: '#b91c1c',
-    warning: '#b45309',
-    info: '#0369a1',
-  };
-
-  toast.innerHTML = `
-    <span style="display:inline-flex; align-items:center; justify-content:center; width:22px; height:22px; border-radius:50%; background:${colors[type]}22; color:${colors[type]}; font-weight:bold; font-size:12px;">
-      ${icons[type] || '•'}
-    </span>
-    <span style="flex:1; color:var(--text); font-weight:600;">${message}</span>
-  `;
+  toast.innerHTML = `<span class="toast-icon" aria-hidden="true">${icons[type] || icons.info}</span><span style="flex:1;"></span>`;
+  // Message may contain server/user text — never parse it as HTML.
+  toast.lastElementChild.textContent = message;
 
   container.appendChild(toast);
 
@@ -43,6 +38,33 @@ function showToast(message, type = 'info') {
     toast.style.transition = 'transform 160ms cubic-bezier(0.23, 1, 0.32, 1), opacity 160ms cubic-bezier(0.23, 1, 0.32, 1)';
     setTimeout(() => toast.remove(), 160);
   }, 3500);
+}
+
+// Escape user-controlled text before interpolating into innerHTML templates.
+function escapeHtml(value) {
+  return String(value ?? '').replace(/[&<>"']/g, (c) => ({
+    '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;',
+  }[c]));
+}
+
+// Shared deadline badge for task rows/cards (overdue or < 24h).
+function deadlineBadge(dueDate) {
+  const diffHours = (new Date(dueDate) - new Date()) / 3600000;
+  if (diffHours < 0) return `<span class="badge badge-overdue">${formatHoursRemaining(diffHours)}</span>`;
+  if (diffHours < 24) return `<span class="badge badge-urgent">${formatHoursRemaining(diffHours)}</span>`;
+  return '';
+}
+
+function priorityBadge(priority) {
+  const cls = { High: 'badge-high', Medium: 'badge-medium', Low: 'badge-low' }[priority];
+  return cls ? `<span class="badge ${cls}">${priority}</span>` : '';
+}
+
+function categoryBadge(category) {
+  const name = category || 'Umum';
+  const known = ['teknis', 'operasional', 'bisnis', 'administrasi', 'umum'];
+  const key = name.toLowerCase();
+  return `<span class="cat-badge cat-${known.includes(key) ? key : 'umum'}"><span class="cat-dot" aria-hidden="true"></span>${escapeHtml(name)}</span>`;
 }
 
 // Global API Fetch
@@ -61,7 +83,8 @@ async function apiFetch(endpoint, options = {}) {
 
   try {
     const response = await fetch(endpoint, config);
-    const data = await response.json();
+    // Tolerate non-JSON bodies (proxy/platform error pages) instead of throwing a parse error.
+    const data = await response.json().catch(() => ({}));
 
     if (!response.ok) {
       if (response.status === 401 && !window.location.pathname.includes('/login')) {

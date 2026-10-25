@@ -4,6 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Kelola Tim — Sistem Manajemen Tugas</title>
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml">
   <link rel="stylesheet" href="/css/style.css">
 </head>
 <body>
@@ -11,58 +12,41 @@
   <!-- Mobile Top Header Bar (< 1024px) -->
   <div id="mobile-header"></div>
 
-  <div style="display: flex; min-height: 100dvh;">
+  <div class="app-shell">
     <!-- Desktop Sidebar (>= 1024px) -->
     <div id="sidebar-container"></div>
 
-    <!-- Main Workspace Area -->
     <main class="workspace-main">
-      
-      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; flex-wrap: wrap; gap: 1rem;">
+
+      <header class="page-head">
         <div>
-          <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.375rem;">
-            <span class="badge" style="background: rgba(0, 128, 255, 0.1); color: var(--primary); border: 1px solid rgba(0, 128, 255, 0.25);">
-              KHUSUS OWNER
-            </span>
-          </div>
-          <h1 style="font-size: 2rem; font-weight: 700; color: var(--text); letter-spacing: -0.01em;">
-            Manajemen Tim & <span style="color: #ea580c;">Hak Akses</span>
-          </h1>
-          <p style="color: var(--text-muted); font-size: 0.875rem;">Kelola hak akses anggota tim, pendaftaran akun baru, dan kontrol status aktif.</p>
+          <h1 class="page-title">Kelola Tim</h1>
+          <p class="page-sub">Daftarkan anggota baru, atur peran, dan kontrol status akun.</p>
         </div>
+        <div class="page-actions">
+          <button type="button" onclick="openAddUserModal()" class="btn-primary">Tambah Anggota</button>
+        </div>
+      </header>
 
-        <button onclick="openAddUserModal()" class="btn-island">
-          <span>+ Tambah Anggota</span>
-          <span class="btn-icon-pill">
-            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="8.5" cy="7" r="4"/><line x1="20" y1="8" x2="20" y2="14"/><line x1="23" y1="11" x2="17" y2="11"/></svg>
-          </span>
-        </button>
-      </div>
-
-      <!-- Users Table Container -->
-      <div class="glass-card" style="padding: 1.5rem;">
-        <div style="overflow-x: auto;">
-          <table style="width: 100%; border-collapse: collapse; text-align: left;">
+      <section class="card card-pad" aria-label="Daftar anggota tim">
+        <div class="table-wrap">
+          <table>
             <thead>
-              <tr style="border-bottom: 1px solid var(--border); color: var(--text-muted); font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.05em;">
-                <th style="padding: 0.75rem 1rem;">Pengguna</th>
-                <th style="padding: 0.75rem 1rem;">Peran (Role)</th>
-                <th style="padding: 0.75rem 1rem;">Status Akun</th>
-                <th style="padding: 0.75rem 1rem;">Beban Tugas</th>
-                <th style="padding: 0.75rem 1rem;">Tanggal Bergabung</th>
-                <th style="padding: 0.75rem 1rem; text-align: right;">Aksi</th>
+              <tr>
+                <th>Pengguna</th>
+                <th>Peran</th>
+                <th>Status</th>
+                <th>Tugas Selesai</th>
+                <th>Bergabung</th>
+                <th class="right"><span class="sr-only">Aksi</span></th>
               </tr>
             </thead>
             <tbody id="users-table-rows">
-              <tr>
-                <td colspan="6" style="text-align: center; padding: 2.5rem 1rem; color: var(--text-muted); font-size: 0.875rem;">
-                  Memuat data anggota tim...
-                </td>
-              </tr>
+              <tr><td colspan="6" class="loading-text">Memuat data anggota tim…</td></tr>
             </tbody>
           </table>
         </div>
-      </div>
+      </section>
 
     </main>
   </div>
@@ -70,47 +54,39 @@
   <!-- Mobile Bottom Nav (< 1024px) -->
   <div id="mobile-bottom-nav"></div>
 
-  <!-- Modal Tambah Pengguna Baru -->
+  <!-- Modal Tambah Pengguna -->
   <div id="add-user-modal" class="modal-overlay">
-    <div class="modal-container glass-card" style="background: #ffffff; border: 1px solid var(--border);">
-      <div style="padding: 1.25rem 1.5rem; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center;">
-        <h3 style="font-size: 1.125rem; font-weight: 700; color: var(--text);">+ Daftarkan Anggota Tim Baru</h3>
-        <button onclick="closeAddUserModal()" class="btn-action-icon" style="width: 32px; height: 32px;" aria-label="Tutup modal">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+    <div class="modal-container" role="dialog" aria-modal="true" aria-labelledby="add-user-title">
+      <div class="modal-head">
+        <h2 id="add-user-title" class="modal-title">Tambah Anggota Tim</h2>
+        <button type="button" onclick="closeAddUserModal()" class="btn-action-icon" aria-label="Tutup">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
         </button>
       </div>
       <form id="add-user-form" class="modal-body">
-        <div style="margin-bottom: 1rem;">
-          <label for="new-user-name" style="display: block; font-size: 0.8125rem; font-weight: 600; color: var(--text); margin-bottom: 0.375rem;">Nama Lengkap *</label>
-          <input type="text" id="new-user-name" class="form-input" placeholder="Contoh: Budi Santoso" required>
+        <div class="field">
+          <label for="new-user-name" class="field-label">Nama Lengkap *</label>
+          <input type="text" id="new-user-name" class="form-input" required autocomplete="off">
         </div>
-
-        <div style="margin-bottom: 1rem;">
-          <label for="new-user-email" style="display: block; font-size: 0.8125rem; font-weight: 600; color: var(--text); margin-bottom: 0.375rem;">Alamat Email *</label>
-          <input type="email" id="new-user-email" class="form-input" placeholder="budi@perusahaan.com" required>
+        <div class="field">
+          <label for="new-user-email" class="field-label">Alamat Email *</label>
+          <input type="email" id="new-user-email" class="form-input" required autocomplete="off" spellcheck="false">
         </div>
-
-        <div style="margin-bottom: 1rem;">
-          <label for="new-user-password" style="display: block; font-size: 0.8125rem; font-weight: 600; color: var(--text); margin-bottom: 0.375rem;">Kata Sandi Awal *</label>
-          <input type="password" id="new-user-password" class="form-input" placeholder="Minimal 6 karakter..." required minlength="6">
+        <div class="field">
+          <label for="new-user-password" class="field-label">Kata Sandi Awal *</label>
+          <input type="password" id="new-user-password" class="form-input" required minlength="8" autocomplete="new-password" aria-describedby="new-user-password-hint">
+          <p id="new-user-password-hint" class="field-hint">Minimal 8 karakter.</p>
         </div>
-
-        <div style="margin-bottom: 1.5rem;">
-          <label for="new-user-role" style="display: block; font-size: 0.8125rem; font-weight: 600; color: var(--text); margin-bottom: 0.375rem;">Peran (Role) *</label>
+        <div class="field">
+          <label for="new-user-role" class="field-label">Peran *</label>
           <select id="new-user-role" class="form-select">
-            <option value="User" selected>User (Anggota Pelaksana)</option>
-            <option value="Owner">Owner (Administrator Utama)</option>
+            <option value="User" selected>User — anggota pelaksana</option>
+            <option value="Owner">Owner — administrator</option>
           </select>
         </div>
-
-        <div style="display: flex; justify-content: flex-end; gap: 0.75rem;">
+        <div class="form-actions">
           <button type="button" onclick="closeAddUserModal()" class="btn-secondary">Batal</button>
-          <button type="submit" id="save-user-btn" class="btn-island">
-            <span>Daftarkan Anggota</span>
-            <span class="btn-icon-pill">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
-            </span>
-          </button>
+          <button type="submit" id="save-user-btn" class="btn-primary">Daftarkan Anggota</button>
         </div>
       </form>
     </div>
@@ -118,50 +94,44 @@
 
   <!-- Modal Edit Pengguna -->
   <div id="edit-user-modal" class="modal-overlay">
-    <div class="modal-container glass-card" style="background: #ffffff; border: 1px solid var(--border);">
-      <div style="padding: 1.25rem 1.5rem; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center;">
-        <h3 style="font-size: 1.125rem; font-weight: 700; color: var(--text);">Edit Data & Akses Pengguna</h3>
-        <button onclick="closeEditUserModal()" class="btn-action-icon" style="width: 32px; height: 32px;" aria-label="Tutup modal">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+    <div class="modal-container" role="dialog" aria-modal="true" aria-labelledby="edit-user-title">
+      <div class="modal-head">
+        <h2 id="edit-user-title" class="modal-title">Edit Anggota</h2>
+        <button type="button" onclick="closeEditUserModal()" class="btn-action-icon" aria-label="Tutup">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
         </button>
       </div>
       <form id="edit-user-form" class="modal-body">
         <input type="hidden" id="edit-user-id" value="">
-
-        <div style="margin-bottom: 1rem;">
-          <label for="edit-user-name" style="display: block; font-size: 0.8125rem; font-weight: 600; color: var(--text); margin-bottom: 0.375rem;">Nama Lengkap *</label>
-          <input type="text" id="edit-user-name" class="form-input" required>
+        <div class="field">
+          <label for="edit-user-name" class="field-label">Nama Lengkap *</label>
+          <input type="text" id="edit-user-name" class="form-input" required autocomplete="off">
         </div>
-
-        <div style="margin-bottom: 1rem;">
-          <label for="edit-user-role" style="display: block; font-size: 0.8125rem; font-weight: 600; color: var(--text); margin-bottom: 0.375rem;">Peran (Role)</label>
-          <select id="edit-user-role" class="form-select">
-            <option value="User">User (Anggota Pelaksana)</option>
-            <option value="Owner">Owner (Administrator Utama)</option>
-          </select>
+        <div class="field-row">
+          <div class="field">
+            <label for="edit-user-role" class="field-label">Peran</label>
+            <select id="edit-user-role" class="form-select">
+              <option value="User">User</option>
+              <option value="Owner">Owner</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="edit-user-status" class="field-label">Status Akun</label>
+            <select id="edit-user-status" class="form-select">
+              <option value="Active">Active — dapat masuk</option>
+              <option value="Inactive">Inactive — diblokir</option>
+            </select>
+          </div>
         </div>
-
-        <div style="margin-bottom: 1rem;">
-          <label for="edit-user-status" style="display: block; font-size: 0.8125rem; font-weight: 600; color: var(--text); margin-bottom: 0.375rem;">Status Akun</label>
-          <select id="edit-user-status" class="form-select">
-            <option value="Active">Active (Dapat Masuk)</option>
-            <option value="Inactive">Inactive (Diblokir Masuk)</option>
-          </select>
+        <p id="self-lock-hint" class="field-hint hidden" style="margin: -0.5rem 0 1rem;">Peran dan status akun sendiri tidak dapat diubah.</p>
+        <div class="field">
+          <label for="edit-user-password" class="field-label">Kata Sandi Baru</label>
+          <input type="password" id="edit-user-password" class="form-input" minlength="8" autocomplete="new-password" aria-describedby="edit-user-password-hint">
+          <p id="edit-user-password-hint" class="field-hint">Minimal 8 karakter. Kosongkan jika tidak ingin mengubah.</p>
         </div>
-
-        <div style="margin-bottom: 1.5rem;">
-          <label for="edit-user-password" style="display: block; font-size: 0.8125rem; font-weight: 600; color: var(--text); margin-bottom: 0.375rem;">Ganti Kata Sandi (Opsional)</label>
-          <input type="password" id="edit-user-password" class="form-input" placeholder="Biarkan kosong jika tidak ingin mengubah sandi">
-        </div>
-
-        <div style="display: flex; justify-content: flex-end; gap: 0.75rem;">
+        <div class="form-actions">
           <button type="button" onclick="closeEditUserModal()" class="btn-secondary">Batal</button>
-          <button type="submit" id="update-user-btn" class="btn-island">
-            <span>Simpan Perubahan</span>
-            <span class="btn-icon-pill">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
-            </span>
-          </button>
+          <button type="submit" id="update-user-btn" class="btn-primary">Simpan Perubahan</button>
         </div>
       </form>
     </div>
@@ -174,6 +144,9 @@
 
     let allUsersList = [];
     let loggedInUser = null;
+
+    const ICON_EDIT = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>';
+    const ICON_TRASH = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>';
 
     async function loadUsersData() {
       try {
@@ -199,87 +172,69 @@
     function renderUsersTable(users) {
       const tbody = document.getElementById('users-table-rows');
       if (!users.length) {
-        tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; padding:2.5rem 1rem; color:var(--text-muted);">Belum ada pengguna tercatat.</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="6"><div class="empty-state-box compact">Belum ada pengguna tercatat.</div></td></tr>';
         return;
       }
 
       tbody.innerHTML = users.map(u => {
+        const id = Number(u.id);
+        const name = escapeHtml(u.name);
         const isSelf = loggedInUser && loggedInUser.id === u.id;
         const isOwner = u.role === 'Owner';
-        const roleBadgeBg = isOwner ? 'rgba(0, 128, 255, 0.1)' : 'rgba(100, 116, 139, 0.1)';
-        const roleColor = isOwner ? 'var(--primary)' : 'var(--text-muted)';
-        const avatarBg = isOwner ? '#ff8c7a' : '#94a3b8';
-        const avatarTextColor = isOwner ? '#2d3748' : '#ffffff';
-        const statusColor = u.status === 'Active' ? 'var(--cta)' : '#b91c1c';
-        const statusBg = u.status === 'Active' ? 'var(--cta-tint)' : '#fef2f2';
-        const taskPercent = u.total_tasks > 0 ? Math.round((u.completed_tasks / u.total_tasks) * 100) : 0;
+        const active = u.status === 'Active';
+        const total = parseInt(u.total_tasks, 10) || 0;
+        const done = parseInt(u.completed_tasks, 10) || 0;
+        const pct = total > 0 ? Math.round((done / total) * 100) : 0;
 
         return `
-          <tr style="border-bottom: 1px solid var(--border); font-size: 0.875rem;">
-            <td style="padding: 1rem;">
-              <div style="display: flex; align-items: center; gap: 0.75rem;">
-                <div style="width: 38px; height: 38px; border-radius: 12px; border: 2px solid var(--border); box-shadow: 2px 2px 0 var(--border); background: ${avatarBg}; display: flex; align-items: center; justify-content: center; color: ${avatarTextColor}; font-weight: 700; font-size: 15px; font-family: 'Fredoka', sans-serif; flex-shrink: 0;">
-                  ${u.name.charAt(0).toUpperCase()}
-                </div>
-                <div>
-                  <div style="display: flex; align-items: center; gap: 6px;">
-                    <p style="font-weight: 700; color: var(--text);">${u.name}</p>
-                    ${isSelf ? '<span class="badge" style="background: rgba(0, 128, 255, 0.15); color: var(--primary); border: 1px solid rgba(0, 128, 255, 0.3); font-size: 9px; padding: 1px 5px;">ANDA</span>' : ''}
-                  </div>
-                  <p style="font-size: 0.75rem; color: var(--text-muted);">${u.email}</p>
+          <tr>
+            <td>
+              <div style="display: flex; align-items: center; gap: 0.75rem; min-width: 220px;">
+                <span class="avatar${isOwner ? '' : ' avatar-muted'}" aria-hidden="true">${escapeHtml(u.name.charAt(0).toUpperCase())}</span>
+                <div style="min-width: 0;">
+                  <p style="font-weight: 600; overflow-wrap: anywhere;">${name}${isSelf ? ' <span class="muted" style="font-weight: 500; font-size: 0.75rem;">(Anda)</span>' : ''}</p>
+                  <p class="cell-sub" style="overflow-wrap: anywhere;">${escapeHtml(u.email)}</p>
                 </div>
               </div>
             </td>
-            <td style="padding: 1rem;">
-              <span class="badge" style="background: ${roleBadgeBg}; color: ${roleColor}; border: 1px solid ${roleColor}44;">
-                ${u.role}
-              </span>
-            </td>
-            <td style="padding: 1rem;">
-              <span class="badge" style="background: ${statusBg}; color: ${statusColor}; border: 1px solid ${statusColor}44; display: inline-flex; align-items: center; gap: 6px;">
-                <span style="width: 6px; height: 6px; border-radius: 50%; background: ${statusColor}; display: inline-block;"></span>
-                <span>${u.status}</span>
-              </span>
-            </td>
-            <td style="padding: 1rem;">
-              <div style="display: flex; flex-direction: column; gap: 4px;">
-                <div style="display: flex; justify-content: space-between; font-size: 11px;" class="font-mono">
-                  <span style="color: var(--text); font-weight: 600;">${u.completed_tasks}/${u.total_tasks}</span>
-                  <span style="color: var(--text-muted);">${taskPercent}%</span>
+            <td><span class="badge ${isOwner ? 'badge-in-progress' : 'badge-todo'}">${escapeHtml(u.role)}</span></td>
+            <td><span class="badge ${active ? 'badge-done' : 'badge-overdue'}">${escapeHtml(u.status)}</span></td>
+            <td>
+              <div style="width: 110px;">
+                <div class="bar-row-head font-mono" style="font-size: 0.75rem; margin-bottom: 4px;">
+                  <span>${done}/${total}</span><span class="muted">${pct}%</span>
                 </div>
-                <div style="width: 90px; height: 6px; background: #e2e8f0; border-radius: 999px; overflow: hidden;">
-                  <div style="width: ${taskPercent}%; height: 100%; background: #0080ff; border-radius: 999px; transition: width 400ms ease;"></div>
-                </div>
+                <div class="bar-track" style="height: 6px;"><div class="bar-fill" style="width: ${pct}%; background: var(--primary);"></div></div>
               </div>
             </td>
-            <td style="padding: 1rem; color: var(--text-secondary); font-size: 0.8125rem;" class="font-mono">
-              ${formatDateWIB(u.created_at)}
+            <td class="nowrap font-mono muted" style="font-size: 0.8125rem;">${formatDateWIB(u.created_at)}</td>
+            <td class="right">
+              <div class="cell-actions">
+                <button type="button" onclick="openEditUserModal(${id})" class="btn-action-icon" aria-label="Edit akun: ${name}" title="Edit">${ICON_EDIT}</button>
+                ${isSelf ? '' : `<button type="button" onclick="deleteUserAccount(${id})" class="btn-action-icon is-danger" aria-label="Hapus akun: ${name}" title="Hapus">${ICON_TRASH}</button>`}
+              </div>
             </td>
-            <td style="padding: 1rem; text-align: right; white-space: nowrap;">
-              <button onclick="openEditUserModal(${u.id})" aria-label="Edit akun pengguna ${u.name}" class="btn-secondary" style="padding: 4px 10px; min-height: 32px; font-size: 12px; margin-right: 4px;">
-                Edit
-              </button>
-              ${!isSelf ? `
-              <button onclick="deleteUserAccount(${u.id}, '${u.name}')" aria-label="Hapus akun ${u.name}" class="btn-danger" style="padding: 4px 10px; min-height: 32px; font-size: 12px;">
-                Hapus
-              </button>` : ''}
-            </td>
-          </tr>
-        `;
+          </tr>`;
       }).join('');
+    }
+
+    function openModal(id, focusId) {
+      document.body.classList.add('modal-open');
+      document.getElementById(id).classList.add('active');
+      document.getElementById(focusId).focus();
+    }
+
+    function closeModal(id) {
+      document.body.classList.remove('modal-open');
+      document.getElementById(id).classList.remove('active');
     }
 
     // Modal Add
     function openAddUserModal() {
       document.getElementById('add-user-form').reset();
-      document.body.classList.add('modal-open');
-      document.getElementById('add-user-modal').classList.add('active');
+      openModal('add-user-modal', 'new-user-name');
     }
-
-    function closeAddUserModal() {
-      document.body.classList.remove('modal-open');
-      document.getElementById('add-user-modal').classList.remove('active');
-    }
+    function closeAddUserModal() { closeModal('add-user-modal'); }
 
     document.getElementById('add-user-form').addEventListener('submit', async (e) => {
       e.preventDefault();
@@ -316,23 +271,15 @@
       document.getElementById('edit-user-status').value = user.status;
       document.getElementById('edit-user-password').value = '';
 
-      // Proteksi Self-Lockout di UI
-      if (loggedInUser && loggedInUser.id === user.id) {
-        document.getElementById('edit-user-role').disabled = true;
-        document.getElementById('edit-user-status').disabled = true;
-      } else {
-        document.getElementById('edit-user-role').disabled = false;
-        document.getElementById('edit-user-status').disabled = false;
-      }
+      // Proteksi self-lockout di UI
+      const isSelf = loggedInUser && loggedInUser.id === user.id;
+      document.getElementById('edit-user-role').disabled = isSelf;
+      document.getElementById('edit-user-status').disabled = isSelf;
+      document.getElementById('self-lock-hint').classList.toggle('hidden', !isSelf);
 
-      document.body.classList.add('modal-open');
-      document.getElementById('edit-user-modal').classList.add('active');
+      openModal('edit-user-modal', 'edit-user-name');
     }
-
-    function closeEditUserModal() {
-      document.body.classList.remove('modal-open');
-      document.getElementById('edit-user-modal').classList.remove('active');
-    }
+    function closeEditUserModal() { closeModal('edit-user-modal'); }
 
     document.getElementById('edit-user-form').addEventListener('submit', async (e) => {
       e.preventDefault();
@@ -359,8 +306,11 @@
       }
     });
 
-    async function deleteUserAccount(id, name) {
-      if (!confirm(`Hapus akun ${name} secara permanen beserta seluruh tugasnya?`)) return;
+    // Name looked up by id — never interpolated into an inline handler.
+    async function deleteUserAccount(id) {
+      const user = allUsersList.find(u => u.id === id);
+      if (!user) return;
+      if (!confirm(`Hapus akun ${user.name} secara permanen beserta seluruh tugasnya?`)) return;
 
       try {
         await apiFetch(`/api/users/${id}`, { method: 'DELETE' });
