@@ -4,6 +4,12 @@ process.on('uncaughtException', (err) => {
 process.on('unhandledRejection', (reason) => {
   console.error('[UNHANDLED REJECTION]', reason);
 });
+process.on('exit', (code) => {
+  console.log('[PROCESS EXIT EVENT] Exit code:', code);
+});
+process.on('beforeExit', (code) => {
+  console.log('[PROCESS BEFORE_EXIT EVENT] Code:', code);
+});
 
 const express = require('express');
 const cookieParser = require('cookie-parser');

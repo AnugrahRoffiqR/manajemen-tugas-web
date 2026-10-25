@@ -25,6 +25,7 @@ yarn-debug.log*
 yarn-error.log*
 pnpm-debug.log*
 lerna-debug.log*
+*.log
 
 # ==========================================
 # 3. BUILD ARTIFACTS, CACHE & VERCEL
