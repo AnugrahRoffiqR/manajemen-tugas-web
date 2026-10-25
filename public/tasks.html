@@ -41,8 +41,8 @@
             </button>
           </div>
 
-          <button onclick="openTaskModal()" class="btn-island">
-            <span>+ Buat Tugas</span>
+          <button onclick="openTaskModal()" class="btn-island" aria-label="Buat tugas baru (Shortcut N)">
+            <span>+ Buat Tugas <kbd style="font-size: 10px; opacity: 0.8; background: rgba(0,0,0,0.25); padding: 1px 5px; border-radius: 4px; margin-left: 4px;">N</kbd></span>
             <span class="btn-icon-pill">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
             </span>
@@ -321,9 +321,18 @@
       document.getElementById('count-inprogress').textContent = inProgs.length;
       document.getElementById('count-done').textContent = dones.length;
 
-      colTodo.innerHTML = todos.length ? todos.map(t => createKanbanCard(t)).join('') : '<p style="font-size:12px; color:#94a3b8; text-align:center; padding:1.5rem;">Tidak ada antrean tugas</p>';
-      colInProg.innerHTML = inProgs.length ? inProgs.map(t => createKanbanCard(t)).join('') : '<p style="font-size:12px; color:#94a3b8; text-align:center; padding:1.5rem;">Tidak ada tugas sedang berjalan</p>';
-      colDone.innerHTML = dones.length ? dones.map(t => createKanbanCard(t)).join('') : '<p style="font-size:12px; color:#94a3b8; text-align:center; padding:1.5rem;">Belum ada tugas selesai</p>';
+      colTodo.innerHTML = todos.length ? todos.map(t => createKanbanCard(t)).join('') : `
+        <div class="empty-state-box" style="padding: 1.75rem 1rem;">
+          <p style="font-size: 12px; color: #94a3b8; font-weight: 500;">Antrean bersih</p>
+        </div>`;
+      colInProg.innerHTML = inProgs.length ? inProgs.map(t => createKanbanCard(t)).join('') : `
+        <div class="empty-state-box" style="padding: 1.75rem 1rem;">
+          <p style="font-size: 12px; color: #94a3b8; font-weight: 500;">Tidak ada tugas aktif</p>
+        </div>`;
+      colDone.innerHTML = dones.length ? dones.map(t => createKanbanCard(t)).join('') : `
+        <div class="empty-state-box" style="padding: 1.75rem 1rem;">
+          <p style="font-size: 12px; color: #94a3b8; font-weight: 500;">Belum ada tugas selesai</p>
+        </div>`;
     }
 
     function createKanbanCard(task) {
@@ -347,11 +356,11 @@
             <span style="font-size: 11px; color: #94a3b8;" class="font-mono">📅 ${formatDateWIB(task.due_date)}</span>
             
             <div style="display: flex; gap: 4px; align-items: center;">
-              ${task.status !== 'To Do' ? `<button onclick="updateTaskStatus(${task.id}, 'To Do')" title="Pindah ke To Do" class="btn-action-icon" style="width: 28px; height: 28px; font-size: 11px;">⏮</button>` : ''}
-              ${task.status !== 'In Progress' ? `<button onclick="updateTaskStatus(${task.id}, 'In Progress')" title="Pindah ke In Progress" class="btn-action-icon" style="width: 28px; height: 28px; font-size: 11px; color: #fbbf24;">▶</button>` : ''}
-              ${task.status !== 'Done' ? `<button onclick="updateTaskStatus(${task.id}, 'Done')" title="Tandai Selesai" class="btn-action-icon" style="width: 28px; height: 28px; font-size: 11px; color: #34d399;">✓</button>` : ''}
-              <button onclick="openEditTaskModal(${task.id})" title="Edit Rincian" class="btn-action-icon" style="width: 28px; height: 28px; font-size: 12px; color: #60a5fa;">✏️</button>
-              <button onclick="deleteTask(${task.id})" title="Hapus Tugas" class="btn-action-icon" style="width: 28px; height: 28px; font-size: 12px; color: #f87171;">🗑️</button>
+              ${task.status !== 'To Do' ? `<button onclick="updateTaskStatus(${task.id}, 'To Do')" title="Pindah ke To Do" aria-label="Pindahkan tugas ke antrean To Do" class="btn-action-icon" style="width: 28px; height: 28px; font-size: 11px;">⏮</button>` : ''}
+              ${task.status !== 'In Progress' ? `<button onclick="updateTaskStatus(${task.id}, 'In Progress')" title="Pindah ke In Progress" aria-label="Pindahkan tugas ke In Progress" class="btn-action-icon" style="width: 28px; height: 28px; font-size: 11px; color: #fbbf24;">▶</button>` : ''}
+              ${task.status !== 'Done' ? `<button onclick="updateTaskStatus(${task.id}, 'Done')" title="Tandai Selesai" aria-label="Tandai tugas telah selesai" class="btn-action-icon" style="width: 28px; height: 28px; font-size: 11px; color: #34d399;">✓</button>` : ''}
+              <button onclick="openEditTaskModal(${task.id})" title="Edit Rincian" aria-label="Edit rincian data tugas" class="btn-action-icon" style="width: 28px; height: 28px; font-size: 12px; color: #60a5fa;">✏️</button>
+              <button onclick="deleteTask(${task.id})" title="Hapus Tugas" aria-label="Hapus tugas secara permanen" class="btn-action-icon" style="width: 28px; height: 28px; font-size: 12px; color: #f87171;">🗑️</button>
             </div>
           </div>
         </div>
@@ -361,14 +370,25 @@
     function renderTable(tasks) {
       const tbody = document.getElementById('task-table-rows');
       if (!tasks.length) {
-        tbody.innerHTML = '<tr><td colspan="8" style="text-align:center; padding:2.5rem 1rem; color:#94a3b8;">Tidak ada data tugas yang sesuai dengan filter.</td></tr>';
+        tbody.innerHTML = `
+          <tr>
+            <td colspan="8" style="padding: 2.5rem 1rem;">
+              <div class="empty-state-box">
+                <div class="empty-state-icon">📋</div>
+                <h4 style="font-size: 0.9375rem; font-weight: 700; color: #f8fafc; margin-bottom: 0.25rem;">Tidak Ada Tugas Ditemukan</h4>
+                <p style="font-size: 0.8125rem; color: #94a3b8; margin-bottom: 1rem;">Coba sesuaikan kata kunci pencarian atau reset filter.</p>
+                <button onclick="resetFilters()" class="btn-secondary" style="font-size: 0.75rem; min-height: 34px;">Reset Filter</button>
+              </div>
+            </td>
+          </tr>
+        `;
         return;
       }
 
       tbody.innerHTML = tasks.map(t => `
         <tr style="border-bottom: 1px solid var(--border-hairline); font-size: 0.875rem;">
           <td style="padding: 0.875rem 0.5rem; text-align: center;">
-            <input type="checkbox" ${t.completed ? 'checked' : ''} onchange="updateTaskStatus(${t.id}, this.checked ? 'Done' : 'In Progress')" style="width: 20px; height: 20px; cursor: pointer; accent-color: #10b981;">
+            <input type="checkbox" ${t.completed ? 'checked' : ''} aria-label="Tandai status selesai untuk ${t.title}" onchange="updateTaskStatus(${t.id}, this.checked ? 'Done' : 'In Progress')" style="width: 20px; height: 20px; cursor: pointer; accent-color: #10b981;">
           </td>
           <td style="padding: 0.875rem 1rem; font-weight: 600; color: #f8fafc;">${t.title}</td>
           <td style="padding: 0.875rem 1rem; color: #cbd5e1; font-size: 0.8125rem;">${t.category}</td>
@@ -385,8 +405,8 @@
           <td style="padding: 0.875rem 1rem; color: #94a3b8; font-size: 0.8125rem;" class="font-mono">${formatDateWIB(t.due_date)}</td>
           <td style="padding: 0.875rem 1rem; color: #cbd5e1; font-size: 0.8125rem;">${t.assignee_name || '-'}</td>
           <td style="padding: 0.875rem 1rem; text-align: right; white-space: nowrap;">
-            <button onclick="openEditTaskModal(${t.id})" class="btn-secondary" style="padding: 4px 8px; min-height: 32px; font-size: 12px; margin-right: 4px;">Edit</button>
-            <button onclick="deleteTask(${t.id})" class="btn-danger" style="padding: 4px 8px; min-height: 32px; font-size: 12px;">Hapus</button>
+            <button onclick="openEditTaskModal(${t.id})" aria-label="Edit tugas ${t.title}" class="btn-secondary" style="padding: 4px 10px; min-height: 34px; font-size: 12px; margin-right: 4px;">Edit</button>
+            <button onclick="deleteTask(${t.id})" aria-label="Hapus tugas ${t.title}" class="btn-danger" style="padding: 4px 10px; min-height: 34px; font-size: 12px;">Hapus</button>
           </td>
         </tr>
       `).join('');

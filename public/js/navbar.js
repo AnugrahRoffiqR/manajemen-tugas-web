@@ -97,7 +97,7 @@ async function initNavigation(activeKey = '') {
               <span style="font-size: 11px; color: ${currentUser.role === 'Owner' ? '#60a5fa' : '#94a3b8'}; font-weight: 600;">${currentUser.role}</span>
             </div>
           </div>
-          <button onclick="handleLogout()" title="Keluar dari akun" class="btn-action-icon" style="flex-shrink: 0; width: 32px; height: 32px;">
+          <button onclick="handleLogout()" title="Keluar dari akun" aria-label="Keluar dari akun" class="btn-action-icon" style="flex-shrink: 0; width: 34px; height: 34px;">
             ${ICONS.logout}
           </button>
         </div>
@@ -118,7 +118,7 @@ async function initNavigation(activeKey = '') {
         </div>
         <div style="display: flex; align-items: center; gap: 0.625rem;">
           <span style="font-size: 12px; color: #cbd5e1; font-weight: 600;">${currentUser.name.split(' ')[0]}</span>
-          <button onclick="handleLogout()" class="btn-action-icon" title="Keluar" style="width: 34px; height: 34px;">
+          <button onclick="handleLogout()" class="btn-action-icon" title="Keluar dari akun" aria-label="Keluar dari akun" style="width: 34px; height: 34px;">
             ${ICONS.logout}
           </button>
         </div>
@@ -126,30 +126,30 @@ async function initNavigation(activeKey = '') {
     `;
   }
 
-  // 5. Render Mobile Bottom Navigation (< 1024px)
+  // 5. Render Mobile Bottom Navigation (< 1024px, baseline-ui safe-area)
   const mobileBottomNav = document.getElementById('mobile-bottom-nav');
   if (mobileBottomNav) {
     mobileBottomNav.innerHTML = `
-      <nav style="position: fixed; bottom: 0; left: 0; right: 0; height: 60px; background: rgba(15, 23, 42, 0.95); border-top: 1px solid var(--border-hairline); display: flex; align-items: center; justify-content: space-around; z-index: 99; backdrop-filter: blur(16px);">
-        <a href="/dashboard" class="mobile-nav-link ${activeKey === 'dashboard' ? 'active' : ''}">
+      <nav aria-label="Navigasi Utama Mobile" style="position: fixed; bottom: 0; left: 0; right: 0; height: calc(60px + env(safe-area-inset-bottom, 0px)); padding-bottom: env(safe-area-inset-bottom, 0px); background: rgba(15, 23, 42, 0.96); border-top: 1px solid var(--border-hairline); display: flex; align-items: center; justify-content: space-around; z-index: 99; backdrop-filter: blur(16px);">
+        <a href="/dashboard" class="mobile-nav-link ${activeKey === 'dashboard' ? 'active' : ''}" aria-label="Halaman Utama Dashboard">
           <span class="mobile-nav-icon">${ICONS.dashboard}</span>
           <span class="mobile-nav-label">Home</span>
         </a>
-        <a href="/tasks" class="mobile-nav-link ${activeKey === 'tasks' ? 'active' : ''}">
+        <a href="/tasks" class="mobile-nav-link ${activeKey === 'tasks' ? 'active' : ''}" aria-label="Halaman Daftar Tugas">
           <span class="mobile-nav-icon">${ICONS.tasks}</span>
           <span class="mobile-nav-label">Tugas</span>
         </a>
-        <a href="/reminders" class="mobile-nav-link ${activeKey === 'reminders' ? 'active' : ''}" style="position: relative;">
+        <a href="/reminders" class="mobile-nav-link ${activeKey === 'reminders' ? 'active' : ''}" aria-label="Halaman Pengingat Deadline" style="position: relative;">
           <span class="mobile-nav-icon">${ICONS.reminders}</span>
           <span class="mobile-nav-label">Ingat</span>
           ${urgentCount > 0 ? `<span style="position: absolute; top: 8px; right: 25%; width: 8px; height: 8px; border-radius: 50%; background: #ef4444; box-shadow: 0 0 6px #ef4444;"></span>` : ''}
         </a>
-        <a href="/reports" class="mobile-nav-link ${activeKey === 'reports' ? 'active' : ''}">
+        <a href="/reports" class="mobile-nav-link ${activeKey === 'reports' ? 'active' : ''}" aria-label="Halaman Laporan Kinerja">
           <span class="mobile-nav-icon">${ICONS.reports}</span>
           <span class="mobile-nav-label">Rekap</span>
         </a>
         ${currentUser.role === 'Owner' ? `
-        <a href="/users" class="mobile-nav-link ${activeKey === 'users' ? 'active' : ''}">
+        <a href="/users" class="mobile-nav-link ${activeKey === 'users' ? 'active' : ''}" aria-label="Halaman Kelola Tim">
           <span class="mobile-nav-icon">${ICONS.users}</span>
           <span class="mobile-nav-label">Tim</span>
         </a>` : ''}
@@ -157,13 +157,24 @@ async function initNavigation(activeKey = '') {
     `;
   }
 
-  // 6. Global Modal Backdrop & Escape Key Listener
+  // 6. Global Shortcuts & Modal Escape (web-design-guidelines & baseline-ui)
   document.addEventListener('keydown', (e) => {
+    // Tutup Modal via Escape
     if (e.key === 'Escape') {
       const activeModal = document.querySelector('.modal-overlay.active');
       if (activeModal) {
         activeModal.classList.remove('active');
         document.body.classList.remove('modal-open');
+      }
+    }
+
+    // Shortcut 'n' untuk buat tugas baru (kecuali sedang mengetik di input/textarea)
+    const isTyping = ['INPUT', 'TEXTAREA', 'SELECT'].includes(document.activeElement?.tagName);
+    if (!isTyping && (e.key === 'n' || e.key === 'N')) {
+      const openModalFn = window.openTaskModal || window.openCreateTaskModal;
+      if (typeof openModalFn === 'function') {
+        e.preventDefault();
+        openModalFn();
       }
     }
   });

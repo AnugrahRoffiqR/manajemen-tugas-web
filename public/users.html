@@ -219,8 +219,9 @@
               </span>
             </td>
             <td style="padding: 1rem;">
-              <span class="badge" style="background: ${statusColor}22; color: ${statusColor}; border: 1px solid ${statusColor}44;">
-                ${u.status}
+              <span class="badge" style="background: ${statusColor}22; color: ${statusColor}; border: 1px solid ${statusColor}44; display: inline-flex; align-items: center; gap: 6px;">
+                <span style="width: 6px; height: 6px; border-radius: 50%; background: ${statusColor}; display: inline-block;"></span>
+                <span>${u.status}</span>
               </span>
             </td>
             <td style="padding: 1rem; color: #cbd5e1;" class="font-mono">
@@ -230,11 +231,11 @@
               ${formatDateWIB(u.created_at)}
             </td>
             <td style="padding: 1rem; text-align: right; white-space: nowrap;">
-              <button onclick="openEditUserModal(${u.id})" class="btn-secondary" style="padding: 4px 10px; min-height: 34px; font-size: 12px; margin-right: 4px;">
+              <button onclick="openEditUserModal(${u.id})" aria-label="Edit akun pengguna ${u.name}" class="btn-secondary" style="padding: 4px 10px; min-height: 34px; font-size: 12px; margin-right: 4px;">
                 Edit
               </button>
               ${!isSelf ? `
-              <button onclick="deleteUserAccount(${u.id}, '${u.name}')" class="btn-danger" style="padding: 4px 10px; min-height: 34px; font-size: 12px;">
+              <button onclick="deleteUserAccount(${u.id}, '${u.name}')" aria-label="Hapus akun ${u.name}" class="btn-danger" style="padding: 4px 10px; min-height: 34px; font-size: 12px;">
                 Hapus
               </button>` : ''}
             </td>

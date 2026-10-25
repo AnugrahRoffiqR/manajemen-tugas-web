@@ -163,16 +163,17 @@
                 <p style="font-size: 0.9375rem; font-weight: 600; color: #f8fafc;">${r.title}</p>
                 <span style="font-size: 0.75rem; color: #60a5fa;" class="font-mono">⏰ Dijadwalkan: ${formatDateWIB(r.remind_at)}</span>
               </div>
-              <button onclick="deleteCustomReminder(${r.id})" class="btn-danger" style="padding: 4px 10px; min-height: 34px; font-size: 12px;">
+              <button onclick="deleteCustomReminder(${r.id})" aria-label="Hapus pengingat ${r.title}" class="btn-danger" style="padding: 4px 10px; min-height: 34px; font-size: 12px;">
                 Hapus
               </button>
             </div>
           `).join('');
         } else {
           customContainer.innerHTML = `
-            <p style="font-size: 0.875rem; color: #94a3b8; text-align: center; padding: 1.5rem;">
-              Belum ada catatan pengingat kustom. Buat satu untuk memo penting.
-            </p>
+            <div class="empty-state-box" style="padding: 2rem 1rem;">
+              <div class="empty-state-icon">⏰</div>
+              <p style="font-size: 0.8125rem; color: #94a3b8;">Belum ada catatan pengingat kustom.</p>
+            </div>
           `;
         }
 
@@ -196,7 +197,7 @@
             <span style="font-size: 12px; color: #94a3b8;" class="font-mono">Tenggat: ${formatDateWIB(task.due_date)}</span>
           </div>
 
-          <button onclick="completeTaskNow(${task.id})" class="btn-island" style="min-height: 44px; padding: 0.5rem 1rem; font-size: 0.8125rem;">
+          <button onclick="completeTaskNow(${task.id})" aria-label="Tandai selesai tugas ${task.title}" class="btn-island" style="min-height: 44px; padding: 0.5rem 1rem; font-size: 0.8125rem;">
             <span>Tandai Selesai</span>
             <span class="btn-icon-pill">✓</span>
           </button>

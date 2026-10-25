@@ -74,6 +74,51 @@ body.modal-open {
   overflow: hidden !important;
 }
 
+/* Accessible Keyboard Focus & Ergonomics (web-design-guidelines & baseline-ui) */
+:focus-visible {
+  outline: 2px solid var(--border-focus) !important;
+  outline-offset: 2px !important;
+}
+
+/* Skeleton Loading State (baseline-ui & UI/UX Pro Max) */
+@keyframes skeletonPulse {
+  0%, 100% { opacity: 0.35; }
+  50% { opacity: 0.75; }
+}
+
+.skeleton {
+  background: rgba(255, 255, 255, 0.08);
+  border-radius: 0.5rem;
+  animation: skeletonPulse 1.5s ease-in-out infinite;
+}
+
+/* Craft Floor Empty State Box (impeccable standard) */
+.empty-state-box {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 3rem 1.5rem;
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px dashed var(--border-hairline);
+  border-radius: 1rem;
+  color: var(--text-tertiary);
+}
+
+.empty-state-icon {
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid var(--border-hairline);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-secondary);
+  margin-bottom: 0.875rem;
+}
+
 .font-mono {
   font-family: 'JetBrains Mono', monospace;
 }
