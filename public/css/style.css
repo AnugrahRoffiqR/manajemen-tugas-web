@@ -1,50 +1,56 @@
 /* ==========================================================================
    STYLE.CSS — Sistem Manajemen Tugas
-   Design System: UUPM Visual Direction + Taste Skill App-Screen Engineering
-   Opaque surfaces, crisp 1px borders, precise typography, zero decorative slop
+   Design System: Educational Platform Reference + Taste Skill Craftsmanship
+   Light theme, claymorphism-inspired tactile surfaces, vibrant accents, block composition
    ========================================================================== */
 
-@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Open+Sans:wght@400;500;600;700&family=Poppins:wght@500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Nunito:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;600;700&display=swap');
 
 :root {
-  /* UUPM Color Tokens */
-  --primary: #0080ff;
-  --primary-dark: #0066cc;
-  --primary-tint: #eff6ff;
-  --secondary: #8b00ff;
-  --secondary-tint: #f5f3ff;
-  --cta: #22c55e;
-  --cta-dark: #16a34a;
+  /* Educational Platform Reference Color Tokens */
+  --primary: #f5a69d;
+  --primary-coral: #ff8c7a;
+  --primary-tint: #fff9f5;
+  --secondary: #add8e6;
+  --secondary-tint: #f0f9ff;
+  --cta: #16a34a;
+  --cta-dark: #15803d;
   --cta-tint: #f0fdf4;
+  --accent-mint: #98ff98;
+  --accent-purple: #e0e7ff;
 
   /* Neutrals & Surfaces */
-  --canvas-bg: #f8fafc;
+  --canvas-bg: #fffbf8;
   --surface-card: #ffffff;
-  --surface-subtle: #f8fafc;
-  --surface-hover: #f1f5f9;
+  --surface-subtle: #fff9f5;
+  --surface-hover: #fef4ee;
 
   /* Typography Colors */
-  --text: #0f172a;
+  --text: #2d3748;
   --text-muted: #64748b;
   --text-tertiary: #94a3b8;
 
   /* Borders & Rules */
-  --border: #e2e8f0;
-  --border-focus: #0080ff;
+  --border: #2d3748;
+  --border-light: #e2e8f0;
+  --border-focus: #2d3748;
   --rule: #f1f5f9;
 
   /* Status Colors */
   --status-todo: #64748b;
-  --status-in-progress: #8b00ff;
+  --status-in-progress: #0284c7;
   --status-done: #16a34a;
   --status-urgent: #d97706;
   --status-overdue: #dc2626;
 
-  /* Sizing Tokens */
-  --radius-card: 0.75rem;
-  --radius-control: 0.5rem;
+  /* Sizing & Claymorphism Tokens */
+  --radius-card: 1.125rem;
+  --radius-control: 0.875rem;
   --radius-pill: 9999px;
-  --control-height: 38px;
+  --control-height: 42px;
+  --shadow-clay: 4px 4px 0 var(--text), inset 0 -3px 0 rgba(0, 0, 0, 0.08);
+  --shadow-btn: 3px 3px 0 var(--text);
+  --shadow-card-hover: 2px 2px 0 var(--text), inset 0 -3px 0 rgba(0, 0, 0, 0.08);
 }
 
 /* ==========================================================================
@@ -62,11 +68,11 @@ html {
 }
 
 body {
-  font-family: 'Open Sans', system-ui, -apple-system, sans-serif;
+  font-family: 'Nunito', system-ui, -apple-system, sans-serif;
   background-color: var(--canvas-bg);
   color: var(--text);
   min-height: 100dvh;
-  line-height: 1.5;
+  line-height: 1.55;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   display: flex;
@@ -74,10 +80,11 @@ body {
 }
 
 h1, h2, h3, h4, h5, h6 {
-  font-family: 'Poppins', sans-serif;
+  font-family: 'Fredoka', 'Nunito', sans-serif;
   color: var(--text);
   font-weight: 700;
   line-height: 1.25;
+  letter-spacing: -0.01em;
 }
 
 body.modal-open {
@@ -91,8 +98,8 @@ body.modal-open {
 
 /* Scrollbar */
 ::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
+  width: 8px;
+  height: 8px;
 }
 
 ::-webkit-scrollbar-track {
@@ -122,12 +129,19 @@ body.modal-open {
 }
 
 /* ==========================================================================
-   CARDS & CONTAINERS (Taste Skill: Flat, 1px Border, No Rest Shadow)
+   CARDS & CONTAINERS (Educational Platform Reference: Tactile Claymorphism)
    ========================================================================== */
-.glass-card, .doppelrand-shell {
+.glass-card, .clay-card, .doppelrand-shell {
   background: var(--surface-card);
-  border: 1px solid var(--border);
+  border: 2.5px solid var(--border);
   border-radius: var(--radius-card);
+  box-shadow: var(--shadow-clay);
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.glass-card:hover, .clay-card:hover {
+  box-shadow: var(--shadow-card-hover);
+  transform: translate(1px, 1px);
 }
 
 .doppelrand-core {
@@ -136,32 +150,42 @@ body.modal-open {
   border: none;
 }
 
-/* Stat Cards */
+/* Stat Cards (Vibrant Block Composition from Reference) */
 .stat-card {
-  background: var(--surface-card);
-  border: 1px solid var(--border);
+  border: 2.5px solid var(--border);
   border-radius: var(--radius-card);
   padding: 1.25rem 1.5rem;
+  box-shadow: var(--shadow-clay);
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.stat-card:hover {
+  box-shadow: var(--shadow-card-hover);
+  transform: translate(2px, 2px);
 }
 
 .stat-card-total {
-  border-top: 3px solid var(--primary);
+  background: #f0f9ff;
+  border-color: var(--border);
 }
 
 .stat-card-progress {
-  border-top: 3px solid var(--secondary);
+  background: #fff7ed;
+  border-color: var(--border);
 }
 
 .stat-card-done {
-  border-top: 3px solid var(--cta);
+  background: #f0fdf4;
+  border-color: var(--border);
 }
 
 .stat-card-overdue {
-  border-top: 3px solid var(--status-overdue);
+  background: #fef2f2;
+  border-color: var(--border);
 }
 
 /* ==========================================================================
-   BUTTONS & CONTROLS
+   BUTTONS & CONTROLS (Tactile Offset Clay Buttons)
    ========================================================================== */
 .btn-primary, .btn-island {
   display: inline-flex;
@@ -170,24 +194,29 @@ body.modal-open {
   gap: 0.5rem;
   background: var(--cta);
   color: #ffffff;
+  font-family: 'Fredoka', 'Nunito', sans-serif;
   font-weight: 600;
-  font-size: 0.875rem;
-  padding: 0.5rem 1.125rem;
+  font-size: 0.9375rem;
+  padding: 0.5rem 1.25rem;
   border-radius: var(--radius-control);
-  border: none;
+  border: 2.5px solid var(--border);
+  box-shadow: var(--shadow-btn);
   cursor: pointer;
   text-decoration: none;
   min-height: var(--control-height);
   white-space: nowrap;
-  transition: background-color 0.15s ease, transform 0.15s ease;
+  transition: transform 0.15s ease, box-shadow 0.15s ease, background-color 0.15s ease;
 }
 
 .btn-primary:hover, .btn-island:hover {
   background: var(--cta-dark);
+  box-shadow: 1px 1px 0 var(--border);
+  transform: translate(2px, 2px);
 }
 
 .btn-primary:active, .btn-island:active {
-  transform: scale(0.98);
+  box-shadow: 0 0 0 var(--border);
+  transform: translate(3px, 3px);
 }
 
 .btn-icon-pill {
@@ -207,25 +236,29 @@ body.modal-open {
   gap: 0.5rem;
   background: #ffffff;
   color: var(--text);
-  border: 1px solid var(--border);
+  font-family: 'Fredoka', 'Nunito', sans-serif;
+  border: 2.5px solid var(--border);
+  box-shadow: var(--shadow-btn);
   font-weight: 600;
   font-size: 0.875rem;
-  padding: 0.5rem 1rem;
+  padding: 0.5rem 1.125rem;
   border-radius: var(--radius-control);
   cursor: pointer;
   min-height: var(--control-height);
   text-decoration: none;
-  transition: background-color 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+  transition: transform 0.15s ease, box-shadow 0.15s ease, background-color 0.15s ease;
 }
 
 .btn-secondary:hover {
   background: var(--surface-hover);
-  border-color: var(--primary);
-  color: var(--primary);
+  box-shadow: 1px 1px 0 var(--border);
+  transform: translate(2px, 2px);
+  color: var(--text);
 }
 
 .btn-secondary:active {
-  transform: scale(0.98);
+  box-shadow: 0 0 0 var(--border);
+  transform: translate(3px, 3px);
 }
 
 .btn-danger {
@@ -233,75 +266,82 @@ body.modal-open {
   align-items: center;
   justify-content: center;
   gap: 0.5rem;
-  background: #ffffff;
-  color: var(--status-overdue);
+  background: #fef2f2;
+  color: #b91c1c;
+  font-family: 'Fredoka', 'Nunito', sans-serif;
   font-weight: 600;
   font-size: 0.8125rem;
   padding: 0.375rem 0.875rem;
-  border-radius: var(--radius-control);
-  border: 1px solid rgba(220, 38, 38, 0.3);
+  border-radius: 12px;
+  border: 2px solid #b91c1c;
+  box-shadow: 2px 2px 0 #b91c1c;
   cursor: pointer;
-  min-height: 32px;
-  transition: background-color 0.15s ease, color 0.15s ease;
+  min-height: 34px;
+  transition: transform 0.15s ease, box-shadow 0.15s ease, background-color 0.15s ease;
 }
 
 .btn-danger:hover {
-  background: #fef2f2;
-  border-color: var(--status-overdue);
+  background: #fee2e2;
+  box-shadow: 1px 1px 0 #b91c1c;
+  transform: translate(1px, 1px);
 }
 
 .btn-danger:active {
-  transform: scale(0.98);
+  box-shadow: 0 0 0 #b91c1c;
+  transform: translate(2px, 2px);
 }
 
 .btn-action-icon {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 32px;
-  height: 32px;
-  border-radius: 6px;
-  border: 1px solid var(--border);
+  width: 34px;
+  height: 34px;
+  border-radius: 10px;
+  border: 2px solid var(--border);
+  box-shadow: 2px 2px 0 var(--border);
   background: #ffffff;
-  color: var(--text-muted);
+  color: var(--text);
   cursor: pointer;
   padding: 0;
-  transition: background-color 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+  transition: transform 0.15s ease, box-shadow 0.15s ease, background-color 0.15s ease;
 }
 
 .btn-action-icon:hover {
   background: var(--surface-hover);
-  border-color: var(--primary);
-  color: var(--primary);
+  box-shadow: 1px 1px 0 var(--border);
+  transform: translate(1px, 1px);
 }
 
 .btn-action-icon:active {
-  transform: scale(0.95);
+  box-shadow: 0 0 0 var(--border);
+  transform: translate(2px, 2px);
 }
 
 /* ==========================================================================
-   FORM CONTROLS
+   FORM CONTROLS (Chunky Tactile Inputs)
    ========================================================================== */
 .form-input, .form-select, .form-textarea {
   width: 100%;
   background: #ffffff;
-  border: 1px solid var(--border);
-  border-radius: var(--radius-control);
+  border: 2px solid #cbd5e1;
+  border-radius: 12px;
   padding: 0.625rem 0.875rem;
   color: var(--text);
   font-family: inherit;
   font-size: 0.875rem;
   outline: none;
   min-height: var(--control-height);
-  transition: border-color 0.15s ease;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
 }
 
 .form-textarea {
-  min-height: 80px;
+  min-height: 90px;
 }
 
 .form-input:focus, .form-select:focus, .form-textarea:focus {
-  border-color: var(--primary);
+  border-color: var(--border);
+  box-shadow: 3px 3px 0 var(--border);
 }
 
 .form-input::placeholder, .form-textarea::placeholder {
@@ -313,28 +353,30 @@ body.modal-open {
   display: inline-flex;
   align-items: center;
   gap: 0.375rem;
-  padding: 0.375rem 0.875rem;
+  padding: 0.4rem 0.875rem;
   border-radius: var(--radius-pill);
   background: #ffffff;
-  border: 1px solid var(--border);
+  border: 2px solid #cbd5e1;
   color: var(--text-muted);
-  font-size: 0.75rem;
+  font-family: 'Fredoka', 'Nunito', sans-serif;
+  font-size: 0.8125rem;
   font-weight: 600;
   cursor: pointer;
   user-select: none;
-  transition: background-color 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+  transition: transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease, color 0.15s ease, background-color 0.15s ease;
 }
 
 .filter-chip:hover {
   background: var(--surface-hover);
-  color: var(--primary);
-  border-color: var(--primary);
+  color: var(--text);
+  border-color: var(--border);
 }
 
 .filter-chip.active {
-  background: var(--primary-tint);
-  border-color: var(--primary);
-  color: var(--primary);
+  background: #fff0eb;
+  border-color: var(--border);
+  box-shadow: 2px 2px 0 var(--border);
+  color: var(--text);
   font-weight: 700;
 }
 
@@ -491,13 +533,15 @@ body.modal-open {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0.5rem 0.75rem;
-  border-radius: var(--radius-control);
+  padding: 0.625rem 0.875rem;
+  border-radius: 12px;
   color: var(--text-muted);
   text-decoration: none;
-  font-size: 0.875rem;
+  font-family: 'Fredoka', 'Nunito', sans-serif;
+  font-size: 0.9375rem;
   font-weight: 500;
-  transition: background-color 0.15s ease, color 0.15s ease;
+  border: 2px solid transparent;
+  transition: transform 0.15s ease, background-color 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease;
 }
 
 .nav-item:hover {
@@ -506,22 +550,25 @@ body.modal-open {
 }
 
 .nav-item.active {
-  background: var(--primary-tint);
-  color: var(--primary);
-  font-weight: 600;
+  background: #fff0eb;
+  border-color: var(--border);
+  box-shadow: 2px 2px 0 var(--border);
+  color: var(--text);
+  font-weight: 700;
 }
 
 .nav-kbd {
   font-size: 11px;
-  padding: 1px 6px;
+  padding: 2px 6px;
   background: #f1f5f9;
-  border-radius: 4px;
+  border-radius: 6px;
   color: var(--text-tertiary);
   font-family: inherit;
+  border: 1px solid #cbd5e1;
 }
 
 /* ==========================================================================
-   KANBAN BOARD
+   KANBAN BOARD (Tactile Block Columns)
    ========================================================================== */
 .kanban-grid {
   display: grid;
@@ -547,27 +594,29 @@ body.modal-open {
 
 .kanban-card {
   background: #ffffff;
-  border: 1px solid var(--border);
-  border-radius: 0.5rem;
-  padding: 1rem;
-  transition: border-color 0.15s ease;
+  border: 2px solid var(--border);
+  border-radius: 14px;
+  padding: 1.125rem;
+  box-shadow: 3px 3px 0 var(--border);
+  transition: transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease;
   position: relative;
 }
 
 .kanban-card:hover {
-  border-color: var(--primary);
+  box-shadow: 1px 1px 0 var(--border);
+  transform: translate(2px, 2px);
 }
 
 .kanban-card[data-priority="High"] {
-  border-left: 3px solid var(--status-overdue);
+  border-left: 5px solid var(--status-overdue);
 }
 
 .kanban-card[data-priority="Medium"] {
-  border-left: 3px solid var(--status-urgent);
+  border-left: 5px solid var(--status-urgent);
 }
 
 .kanban-card[data-priority="Low"] {
-  border-left: 3px solid var(--cta);
+  border-left: 5px solid var(--cta);
 }
 
 /* Tables (Taste Skill: Rules & Alignment, No Zebra, Numbers Right Aligned) */
@@ -580,9 +629,10 @@ table {
 th {
   padding: 0.75rem 1rem;
   color: var(--text-muted);
-  font-size: 0.75rem;
+  font-family: 'Fredoka', 'Nunito', sans-serif;
+  font-size: 0.8125rem;
   font-weight: 600;
-  border-bottom: 1px solid var(--border);
+  border-bottom: 2px solid var(--border-light);
 }
 
 th.num, td.num {
@@ -613,25 +663,27 @@ tbody tr:hover {
   justify-content: center;
   text-align: center;
   padding: 2.5rem 1.5rem;
-  background: #ffffff;
-  border: 1px dashed var(--border);
+  background: #fffdfb;
+  border: 2px dashed var(--border);
   border-radius: var(--radius-card);
   color: var(--text-muted);
 }
 
 .empty-state-icon {
-  width: 40px;
-  height: 40px;
-  border-radius: 10px;
-  background: var(--surface-hover);
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  background: #fff9f5;
+  border: 2px solid var(--border);
+  box-shadow: 2px 2px 0 var(--border);
   display: flex;
   align-items: center;
   justify-content: center;
-  color: var(--text-muted);
+  color: var(--text);
   margin-bottom: 0.75rem;
 }
 
-/* Toast Notifications (Overlay with subtle shadow) */
+/* Toast Notifications (Tactile Overlay) */
 #toast-container {
   position: fixed;
   top: 1.25rem;
@@ -651,20 +703,20 @@ tbody tr:hover {
   min-width: 280px;
   max-width: 420px;
   background: #ffffff;
-  border: 1px solid var(--border);
-  border-radius: var(--radius-control);
+  border: 2.5px solid var(--border);
+  border-radius: 14px;
   padding: 0.75rem 1rem;
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+  box-shadow: 4px 4px 0 var(--text);
   font-size: 0.875rem;
-  font-weight: 500;
+  font-weight: 600;
   color: var(--text);
 }
 
-/* Modal Dialog (Real Overlay) */
+/* Modal Dialog (Real Overlay with Chunky Clay Dialog) */
 .modal-overlay {
   position: fixed;
   inset: 0;
-  background: rgba(15, 23, 42, 0.4);
+  background: rgba(45, 55, 72, 0.45);
   z-index: 1000;
   display: flex;
   align-items: center;
@@ -687,9 +739,9 @@ tbody tr:hover {
   display: flex;
   flex-direction: column;
   background: #ffffff;
-  border: 1px solid var(--border);
-  border-radius: var(--radius-card);
-  box-shadow: 0 16px 36px rgba(0, 0, 0, 0.12);
+  border: 3px solid var(--border);
+  border-radius: 20px;
+  box-shadow: 8px 8px 0 var(--text);
   overflow: hidden;
 }
 

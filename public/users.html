@@ -25,8 +25,8 @@
               KHUSUS OWNER
             </span>
           </div>
-          <h1 style="font-size: 1.875rem; font-weight: 800; color: var(--text); letter-spacing: -0.025em;">
-            Manajemen Tim & <span style="color: var(--primary);">Hak Akses</span>
+          <h1 style="font-size: 2rem; font-weight: 700; color: var(--text); letter-spacing: -0.01em;">
+            Manajemen Tim & <span style="color: #ea580c;">Hak Akses</span>
           </h1>
           <p style="color: var(--text-muted); font-size: 0.875rem;">Kelola hak akses anggota tim, pendaftaran akun baru, dan kontrol status aktif.</p>
         </div>
@@ -208,7 +208,8 @@
         const isOwner = u.role === 'Owner';
         const roleBadgeBg = isOwner ? 'rgba(0, 128, 255, 0.1)' : 'rgba(100, 116, 139, 0.1)';
         const roleColor = isOwner ? 'var(--primary)' : 'var(--text-muted)';
-        const avatarBg = isOwner ? '#0080ff' : '#64748b';
+        const avatarBg = isOwner ? '#ff8c7a' : '#94a3b8';
+        const avatarTextColor = isOwner ? '#2d3748' : '#ffffff';
         const statusColor = u.status === 'Active' ? 'var(--cta)' : '#ef4444';
         const statusBg = u.status === 'Active' ? 'rgba(34, 197, 94, 0.12)' : 'rgba(239, 68, 68, 0.12)';
         const taskPercent = u.total_tasks > 0 ? Math.round((u.completed_tasks / u.total_tasks) * 100) : 0;
@@ -217,7 +218,7 @@
           <tr style="border-bottom: 1px solid var(--border); font-size: 0.875rem;">
             <td style="padding: 1rem;">
               <div style="display: flex; align-items: center; gap: 0.75rem;">
-                <div style="width: 38px; height: 38px; border-radius: 50%; background: ${avatarBg}; display: flex; align-items: center; justify-content: center; color: #fff; font-weight: 700; font-size: 14px; flex-shrink: 0;">
+                <div style="width: 38px; height: 38px; border-radius: 12px; border: 2px solid var(--border); box-shadow: 2px 2px 0 var(--border); background: ${avatarBg}; display: flex; align-items: center; justify-content: center; color: ${avatarTextColor}; font-weight: 700; font-size: 15px; font-family: 'Fredoka', sans-serif; flex-shrink: 0;">
                   ${u.name.charAt(0).toUpperCase()}
                 </div>
                 <div>

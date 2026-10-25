@@ -24,8 +24,8 @@
             DEADLINE RADAR
           </span>
         </div>
-        <h1 style="font-size: 1.875rem; font-weight: 800; color: var(--text); letter-spacing: -0.025em;">
-          Pengingat & <span class="gradient-text">Evaluasi Tenggat Waktu</span>
+        <h1 style="font-size: 2rem; font-weight: 700; color: var(--text); letter-spacing: -0.01em;">
+          Pengingat & <span style="color: #ea580c;">Evaluasi Tenggat Waktu</span>
         </h1>
         <p style="color: var(--text-muted); font-size: 0.875rem;">Deteksi otomatis tugas berisiko tinggi dan kelola jadwal pengingat kustom.</p>
       </div>
@@ -188,7 +188,7 @@
       const catClass = `cat-${(task.category || 'umum').toLowerCase()}`;
 
       return `
-        <div class="glass-card" style="display: flex; align-items: center; justify-content: space-between; background: ${bgColor}; border: 1px solid ${borderColor}; padding: 1.125rem 1.25rem; flex-wrap: wrap; gap: 1rem; box-shadow: 0 4px 16px rgba(0,0,0,0.04);">
+        <div class="glass-card" style="display: flex; align-items: center; justify-content: space-between; background: ${bgColor}; border: 2.5px solid var(--border); padding: 1.25rem 1.5rem; flex-wrap: wrap; gap: 1rem; box-shadow: 4px 4px 0 var(--border); border-radius: 18px;">
           <div>
             <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.375rem; flex-wrap: wrap;">
               <span class="badge ${badgeClass}">${formatHoursRemaining(task.hours_left)}</span>
