@@ -88,18 +88,23 @@ async function apiFetch(endpoint, options = {}) {
 
     if (!response.ok) {
       if (response.status === 401 && !window.location.pathname.includes('/login')) {
-        showToast('Sesi Anda telah berakhir. Mengalihkan ke halaman login...', 'warning');
+        showToast(data.message || 'Sesi Anda telah berakhir. Mengalihkan ke halaman login...', 'warning');
         setTimeout(() => {
           window.location.href = '/login';
         }, 1200);
-        return null;
+        // Throw (not return null) so callers reading res.data stop cleanly instead of crashing.
+        const sessionErr = new Error('SESSION_EXPIRED');
+        sessionErr.handled = true;
+        throw sessionErr;
       }
       throw new Error(data.message || 'Terjadi kesalahan sistem.');
     }
 
     return data;
   } catch (err) {
-    showToast(err.message, 'error');
+    if (!err.handled) {
+      showToast(err instanceof TypeError ? 'Gagal terhubung ke server. Periksa koneksi internet Anda.' : err.message, 'error');
+    }
     throw err;
   }
 }
@@ -145,6 +150,27 @@ function formatHoursRemaining(hoursLeft) {
     const days = Math.floor(h / 24);
     return `Sisa ${days} hari lagi`;
   }
+}
+
+// Replace stale "Memuat…" placeholders with an error and a retry button after a failed load.
+function showLoadError(selectors, retryFnName, err) {
+  if (err?.handled) return; // session expired: already redirecting to /login
+  const retry = retryFnName
+    ? ` <button type="button" class="btn-secondary btn-sm" onclick="${retryFnName}()">Coba lagi</button>`
+    : '';
+  selectors.forEach((sel) => {
+    const el = document.querySelector(sel);
+    if (!el || !/Memuat|Memeriksa/.test(el.textContent)) return;
+    const html = `<span>Gagal memuat data.</span>${retry}`;
+    if (el.tagName === 'TBODY') {
+      const cols = el.closest('table')?.querySelectorAll('thead th').length || 1;
+      el.innerHTML = `<tr><td colspan="${cols}" class="loading-text">${html}</td></tr>`;
+    } else if (el.tagName === 'P') {
+      el.innerHTML = html; // <p> cannot contain a <div>
+    } else {
+      el.innerHTML = `<div class="chart-empty">${html}</div>`;
+    }
+  });
 }
 
 // Debounce helper

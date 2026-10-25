@@ -262,7 +262,11 @@
           p => priorityBadge(p.priority) || escapeHtml(p.priority),
           p => PRIO_COLORS[p.priority] || 'var(--primary)',
         );
-      } catch (err) {}
+      } catch (err) {
+        if (seq === loadSeq) {
+          showLoadError(['#trend-chart', '#status-chart', '#category-bars', '#priority-bars'], 'loadReportsData', err);
+        }
+      }
     }
 
     loadReportsData();

@@ -337,17 +337,24 @@ app.post('/api/tasks', authMiddleware, async (req, res) => {
     const assigneeId = await resolveAssignee(req, user_id, req.user.id);
     if (assigneeId === null) return badRequest(res, 'Penanggung jawab tidak ditemukan atau tidak aktif.');
 
+    // Honour the column the task was added from (e.g. "+" on In Progress); defaults to To Do.
+    const initialStatus = body.status || 'To Do';
+    const isDone = initialStatus === 'Done';
+
     const insertRes = await db.query(
-      `INSERT INTO tasks (user_id, title, description, category, priority, status, due_date, completed)
-       VALUES ($1, $2, $3, $4, $5, 'To Do', $6, false)
+      `INSERT INTO tasks (user_id, title, description, category, priority, status, due_date, completed, completed_at)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
        RETURNING *`,
       [
         assigneeId,
         title.trim(),
-        description ? description.trim() : null,
+        description ? description.trim() || null : null,
         category ? category.trim() : 'Umum',
         priority || 'Medium',
+        initialStatus,
         parseDateInput(due_date),
+        isDone,
+        isDone ? new Date() : null,
       ]
     );
 

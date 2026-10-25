@@ -96,7 +96,8 @@
           body: JSON.stringify({ email, password }),
         });
 
-        const data = await response.json();
+        // Platform error pages are HTML; don't misreport them as a network failure.
+        const data = await response.json().catch(() => ({ message: 'Server sedang bermasalah. Coba lagi beberapa saat.' }));
 
         if (response.ok && data.success) {
           showToast(data.message || 'Login berhasil! Mengalihkan...', 'success');

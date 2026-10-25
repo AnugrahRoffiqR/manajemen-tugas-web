@@ -294,7 +294,9 @@
           renderKanban(allTasks);
           renderTable(allTasks);
         }
-      } catch (err) {}
+      } catch (err) {
+        showLoadError(['#task-table-rows'], 'loadTasks', err);
+      }
     }
 
     function renderKanban(tasks) {

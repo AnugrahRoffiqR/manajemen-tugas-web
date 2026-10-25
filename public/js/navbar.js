@@ -142,6 +142,17 @@ async function initNavigation(activeKey = '') {
     if (target) window.location.href = target.href;
   });
 
+  // Pages focus the first modal field synchronously on open, so remember the last focus outside any modal.
+  let lastOutsideFocus = null;
+  document.addEventListener('focusin', (e) => {
+    if (!e.target.closest('.modal-overlay')) lastOutsideFocus = e.target;
+  });
+  // focusin is skipped when the window itself lacks focus, so also record the clicked control.
+  document.addEventListener('click', (e) => {
+    const control = e.target.closest?.('button, a, [tabindex]');
+    if (control && !control.closest('.modal-overlay')) lastOutsideFocus = control;
+  }, true);
+
   document.querySelectorAll('.modal-overlay').forEach((modal) => {
     modal.addEventListener('click', (e) => {
       if (e.target === modal) {
@@ -149,5 +160,37 @@ async function initNavigation(activeKey = '') {
         document.body.classList.remove('modal-open');
       }
     });
+
+    // Return focus to whatever opened the modal, however it was closed (button, Escape, backdrop).
+    let wasOpen = modal.classList.contains('active');
+    new MutationObserver(() => {
+      const isOpen = modal.classList.contains('active');
+      if (wasOpen && !isOpen && lastOutsideFocus && document.contains(lastOutsideFocus)) {
+        lastOutsideFocus.focus();
+      }
+      wasOpen = isOpen;
+    }).observe(modal, { attributes: true, attributeFilter: ['class'] });
+  });
+
+  // Keep Tab cycling inside an open modal.
+  document.addEventListener('keydown', (e) => {
+    if (e.key !== 'Tab') return;
+    const modal = document.querySelector('.modal-overlay.active');
+    if (!modal) return;
+    const focusables = [...modal.querySelectorAll('button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])')]
+      .filter((el) => !el.disabled && el.offsetParent !== null);
+    if (!focusables.length) return;
+    const first = focusables[0];
+    const last = focusables[focusables.length - 1];
+    if (!modal.contains(document.activeElement)) {
+      e.preventDefault();
+      first.focus();
+    } else if (e.shiftKey && document.activeElement === first) {
+      e.preventDefault();
+      last.focus();
+    } else if (!e.shiftKey && document.activeElement === last) {
+      e.preventDefault();
+      first.focus();
+    }
   });
 }

@@ -141,7 +141,9 @@
               <button type="button" onclick="deleteCustomReminder(${Number(r.id)})" class="btn-danger btn-sm" aria-label="Hapus pengingat: ${escapeHtml(r.title)}">Hapus</button>
             </div>`).join('')
           : '<div class="empty-state-box compact">Belum ada pengingat mandiri.</div>';
-      } catch (err) {}
+      } catch (err) {
+        showLoadError(['#overdue-list .loading-text', '#urgent-list .loading-text', '#custom-reminders-list .loading-text'], 'loadReminders', err);
+      }
     }
 
     function createReminderCard(task, type) {

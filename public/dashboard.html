@@ -321,6 +321,7 @@
           </tr>`).join('');
       } catch (err) {
         console.error(err);
+        showLoadError(['#status-chart', '#category-chart', '#trend-chart', '#priority-task-rows'], 'loadDashboardData', err);
       }
     }
 

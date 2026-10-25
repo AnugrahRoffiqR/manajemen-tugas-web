@@ -300,6 +300,16 @@ async function runTests() {
     }
 
     // ----------------------------------------------------
+    // TC-17: Tugas baru bisa langsung dibuat di kolom In Progress
+    // ----------------------------------------------------
+    const t17 = await (await fetch(`${BASE_URL}/api/tasks`, {
+      method: 'POST', headers: jsonHeaders(ownerCookie),
+      body: JSON.stringify({ title: 'TC17', due_date: due, status: 'In Progress' }),
+    })).json();
+    assert(t17.data?.status === 'In Progress' && t17.data?.completed === false, 'TC-17', 'Status awal dari kolom Kanban dihormati');
+    if (t17.data?.id) await fetch(`${BASE_URL}/api/tasks/${t17.data.id}`, { method: 'DELETE', headers: { 'Cookie': ownerCookie } });
+
+    // ----------------------------------------------------
     // TC-16: Re-save tugas Done tidak menggeser completed_at
     // ----------------------------------------------------
     const t16 = await (await fetch(`${BASE_URL}/api/tasks`, {

@@ -166,7 +166,9 @@
           allUsersList = res.data;
           renderUsersTable(allUsersList);
         }
-      } catch (err) {}
+      } catch (err) {
+        showLoadError(['#users-table-rows'], 'loadUsersData', err);
+      }
     }
 
     function renderUsersTable(users) {
