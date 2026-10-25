@@ -91,3 +91,6 @@ coverage/
 *.lcov
 tmp/
 temp/
+
+.vercel
+.env*

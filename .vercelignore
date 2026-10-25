@@ -1,0 +1,10 @@
+.env
+.env*
+!.env.example
+check-prd.js
+test-suite.js
+seed.js
+.agents
+AGENTS.md
+*.md
+node_modules
