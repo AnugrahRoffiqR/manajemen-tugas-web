@@ -20,13 +20,15 @@
       
       <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; flex-wrap: wrap; gap: 1rem;">
         <div>
-          <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.25rem;">
-            <span class="badge" style="background: rgba(59, 130, 246, 0.15); color: #60a5fa; border: 1px solid rgba(59, 130, 246, 0.3);">
+          <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.375rem;">
+            <span class="badge" style="background: rgba(0, 128, 255, 0.1); color: var(--primary); border: 1px solid rgba(0, 128, 255, 0.25);">
               KHUSUS OWNER
             </span>
           </div>
-          <h1 style="font-size: 1.75rem; font-weight: 800; color: #f8fafc; letter-spacing: -0.02em;">Manajemen Tim & Hak Akses</h1>
-          <p style="color: #94a3b8; font-size: 0.875rem;">Kelola hak akses anggota tim, pendaftaran akun baru, dan kontrol status aktif.</p>
+          <h1 style="font-size: 1.875rem; font-weight: 800; color: var(--text); letter-spacing: -0.025em;">
+            Manajemen Tim & <span class="gradient-text">Hak Akses</span>
+          </h1>
+          <p style="color: var(--text-muted); font-size: 0.875rem;">Kelola hak akses anggota tim, pendaftaran akun baru, dan kontrol status aktif.</p>
         </div>
 
         <button onclick="openAddUserModal()" class="btn-island">
@@ -37,30 +39,28 @@
         </button>
       </div>
 
-      <!-- Users Table -->
-      <div class="doppelrand-shell">
-        <div class="doppelrand-core" style="padding: 1.5rem;">
-          <div style="overflow-x: auto;">
-            <table style="width: 100%; border-collapse: collapse; text-align: left;">
-              <thead>
-                <tr style="border-bottom: 1px solid var(--border-hairline); color: #94a3b8; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.05em;">
-                  <th style="padding: 0.75rem 1rem;">Pengguna</th>
-                  <th style="padding: 0.75rem 1rem;">Peran (Role)</th>
-                  <th style="padding: 0.75rem 1rem;">Status Akun</th>
-                  <th style="padding: 0.75rem 1rem;">Beban Tugas</th>
-                  <th style="padding: 0.75rem 1rem;">Tanggal Bergabung</th>
-                  <th style="padding: 0.75rem 1rem; text-align: right;">Aksi</th>
-                </tr>
-              </thead>
-              <tbody id="users-table-rows">
-                <tr>
-                  <td colspan="6" style="text-align: center; padding: 2.5rem 1rem; color: #94a3b8; font-size: 0.875rem;">
-                    Memuat data anggota tim...
-                  </td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
+      <!-- Users Table Container -->
+      <div class="glass-card" style="padding: 1.5rem;">
+        <div style="overflow-x: auto;">
+          <table style="width: 100%; border-collapse: collapse; text-align: left;">
+            <thead>
+              <tr style="border-bottom: 1px solid var(--border); color: var(--text-muted); font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.05em;">
+                <th style="padding: 0.75rem 1rem;">Pengguna</th>
+                <th style="padding: 0.75rem 1rem;">Peran (Role)</th>
+                <th style="padding: 0.75rem 1rem;">Status Akun</th>
+                <th style="padding: 0.75rem 1rem;">Beban Tugas</th>
+                <th style="padding: 0.75rem 1rem;">Tanggal Bergabung</th>
+                <th style="padding: 0.75rem 1rem; text-align: right;">Aksi</th>
+              </tr>
+            </thead>
+            <tbody id="users-table-rows">
+              <tr>
+                <td colspan="6" style="text-align: center; padding: 2.5rem 1rem; color: var(--text-muted); font-size: 0.875rem;">
+                  Memuat data anggota tim...
+                </td>
+              </tr>
+            </tbody>
+          </table>
         </div>
       </div>
 
@@ -72,29 +72,29 @@
 
   <!-- Modal Tambah Pengguna Baru -->
   <div id="add-user-modal" class="modal-overlay">
-    <div class="modal-container">
-      <div style="padding: 1.25rem 1.5rem; border-bottom: 1px solid var(--border-hairline); display: flex; justify-content: space-between; align-items: center;">
-        <h3 style="font-size: 1.125rem; font-weight: 700; color: #f8fafc;">+ Daftarkan Anggota Tim Baru</h3>
-        <button onclick="closeAddUserModal()" class="btn-action-icon" style="width: 32px; height: 32px;">✕</button>
+    <div class="modal-container glass-card" style="background: #ffffff; border: 1px solid var(--border);">
+      <div style="padding: 1.25rem 1.5rem; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center;">
+        <h3 style="font-size: 1.125rem; font-weight: 700; color: var(--text);">+ Daftarkan Anggota Tim Baru</h3>
+        <button onclick="closeAddUserModal()" class="btn-action-icon" style="width: 32px; height: 32px;" aria-label="Tutup modal">✕</button>
       </div>
       <form id="add-user-form" class="modal-body">
         <div style="margin-bottom: 1rem;">
-          <label style="display: block; font-size: 0.8125rem; font-weight: 600; color: #cbd5e1; margin-bottom: 0.375rem;">Nama Lengkap *</label>
+          <label for="new-user-name" style="display: block; font-size: 0.8125rem; font-weight: 600; color: var(--text); margin-bottom: 0.375rem;">Nama Lengkap *</label>
           <input type="text" id="new-user-name" class="form-input" placeholder="Contoh: Budi Santoso" required>
         </div>
 
         <div style="margin-bottom: 1rem;">
-          <label style="display: block; font-size: 0.8125rem; font-weight: 600; color: #cbd5e1; margin-bottom: 0.375rem;">Alamat Email *</label>
+          <label for="new-user-email" style="display: block; font-size: 0.8125rem; font-weight: 600; color: var(--text); margin-bottom: 0.375rem;">Alamat Email *</label>
           <input type="email" id="new-user-email" class="form-input" placeholder="budi@perusahaan.com" required>
         </div>
 
         <div style="margin-bottom: 1rem;">
-          <label style="display: block; font-size: 0.8125rem; font-weight: 600; color: #cbd5e1; margin-bottom: 0.375rem;">Kata Sandi Awal *</label>
+          <label for="new-user-password" style="display: block; font-size: 0.8125rem; font-weight: 600; color: var(--text); margin-bottom: 0.375rem;">Kata Sandi Awal *</label>
           <input type="password" id="new-user-password" class="form-input" placeholder="Minimal 6 karakter..." required minlength="6">
         </div>
 
         <div style="margin-bottom: 1.5rem;">
-          <label style="display: block; font-size: 0.8125rem; font-weight: 600; color: #cbd5e1; margin-bottom: 0.375rem;">Peran (Role) *</label>
+          <label for="new-user-role" style="display: block; font-size: 0.8125rem; font-weight: 600; color: var(--text); margin-bottom: 0.375rem;">Peran (Role) *</label>
           <select id="new-user-role" class="form-select">
             <option value="User" selected>User (Anggota Pelaksana)</option>
             <option value="Owner">Owner (Administrator Utama)</option>
@@ -114,21 +114,21 @@
 
   <!-- Modal Edit Pengguna -->
   <div id="edit-user-modal" class="modal-overlay">
-    <div class="modal-container">
-      <div style="padding: 1.25rem 1.5rem; border-bottom: 1px solid var(--border-hairline); display: flex; justify-content: space-between; align-items: center;">
-        <h3 style="font-size: 1.125rem; font-weight: 700; color: #f8fafc;">✏️ Edit Data & Akses Pengguna</h3>
-        <button onclick="closeEditUserModal()" class="btn-action-icon" style="width: 32px; height: 32px;">✕</button>
+    <div class="modal-container glass-card" style="background: #ffffff; border: 1px solid var(--border);">
+      <div style="padding: 1.25rem 1.5rem; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center;">
+        <h3 style="font-size: 1.125rem; font-weight: 700; color: var(--text);">✏️ Edit Data & Akses Pengguna</h3>
+        <button onclick="closeEditUserModal()" class="btn-action-icon" style="width: 32px; height: 32px;" aria-label="Tutup modal">✕</button>
       </div>
       <form id="edit-user-form" class="modal-body">
         <input type="hidden" id="edit-user-id" value="">
 
         <div style="margin-bottom: 1rem;">
-          <label style="display: block; font-size: 0.8125rem; font-weight: 600; color: #cbd5e1; margin-bottom: 0.375rem;">Nama Lengkap *</label>
+          <label for="edit-user-name" style="display: block; font-size: 0.8125rem; font-weight: 600; color: var(--text); margin-bottom: 0.375rem;">Nama Lengkap *</label>
           <input type="text" id="edit-user-name" class="form-input" required>
         </div>
 
         <div style="margin-bottom: 1rem;">
-          <label style="display: block; font-size: 0.8125rem; font-weight: 600; color: #cbd5e1; margin-bottom: 0.375rem;">Peran (Role)</label>
+          <label for="edit-user-role" style="display: block; font-size: 0.8125rem; font-weight: 600; color: var(--text); margin-bottom: 0.375rem;">Peran (Role)</label>
           <select id="edit-user-role" class="form-select">
             <option value="User">User (Anggota Pelaksana)</option>
             <option value="Owner">Owner (Administrator Utama)</option>
@@ -136,7 +136,7 @@
         </div>
 
         <div style="margin-bottom: 1rem;">
-          <label style="display: block; font-size: 0.8125rem; font-weight: 600; color: #cbd5e1; margin-bottom: 0.375rem;">Status Akun</label>
+          <label for="edit-user-status" style="display: block; font-size: 0.8125rem; font-weight: 600; color: var(--text); margin-bottom: 0.375rem;">Status Akun</label>
           <select id="edit-user-status" class="form-select">
             <option value="Active">Active (Dapat Masuk)</option>
             <option value="Inactive">Inactive (Diblokir Masuk)</option>
@@ -144,7 +144,7 @@
         </div>
 
         <div style="margin-bottom: 1.5rem;">
-          <label style="display: block; font-size: 0.8125rem; font-weight: 600; color: #cbd5e1; margin-bottom: 0.375rem;">Ganti Kata Sandi (Opsional)</label>
+          <label for="edit-user-password" style="display: block; font-size: 0.8125rem; font-weight: 600; color: var(--text); margin-bottom: 0.375rem;">Ganti Kata Sandi (Opsional)</label>
           <input type="password" id="edit-user-password" class="form-input" placeholder="Biarkan kosong jika tidak ingin mengubah sandi">
         </div>
 
@@ -191,33 +191,33 @@
     function renderUsersTable(users) {
       const tbody = document.getElementById('users-table-rows');
       if (!users.length) {
-        tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; padding:2.5rem 1rem; color:#94a3b8;">Belum ada pengguna tercatat.</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; padding:2.5rem 1rem; color:var(--text-muted);">Belum ada pengguna tercatat.</td></tr>';
         return;
       }
 
       tbody.innerHTML = users.map(u => {
         const isSelf = loggedInUser && loggedInUser.id === u.id;
         const isOwner = u.role === 'Owner';
-        const roleBadgeBg = isOwner ? 'rgba(59, 130, 246, 0.15)' : 'rgba(148, 163, 184, 0.12)';
-        const roleColor = isOwner ? '#60a5fa' : '#cbd5e1';
-        const avatarBg = isOwner ? 'linear-gradient(135deg, #3b82f6, #1d4ed8)' : 'linear-gradient(135deg, #475569, #334155)';
-        const statusColor = u.status === 'Active' ? '#34d399' : '#f87171';
-        const statusBg = u.status === 'Active' ? 'rgba(16, 185, 129, 0.14)' : 'rgba(239, 68, 68, 0.14)';
+        const roleBadgeBg = isOwner ? 'rgba(0, 128, 255, 0.1)' : 'rgba(100, 116, 139, 0.1)';
+        const roleColor = isOwner ? 'var(--primary)' : 'var(--text-muted)';
+        const avatarBg = isOwner ? 'linear-gradient(135deg, #0080ff, #8b00ff)' : 'linear-gradient(135deg, #64748b, #475569)';
+        const statusColor = u.status === 'Active' ? 'var(--cta)' : '#ef4444';
+        const statusBg = u.status === 'Active' ? 'rgba(34, 197, 94, 0.12)' : 'rgba(239, 68, 68, 0.12)';
         const taskPercent = u.total_tasks > 0 ? Math.round((u.completed_tasks / u.total_tasks) * 100) : 0;
 
         return `
-          <tr style="border-bottom: 1px solid var(--border-hairline); font-size: 0.875rem;">
+          <tr style="border-bottom: 1px solid var(--border); font-size: 0.875rem;">
             <td style="padding: 1rem;">
               <div style="display: flex; align-items: center; gap: 0.75rem;">
-                <div style="width: 38px; height: 38px; border-radius: 50%; background: ${avatarBg}; display: flex; align-items: center; justify-content: center; color: #fff; font-weight: 700; font-size: 14px; flex-shrink: 0; box-shadow: 0 2px 8px rgba(0,0,0,0.4); border: 1px solid rgba(255,255,255,0.15);">
+                <div style="width: 38px; height: 38px; border-radius: 50%; background: ${avatarBg}; display: flex; align-items: center; justify-content: center; color: #fff; font-weight: 700; font-size: 14px; flex-shrink: 0; box-shadow: 0 2px 8px rgba(0,0,0,0.1); border: 1px solid rgba(255,255,255,0.4);">
                   ${u.name.charAt(0).toUpperCase()}
                 </div>
                 <div>
                   <div style="display: flex; align-items: center; gap: 6px;">
-                    <p style="font-weight: 700; color: #f8fafc;">${u.name}</p>
-                    ${isSelf ? '<span class="badge" style="background: rgba(59, 130, 246, 0.2); color: #60a5fa; border: 1px solid rgba(59, 130, 246, 0.4); font-size: 9px; padding: 1px 5px;">ANDA</span>' : ''}
+                    <p style="font-weight: 700; color: var(--text);">${u.name}</p>
+                    ${isSelf ? '<span class="badge" style="background: rgba(0, 128, 255, 0.15); color: var(--primary); border: 1px solid rgba(0, 128, 255, 0.3); font-size: 9px; padding: 1px 5px;">ANDA</span>' : ''}
                   </div>
-                  <p style="font-size: 0.75rem; color: #94a3b8;">${u.email}</p>
+                  <p style="font-size: 0.75rem; color: var(--text-muted);">${u.email}</p>
                 </div>
               </div>
             </td>
@@ -228,30 +228,30 @@
             </td>
             <td style="padding: 1rem;">
               <span class="badge" style="background: ${statusBg}; color: ${statusColor}; border: 1px solid ${statusColor}44; display: inline-flex; align-items: center; gap: 6px;">
-                <span style="width: 6px; height: 6px; border-radius: 50%; background: ${statusColor}; box-shadow: 0 0 6px ${statusColor}; display: inline-block;"></span>
+                <span style="width: 6px; height: 6px; border-radius: 50%; background: ${statusColor}; display: inline-block;"></span>
                 <span>${u.status}</span>
               </span>
             </td>
             <td style="padding: 1rem;">
               <div style="display: flex; flex-direction: column; gap: 4px;">
                 <div style="display: flex; justify-content: space-between; font-size: 11px;" class="font-mono">
-                  <span style="color: #f8fafc; font-weight: 600;">${u.completed_tasks}/${u.total_tasks}</span>
-                  <span style="color: #94a3b8;">${taskPercent}%</span>
+                  <span style="color: var(--text); font-weight: 600;">${u.completed_tasks}/${u.total_tasks}</span>
+                  <span style="color: var(--text-muted);">${taskPercent}%</span>
                 </div>
-                <div style="width: 90px; height: 6px; background: rgba(255,255,255,0.08); border-radius: 999px; overflow: hidden; box-shadow: inset 0 1px 2px rgba(0,0,0,0.5);">
-                  <div style="width: ${taskPercent}%; height: 100%; background: linear-gradient(90deg, #3b82f6, #10b981); border-radius: 999px; transition: width 400ms ease;"></div>
+                <div style="width: 90px; height: 6px; background: #e2e8f0; border-radius: 999px; overflow: hidden;">
+                  <div style="width: ${taskPercent}%; height: 100%; background: linear-gradient(90deg, #0080ff, #22c55e); border-radius: 999px; transition: width 400ms ease;"></div>
                 </div>
               </div>
             </td>
-            <td style="padding: 1rem; color: #cbd5e1; font-size: 0.8125rem;" class="font-mono">
+            <td style="padding: 1rem; color: var(--text-secondary); font-size: 0.8125rem;" class="font-mono">
               ${formatDateWIB(u.created_at)}
             </td>
             <td style="padding: 1rem; text-align: right; white-space: nowrap;">
-              <button onclick="openEditUserModal(${u.id})" aria-label="Edit akun pengguna ${u.name}" class="btn-secondary" style="padding: 4px 10px; min-height: 34px; font-size: 12px; margin-right: 4px;">
+              <button onclick="openEditUserModal(${u.id})" aria-label="Edit akun pengguna ${u.name}" class="btn-secondary" style="padding: 4px 10px; min-height: 32px; font-size: 12px; margin-right: 4px;">
                 Edit
               </button>
               ${!isSelf ? `
-              <button onclick="deleteUserAccount(${u.id}, '${u.name}')" aria-label="Hapus akun ${u.name}" class="btn-danger" style="padding: 4px 10px; min-height: 34px; font-size: 12px;">
+              <button onclick="deleteUserAccount(${u.id}, '${u.name}')" aria-label="Hapus akun ${u.name}" class="btn-danger" style="padding: 4px 10px; min-height: 32px; font-size: 12px;">
                 Hapus
               </button>` : ''}
             </td>

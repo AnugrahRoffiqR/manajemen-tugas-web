@@ -19,30 +19,32 @@
     <main class="workspace-main">
       
       <!-- Top Action Bar -->
-      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; flex-wrap: wrap; gap: 1rem;">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.75rem; flex-wrap: wrap; gap: 1rem;">
         <div>
-          <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.25rem;">
-            <span class="badge" style="background: rgba(59, 130, 246, 0.15); color: #60a5fa; border: 1px solid rgba(59, 130, 246, 0.3);">
+          <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.375rem;">
+            <span class="badge" style="background: rgba(0, 128, 255, 0.1); color: var(--primary); border: 1px solid rgba(0, 128, 255, 0.25);">
               TASKS WORKSPACE
             </span>
           </div>
-          <h1 style="font-size: 1.75rem; font-weight: 800; color: #f8fafc; letter-spacing: -0.02em;">Daftar Tugas Tim</h1>
-          <p style="color: #94a3b8; font-size: 0.875rem;">Kelola siklus pekerjaan tim, ubah status, dan pantau tenggat waktu.</p>
+          <h1 style="font-size: 1.875rem; font-weight: 800; color: var(--text); letter-spacing: -0.025em;">
+            Daftar <span class="gradient-text">Tugas Tim</span>
+          </h1>
+          <p style="color: var(--text-muted); font-size: 0.875rem;">Kelola siklus pekerjaan tim, ubah status antrean, dan pantau tenggat waktu.</p>
         </div>
         
         <div style="display: flex; align-items: center; gap: 0.75rem; flex-wrap: wrap;">
           <!-- Dual View Switcher -->
-          <div style="background: var(--surface-shell); border: 1px solid var(--border-hairline); border-radius: 0.75rem; padding: 4px; display: flex; gap: 4px;">
-            <button id="view-kanban-btn" onclick="switchView('kanban')" class="btn-secondary" style="padding: 0.375rem 0.875rem; min-height: 34px; font-size: 0.75rem; border: none; background: #3b82f6; color: #fff;">
+          <div style="background: #ffffff; border: 1px solid var(--border); border-radius: 0.75rem; padding: 4px; display: flex; gap: 4px; box-shadow: 0 1px 3px rgba(0,0,0,0.04);">
+            <button id="view-kanban-btn" onclick="switchView('kanban')" class="btn-secondary" style="padding: 0.375rem 0.875rem; min-height: 34px; font-size: 0.75rem; border: none; background: var(--primary); color: #ffffff;">
               ▦ Kanban
             </button>
-            <button id="view-table-btn" onclick="switchView('table')" class="btn-secondary" style="padding: 0.375rem 0.875rem; min-height: 34px; font-size: 0.75rem; border: none; background: transparent; color: #94a3b8;">
+            <button id="view-table-btn" onclick="switchView('table')" class="btn-secondary" style="padding: 0.375rem 0.875rem; min-height: 34px; font-size: 0.75rem; border: none; background: transparent; color: var(--text-muted);">
               ☰ Tabel List
             </button>
           </div>
 
           <button onclick="openTaskModal()" class="btn-island" aria-label="Buat tugas baru (Shortcut N)">
-            <span>+ Buat Tugas <kbd style="font-size: 10px; opacity: 0.8; background: rgba(0,0,0,0.25); padding: 1px 5px; border-radius: 4px; margin-left: 4px;">N</kbd></span>
+            <span>+ Buat Tugas <kbd style="font-size: 10px; opacity: 0.85; background: rgba(0,0,0,0.2); padding: 1px 5px; border-radius: 4px; margin-left: 4px;">N</kbd></span>
             <span class="btn-icon-pill">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
             </span>
@@ -51,56 +53,54 @@
       </div>
 
       <!-- Filter Toolbar & Quick Filter Chips -->
-      <div class="doppelrand-shell" style="margin-bottom: 1.75rem;">
-        <div class="doppelrand-core" style="padding: 1.25rem;">
+      <div class="glass-card" style="padding: 1.25rem; margin-bottom: 2rem;">
+        
+        <!-- Quick Filter Pills -->
+        <div style="display: flex; gap: 0.5rem; flex-wrap: wrap; margin-bottom: 1rem; align-items: center;">
+          <span style="font-size: 11px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; margin-right: 0.25rem;">Filter Cepat:</span>
+          <button type="button" class="filter-chip active" id="chip-all" onclick="applyQuickChip('all')">Semua Tugas</button>
+          <button type="button" class="filter-chip" id="chip-urgent" onclick="applyQuickChip('urgent')">🔥 Prioritas High</button>
+          <button type="button" class="filter-chip" id="chip-inprogress" onclick="applyQuickChip('inprogress')">⏳ Sedang Berjalan</button>
+          <button type="button" class="filter-chip" id="chip-done" onclick="applyQuickChip('done')">✅ Selesai</button>
+        </div>
+
+        <div style="display: flex; gap: 1rem; flex-wrap: wrap; align-items: center; justify-content: space-between; border-top: 1px solid var(--border); padding-top: 1rem;">
           
-          <!-- Quick Filter Pills (impeccable standard) -->
-          <div style="display: flex; gap: 0.5rem; flex-wrap: wrap; margin-bottom: 1rem; align-items: center;">
-            <span style="font-size: 11px; font-weight: 700; color: #64748b; text-transform: uppercase; letter-spacing: 0.05em; margin-right: 0.25rem;">Filter Cepat:</span>
-            <button type="button" class="filter-chip active" id="chip-all" onclick="applyQuickChip('all')">Semua Tugas</button>
-            <button type="button" class="filter-chip" id="chip-urgent" onclick="applyQuickChip('urgent')">🔥 Prioritas High</button>
-            <button type="button" class="filter-chip" id="chip-inprogress" onclick="applyQuickChip('inprogress')">⏳ Sedang Berjalan</button>
-            <button type="button" class="filter-chip" id="chip-done" onclick="applyQuickChip('done')">✅ Selesai</button>
+          <!-- Search Input -->
+          <div style="flex: 1; min-width: 240px;">
+            <input type="text" id="filter-search" class="form-input" placeholder="🔍 Cari judul atau rincian tugas..." oninput="handleSearch()">
           </div>
 
-          <div style="display: flex; gap: 1rem; flex-wrap: wrap; align-items: center; justify-content: space-between; border-top: 1px solid var(--border-hairline); padding-top: 1rem;">
-            
-            <!-- Search Input -->
-            <div style="flex: 1; min-width: 240px;">
-              <input type="text" id="filter-search" class="form-input" placeholder="🔍 Cari judul atau rincian tugas..." oninput="handleSearch()">
-            </div>
+          <!-- Filter Controls -->
+          <div style="display: flex; gap: 0.75rem; flex-wrap: wrap; align-items: center;">
+            <select id="filter-status" class="form-select" style="width: auto; padding: 0.5rem 0.875rem;" onchange="loadTasks()">
+              <option value="Semua">Semua Status</option>
+              <option value="To Do">To Do</option>
+              <option value="In Progress">In Progress</option>
+              <option value="Done">Done</option>
+            </select>
 
-            <!-- Filter Controls -->
-            <div style="display: flex; gap: 0.75rem; flex-wrap: wrap; align-items: center;">
-              <select id="filter-status" class="form-select" style="width: auto; padding: 0.5rem 0.875rem;" onchange="loadTasks()">
-                <option value="Semua">Semua Status</option>
-                <option value="To Do">To Do</option>
-                <option value="In Progress">In Progress</option>
-                <option value="Done">Done</option>
-              </select>
+            <select id="filter-priority" class="form-select" style="width: auto; padding: 0.5rem 0.875rem;" onchange="loadTasks()">
+              <option value="Semua">Semua Prioritas</option>
+              <option value="High">High</option>
+              <option value="Medium">Medium</option>
+              <option value="Low">Low</option>
+            </select>
 
-              <select id="filter-priority" class="form-select" style="width: auto; padding: 0.5rem 0.875rem;" onchange="loadTasks()">
-                <option value="Semua">Semua Prioritas</option>
-                <option value="High">High</option>
-                <option value="Medium">Medium</option>
-                <option value="Low">Low</option>
-              </select>
+            <select id="filter-category" class="form-select" style="width: auto; padding: 0.5rem 0.875rem;" onchange="loadTasks()">
+              <option value="Semua">Semua Kategori</option>
+              <option value="Operasional">Operasional</option>
+              <option value="Teknis">Teknis</option>
+              <option value="Administrasi">Administrasi</option>
+              <option value="Bisnis">Bisnis</option>
+              <option value="Umum">Umum</option>
+            </select>
 
-              <select id="filter-category" class="form-select" style="width: auto; padding: 0.5rem 0.875rem;" onchange="loadTasks()">
-                <option value="Semua">Semua Kategori</option>
-                <option value="Operasional">Operasional</option>
-                <option value="Teknis">Teknis</option>
-                <option value="Administrasi">Administrasi</option>
-                <option value="Bisnis">Bisnis</option>
-                <option value="Umum">Umum</option>
-              </select>
-
-              <button onclick="resetFilters()" class="btn-secondary" style="padding: 0.5rem 0.875rem; min-height: 44px; font-size: 0.75rem;">
-                ↺ Reset
-              </button>
-            </div>
-
+            <button onclick="resetFilters()" class="btn-secondary" style="padding: 0.5rem 0.875rem; min-height: 42px; font-size: 0.8125rem;">
+              ↺ Reset
+            </button>
           </div>
+
         </div>
       </div>
 
@@ -108,81 +108,73 @@
       <div id="kanban-view" class="kanban-grid">
         
         <!-- Kolom 1: To Do -->
-        <div class="doppelrand-shell">
-          <div class="doppelrand-core" style="background: rgba(15, 23, 42, 0.75);">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; border-bottom: 1px solid var(--border-hairline); padding-bottom: 0.75rem;">
-              <div style="display: flex; align-items: center; gap: 0.5rem;">
-                <span style="width: 8px; height: 8px; border-radius: 50%; background: #94a3b8; display: inline-block;"></span>
-                <h3 style="font-size: 0.9375rem; font-weight: 700; color: #f8fafc;">Antrean (To Do)</h3>
-              </div>
-              <div style="display: flex; align-items: center; gap: 6px;">
-                <span id="count-todo" class="badge badge-todo font-mono">0</span>
-                <button onclick="openTaskModal('To Do')" class="btn-action-icon" style="width: 24px; height: 24px; font-size: 13px;" title="Tambah tugas ke To Do">+</button>
-              </div>
+        <div class="glass-card" style="padding: 1.25rem; background: rgba(255, 255, 255, 0.9);">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; border-bottom: 1px solid var(--border); padding-bottom: 0.75rem;">
+            <div style="display: flex; align-items: center; gap: 0.5rem;">
+              <span style="width: 8px; height: 8px; border-radius: 50%; background: #64748b; display: inline-block;"></span>
+              <h3 style="font-size: 0.9375rem; font-weight: 700; color: var(--text);">Antrean (To Do)</h3>
             </div>
-            <div id="col-todo" style="display: flex; flex-direction: column; gap: 0.875rem; min-height: 120px;"></div>
+            <div style="display: flex; align-items: center; gap: 6px;">
+              <span id="count-todo" class="badge badge-todo font-mono">0</span>
+              <button onclick="openTaskModal('To Do')" class="btn-action-icon" style="width: 26px; height: 26px; font-size: 14px;" title="Tambah tugas ke To Do">+</button>
+            </div>
           </div>
+          <div id="col-todo" style="display: flex; flex-direction: column; gap: 0.875rem; min-height: 140px;"></div>
         </div>
 
         <!-- Kolom 2: In Progress -->
-        <div class="doppelrand-shell">
-          <div class="doppelrand-core" style="background: rgba(15, 23, 42, 0.75);">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; border-bottom: 1px solid var(--border-hairline); padding-bottom: 0.75rem;">
-              <div style="display: flex; align-items: center; gap: 0.5rem;">
-                <span style="width: 8px; height: 8px; border-radius: 50%; background: #fbbf24; box-shadow: 0 0 6px #f59e0b; display: inline-block;"></span>
-                <h3 style="font-size: 0.9375rem; font-weight: 700; color: #fbbf24;">Sedang Jalan (In Progress)</h3>
-              </div>
-              <div style="display: flex; align-items: center; gap: 6px;">
-                <span id="count-inprogress" class="badge badge-in-progress font-mono">0</span>
-                <button onclick="openTaskModal('In Progress')" class="btn-action-icon" style="width: 24px; height: 24px; font-size: 13px;" title="Tambah tugas ke In Progress">+</button>
-              </div>
+        <div class="glass-card" style="padding: 1.25rem; background: rgba(255, 255, 255, 0.9);">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; border-bottom: 1px solid var(--border); padding-bottom: 0.75rem;">
+            <div style="display: flex; align-items: center; gap: 0.5rem;">
+              <span style="width: 8px; height: 8px; border-radius: 50%; background: #8b00ff; box-shadow: 0 0 6px rgba(139, 0, 255, 0.5); display: inline-block;"></span>
+              <h3 style="font-size: 0.9375rem; font-weight: 700; color: #8b00ff;">Sedang Jalan (In Progress)</h3>
             </div>
-            <div id="col-inprogress" style="display: flex; flex-direction: column; gap: 0.875rem; min-height: 120px;"></div>
+            <div style="display: flex; align-items: center; gap: 6px;">
+              <span id="count-inprogress" class="badge badge-in-progress font-mono">0</span>
+              <button onclick="openTaskModal('In Progress')" class="btn-action-icon" style="width: 26px; height: 26px; font-size: 14px;" title="Tambah tugas ke In Progress">+</button>
+            </div>
           </div>
+          <div id="col-inprogress" style="display: flex; flex-direction: column; gap: 0.875rem; min-height: 140px;"></div>
         </div>
 
         <!-- Kolom 3: Done -->
-        <div class="doppelrand-shell">
-          <div class="doppelrand-core" style="background: rgba(15, 23, 42, 0.75);">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; border-bottom: 1px solid var(--border-hairline); padding-bottom: 0.75rem;">
-              <div style="display: flex; align-items: center; gap: 0.5rem;">
-                <span style="width: 8px; height: 8px; border-radius: 50%; background: #34d399; box-shadow: 0 0 6px #10b981; display: inline-block;"></span>
-                <h3 style="font-size: 0.9375rem; font-weight: 700; color: #34d399;">Selesai (Done)</h3>
-              </div>
-              <span id="count-done" class="badge badge-done font-mono">0</span>
+        <div class="glass-card" style="padding: 1.25rem; background: rgba(255, 255, 255, 0.9);">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; border-bottom: 1px solid var(--border); padding-bottom: 0.75rem;">
+            <div style="display: flex; align-items: center; gap: 0.5rem;">
+              <span style="width: 8px; height: 8px; border-radius: 50%; background: var(--cta); box-shadow: 0 0 6px rgba(34, 197, 94, 0.5); display: inline-block;"></span>
+              <h3 style="font-size: 0.9375rem; font-weight: 700; color: var(--cta);">Selesai (Done)</h3>
             </div>
-            <div id="col-done" style="display: flex; flex-direction: column; gap: 0.875rem; min-height: 120px;"></div>
+            <span id="count-done" class="badge badge-done font-mono">0</span>
           </div>
+          <div id="col-done" style="display: flex; flex-direction: column; gap: 0.875rem; min-height: 140px;"></div>
         </div>
 
       </div>
 
       <!-- VIEW 2: TABEL LIST -->
-      <div id="table-view" class="doppelrand-shell" style="display: none;">
-        <div class="doppelrand-core" style="padding: 1.5rem;">
-          <div style="overflow-x: auto;">
-            <table style="width: 100%; border-collapse: collapse; text-align: left;">
-              <thead>
-                <tr style="border-bottom: 1px solid var(--border-hairline); color: #94a3b8; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.05em;">
-                  <th style="padding: 0.75rem 0.5rem; width: 44px; text-align: center;">Status</th>
-                  <th style="padding: 0.75rem 1rem;">Judul Tugas</th>
-                  <th style="padding: 0.75rem 1rem;">Kategori</th>
-                  <th style="padding: 0.75rem 1rem;">Prioritas</th>
-                  <th style="padding: 0.75rem 1rem;">Status</th>
-                  <th style="padding: 0.75rem 1rem;">Tenggat Waktu</th>
-                  <th style="padding: 0.75rem 1rem;">Pemilik Akun</th>
-                  <th style="padding: 0.75rem 1rem; text-align: right;">Aksi</th>
-                </tr>
-              </thead>
-              <tbody id="task-table-rows">
-                <tr>
-                  <td colspan="8" style="text-align: center; padding: 2.5rem 1rem; color: #94a3b8;">
-                    Memuat data tugas...
-                  </td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
+      <div id="table-view" class="glass-card" style="display: none; padding: 1.5rem;">
+        <div style="overflow-x: auto;">
+          <table style="width: 100%; border-collapse: collapse; text-align: left;">
+            <thead>
+              <tr style="border-bottom: 1px solid var(--border); color: var(--text-muted); font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.05em;">
+                <th style="padding: 0.75rem 0.5rem; width: 44px; text-align: center;">Status</th>
+                <th style="padding: 0.75rem 1rem;">Judul Tugas</th>
+                <th style="padding: 0.75rem 1rem;">Kategori</th>
+                <th style="padding: 0.75rem 1rem;">Prioritas</th>
+                <th style="padding: 0.75rem 1rem;">Status</th>
+                <th style="padding: 0.75rem 1rem;">Tenggat Waktu</th>
+                <th style="padding: 0.75rem 1rem;">Pemilik Akun</th>
+                <th style="padding: 0.75rem 1rem; text-align: right;">Aksi</th>
+              </tr>
+            </thead>
+            <tbody id="task-table-rows">
+              <tr>
+                <td colspan="8" style="text-align: center; padding: 2.5rem 1rem; color: var(--text-muted);">
+                  Memuat data tugas...
+                </td>
+              </tr>
+            </tbody>
+          </table>
         </div>
       </div>
 
@@ -194,27 +186,27 @@
 
   <!-- Modal Buat / Edit Tugas -->
   <div id="task-modal" class="modal-overlay">
-    <div class="modal-container">
-      <div style="padding: 1.25rem 1.5rem; border-bottom: 1px solid var(--border-hairline); display: flex; justify-content: space-between; align-items: center;">
-        <h3 id="modal-title" style="font-size: 1.125rem; font-weight: 700; color: #f8fafc;">+ Tambah Tugas Baru</h3>
-        <button onclick="closeTaskModal()" class="btn-action-icon" style="width: 32px; height: 32px;">✕</button>
+    <div class="modal-container glass-card" style="background: #ffffff; border: 1px solid var(--border);">
+      <div style="padding: 1.25rem 1.5rem; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center;">
+        <h3 id="modal-title" style="font-size: 1.125rem; font-weight: 700; color: var(--text);">+ Tambah Tugas Baru</h3>
+        <button onclick="closeTaskModal()" class="btn-action-icon" style="width: 32px; height: 32px;" aria-label="Tutup modal">✕</button>
       </div>
       <form id="task-form" class="modal-body">
         <input type="hidden" id="edit-task-id" value="">
 
         <div style="margin-bottom: 1rem;">
-          <label style="display: block; font-size: 0.8125rem; font-weight: 600; color: #cbd5e1; margin-bottom: 0.375rem;">Judul Tugas *</label>
+          <label for="task-title" style="display: block; font-size: 0.8125rem; font-weight: 600; color: var(--text); margin-bottom: 0.375rem;">Judul Tugas *</label>
           <input type="text" id="task-title" class="form-input" placeholder="Contoh: Implementasi Audit Desain Antislop" required>
         </div>
 
         <div style="margin-bottom: 1rem;">
-          <label style="display: block; font-size: 0.8125rem; font-weight: 600; color: #cbd5e1; margin-bottom: 0.375rem;">Deskripsi / Catatan Tambahan</label>
+          <label for="task-desc" style="display: block; font-size: 0.8125rem; font-weight: 600; color: var(--text); margin-bottom: 0.375rem;">Deskripsi / Catatan Tambahan</label>
           <textarea id="task-desc" class="form-textarea" rows="3" placeholder="Rincian informasi tugas..."></textarea>
         </div>
 
         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem;">
           <div>
-            <label style="display: block; font-size: 0.8125rem; font-weight: 600; color: #cbd5e1; margin-bottom: 0.375rem;">Kategori</label>
+            <label for="task-category" style="display: block; font-size: 0.8125rem; font-weight: 600; color: var(--text); margin-bottom: 0.375rem;">Kategori</label>
             <select id="task-category" class="form-select">
               <option value="Operasional">Operasional</option>
               <option value="Teknis">Teknis</option>
@@ -224,7 +216,7 @@
             </select>
           </div>
           <div>
-            <label style="display: block; font-size: 0.8125rem; font-weight: 600; color: #cbd5e1; margin-bottom: 0.375rem;">Prioritas</label>
+            <label for="task-priority" style="display: block; font-size: 0.8125rem; font-weight: 600; color: var(--text); margin-bottom: 0.375rem;">Prioritas</label>
             <select id="task-priority" class="form-select">
               <option value="Low">Low</option>
               <option value="Medium" selected>Medium</option>
@@ -234,7 +226,7 @@
         </div>
 
         <div style="margin-bottom: 1rem;">
-          <label style="display: block; font-size: 0.8125rem; font-weight: 600; color: #cbd5e1; margin-bottom: 0.375rem;">Status</label>
+          <label for="task-status" style="display: block; font-size: 0.8125rem; font-weight: 600; color: var(--text); margin-bottom: 0.375rem;">Status</label>
           <select id="task-status" class="form-select">
             <option value="To Do">To Do (Antrean)</option>
             <option value="In Progress">In Progress (Sedang Jalan)</option>
@@ -243,7 +235,7 @@
         </div>
 
         <div style="margin-bottom: 1.5rem;">
-          <label style="display: block; font-size: 0.8125rem; font-weight: 600; color: #cbd5e1; margin-bottom: 0.375rem;">Tenggat Waktu *</label>
+          <label for="task-due-date" style="display: block; font-size: 0.8125rem; font-weight: 600; color: var(--text); margin-bottom: 0.375rem;">Tenggat Waktu *</label>
           <input type="datetime-local" id="task-due-date" class="form-input" required>
         </div>
 
@@ -276,17 +268,17 @@
       if (view === 'kanban') {
         kanbanView.style.display = 'grid';
         tableView.style.display = 'none';
-        kanbanBtn.style.background = '#3b82f6';
+        kanbanBtn.style.background = 'var(--primary)';
         kanbanBtn.style.color = '#fff';
         tableBtn.style.background = 'transparent';
-        tableBtn.style.color = '#94a3b8';
+        tableBtn.style.color = 'var(--text-muted)';
       } else {
         kanbanView.style.display = 'none';
         tableView.style.display = 'block';
-        tableBtn.style.background = '#3b82f6';
+        tableBtn.style.background = 'var(--primary)';
         tableBtn.style.color = '#fff';
         kanbanBtn.style.background = 'transparent';
-        kanbanBtn.style.color = '#94a3b8';
+        kanbanBtn.style.color = 'var(--text-muted)';
       }
     }
 
@@ -366,23 +358,23 @@
 
       colTodo.innerHTML = todos.length ? todos.map(t => createKanbanCard(t)).join('') : `
         <div class="empty-state-box" style="padding: 1.75rem 1rem;">
-          <p style="font-size: 12px; color: #94a3b8; font-weight: 500;">Antrean bersih</p>
+          <p style="font-size: 12px; color: var(--text-muted); font-weight: 500;">Antrean bersih</p>
         </div>`;
       colInProg.innerHTML = inProgs.length ? inProgs.map(t => createKanbanCard(t)).join('') : `
         <div class="empty-state-box" style="padding: 1.75rem 1rem;">
-          <p style="font-size: 12px; color: #94a3b8; font-weight: 500;">Tidak ada tugas aktif</p>
+          <p style="font-size: 12px; color: var(--text-muted); font-weight: 500;">Tidak ada tugas aktif</p>
         </div>`;
       colDone.innerHTML = dones.length ? dones.map(t => createKanbanCard(t)).join('') : `
         <div class="empty-state-box" style="padding: 1.75rem 1rem;">
-          <p style="font-size: 12px; color: #94a3b8; font-weight: 500;">Belum ada tugas selesai</p>
+          <p style="font-size: 12px; color: var(--text-muted); font-weight: 500;">Belum ada tugas selesai</p>
         </div>`;
     }
 
     function createKanbanCard(task) {
       const priorityPill = {
-        High: '<span class="badge" style="background:rgba(239,68,68,0.2); color:#f87171; border:1px solid rgba(239,68,68,0.3);">HIGH</span>',
-        Medium: '<span class="badge" style="background:rgba(245,158,11,0.2); color:#fbbf24; border:1px solid rgba(245,158,11,0.3);">MED</span>',
-        Low: '<span class="badge" style="background:rgba(16,185,129,0.2); color:#34d399; border:1px solid rgba(16,185,129,0.3);">LOW</span>',
+        High: '<span class="badge" style="background:rgba(239,68,68,0.12); color:#ef4444; border:1px solid rgba(239,68,68,0.25);">HIGH</span>',
+        Medium: '<span class="badge" style="background:rgba(245,158,11,0.12); color:#d97706; border:1px solid rgba(245,158,11,0.25);">MED</span>',
+        Low: '<span class="badge" style="background:rgba(34,197,94,0.12); color:#16a34a; border:1px solid rgba(34,197,94,0.25);">LOW</span>',
       }[task.priority] || '';
 
       const catClass = `cat-${(task.category || 'umum').toLowerCase()}`;
@@ -404,23 +396,23 @@
             </span>
           </div>
 
-          <h4 style="font-size: 0.9375rem; font-weight: 700; color: #f8fafc; margin-bottom: 0.375rem; line-height: 1.35; ${task.completed ? 'text-decoration: line-through; opacity: 0.65;' : ''}">${task.title}</h4>
-          ${task.description ? `<p style="font-size: 0.8125rem; color: #cbd5e1; margin-bottom: 0.875rem; line-height: 1.45;">${task.description}</p>` : ''}
+          <h4 style="font-size: 0.9375rem; font-weight: 700; color: var(--text); margin-bottom: 0.375rem; line-height: 1.35; ${task.completed ? 'text-decoration: line-through; opacity: 0.65;' : ''}">${task.title}</h4>
+          ${task.description ? `<p style="font-size: 0.8125rem; color: var(--text-muted); margin-bottom: 0.875rem; line-height: 1.45;">${task.description}</p>` : ''}
 
           <div style="display: flex; flex-direction: column; gap: 4px; margin-bottom: 0.75rem;">
-            <span style="font-size: 11px; color: #94a3b8;" class="font-mono">📅 ${formatDateWIB(task.due_date)}</span>
+            <span style="font-size: 11px; color: var(--text-muted);" class="font-mono">📅 ${formatDateWIB(task.due_date)}</span>
             ${deadlineBadge}
           </div>
 
-          <div style="display: flex; align-items: center; justify-content: space-between; border-top: 1px solid var(--border-hairline); padding-top: 0.75rem; flex-wrap: wrap; gap: 0.5rem;">
-            <span style="font-size: 11px; color: #64748b;">${task.assignee_name ? '👤 ' + task.assignee_name.split(' ')[0] : ''}</span>
+          <div style="display: flex; align-items: center; justify-content: space-between; border-top: 1px solid var(--border); padding-top: 0.75rem; flex-wrap: wrap; gap: 0.5rem;">
+            <span style="font-size: 11px; color: var(--text-muted); font-weight: 600;">${task.assignee_name ? '👤 ' + task.assignee_name.split(' ')[0] : ''}</span>
             
             <div style="display: flex; gap: 4px; align-items: center;">
               ${task.status !== 'To Do' ? `<button onclick="updateTaskStatus(${task.id}, 'To Do')" title="Pindah ke To Do" aria-label="Pindahkan tugas ke antrean To Do" class="btn-action-icon" style="width: 28px; height: 28px; font-size: 11px;">⏮</button>` : ''}
-              ${task.status !== 'In Progress' ? `<button onclick="updateTaskStatus(${task.id}, 'In Progress')" title="Pindah ke In Progress" aria-label="Pindahkan tugas ke In Progress" class="btn-action-icon" style="width: 28px; height: 28px; font-size: 11px; color: #fbbf24;">▶</button>` : ''}
-              ${task.status !== 'Done' ? `<button onclick="updateTaskStatus(${task.id}, 'Done')" title="Tandai Selesai" aria-label="Tandai tugas telah selesai" class="btn-action-icon" style="width: 28px; height: 28px; font-size: 11px; color: #34d399;">✓</button>` : ''}
-              <button onclick="openEditTaskModal(${task.id})" title="Edit Rincian" aria-label="Edit rincian data tugas" class="btn-action-icon" style="width: 28px; height: 28px; font-size: 12px; color: #60a5fa;">✏️</button>
-              <button onclick="deleteTask(${task.id})" title="Hapus Tugas" aria-label="Hapus tugas secara permanen" class="btn-action-icon" style="width: 28px; height: 28px; font-size: 12px; color: #f87171;">🗑️</button>
+              ${task.status !== 'In Progress' ? `<button onclick="updateTaskStatus(${task.id}, 'In Progress')" title="Pindah ke In Progress" aria-label="Pindahkan tugas ke In Progress" class="btn-action-icon" style="width: 28px; height: 28px; font-size: 11px; color: #8b00ff; border-color: rgba(139,0,255,0.3);">▶</button>` : ''}
+              ${task.status !== 'Done' ? `<button onclick="updateTaskStatus(${task.id}, 'Done')" title="Tandai Selesai" aria-label="Tandai tugas telah selesai" class="btn-action-icon" style="width: 28px; height: 28px; font-size: 11px; color: var(--cta); border-color: rgba(34,197,94,0.3);">✓</button>` : ''}
+              <button onclick="openEditTaskModal(${task.id})" title="Edit Rincian" aria-label="Edit rincian data tugas" class="btn-action-icon" style="width: 28px; height: 28px; font-size: 12px; color: var(--primary);">✏️</button>
+              <button onclick="deleteTask(${task.id})" title="Hapus Tugas" aria-label="Hapus tugas secara permanen" class="btn-action-icon" style="width: 28px; height: 28px; font-size: 12px; color: #ef4444; border-color: rgba(239,68,68,0.3);">🗑️</button>
             </div>
           </div>
         </div>
@@ -435,8 +427,8 @@
             <td colspan="8" style="padding: 2.5rem 1rem;">
               <div class="empty-state-box">
                 <div class="empty-state-icon">📋</div>
-                <h4 style="font-size: 0.9375rem; font-weight: 700; color: #f8fafc; margin-bottom: 0.25rem;">Tidak Ada Tugas Ditemukan</h4>
-                <p style="font-size: 0.8125rem; color: #94a3b8; margin-bottom: 1rem;">Coba sesuaikan kata kunci pencarian atau reset filter.</p>
+                <h4 style="font-size: 0.9375rem; font-weight: 700; color: var(--text); margin-bottom: 0.25rem;">Tidak Ada Tugas Ditemukan</h4>
+                <p style="font-size: 0.8125rem; color: var(--text-muted); margin-bottom: 1rem;">Coba sesuaikan kata kunci pencarian atau reset filter.</p>
                 <button onclick="resetFilters()" class="btn-secondary" style="font-size: 0.75rem; min-height: 34px;">Reset Filter</button>
               </div>
             </td>
@@ -456,11 +448,11 @@
         }
 
         return `
-          <tr style="border-bottom: 1px solid var(--border-hairline); font-size: 0.875rem;">
+          <tr style="border-bottom: 1px solid var(--border); font-size: 0.875rem;">
             <td style="padding: 0.875rem 0.5rem; text-align: center;">
-              <input type="checkbox" ${t.completed ? 'checked' : ''} aria-label="Tandai status selesai untuk ${t.title}" onchange="updateTaskStatus(${t.id}, this.checked ? 'Done' : 'In Progress')" style="width: 20px; height: 20px; cursor: pointer; accent-color: #10b981;">
+              <input type="checkbox" ${t.completed ? 'checked' : ''} aria-label="Tandai status selesai untuk ${t.title}" onchange="updateTaskStatus(${t.id}, this.checked ? 'Done' : 'In Progress')" style="width: 20px; height: 20px; cursor: pointer; accent-color: var(--cta);">
             </td>
-            <td style="padding: 0.875rem 1rem; font-weight: 600; color: #f8fafc; ${t.completed ? 'text-decoration: line-through; opacity: 0.65;' : ''}">
+            <td style="padding: 0.875rem 1rem; font-weight: 600; color: var(--text); ${t.completed ? 'text-decoration: line-through; opacity: 0.65;' : ''}">
               ${t.title}
             </td>
             <td style="padding: 0.875rem 1rem;">
@@ -470,7 +462,7 @@
               </span>
             </td>
             <td style="padding: 0.875rem 1rem;">
-              <span style="font-weight: 700; font-size: 0.75rem; color: ${t.priority === 'High' ? '#ef4444' : t.priority === 'Medium' ? '#f59e0b' : '#10b981'};">
+              <span style="font-weight: 700; font-size: 0.75rem; color: ${t.priority === 'High' ? '#ef4444' : t.priority === 'Medium' ? '#d97706' : '#16a34a'};">
                 ${t.priority}
               </span>
             </td>
@@ -479,14 +471,14 @@
                 ${t.status}
               </span>
             </td>
-            <td style="padding: 0.875rem 1rem; color: #cbd5e1; font-size: 0.8125rem;">
+            <td style="padding: 0.875rem 1rem; color: var(--text-secondary); font-size: 0.8125rem;">
               <span class="font-mono">${formatDateWIB(t.due_date)}</span>
               ${deadlineBadge}
             </td>
-            <td style="padding: 0.875rem 1rem; color: #cbd5e1; font-size: 0.8125rem;">${t.assignee_name || '-'}</td>
+            <td style="padding: 0.875rem 1rem; color: var(--text-muted); font-size: 0.8125rem;">${t.assignee_name || '-'}</td>
             <td style="padding: 0.875rem 1rem; text-align: right; white-space: nowrap;">
-              <button onclick="openEditTaskModal(${t.id})" aria-label="Edit tugas ${t.title}" class="btn-secondary" style="padding: 4px 10px; min-height: 34px; font-size: 12px; margin-right: 4px;">Edit</button>
-              <button onclick="deleteTask(${t.id})" aria-label="Hapus tugas ${t.title}" class="btn-danger" style="padding: 4px 10px; min-height: 34px; font-size: 12px;">Hapus</button>
+              <button onclick="openEditTaskModal(${t.id})" aria-label="Edit tugas ${t.title}" class="btn-secondary" style="padding: 4px 10px; min-height: 32px; font-size: 12px; margin-right: 4px;">Edit</button>
+              <button onclick="deleteTask(${t.id})" aria-label="Hapus tugas ${t.title}" class="btn-danger" style="padding: 4px 10px; min-height: 32px; font-size: 12px;">Hapus</button>
             </td>
           </tr>
         `;
@@ -559,6 +551,17 @@
       document.body.classList.remove('modal-open');
       document.getElementById('task-modal').classList.remove('active');
     }
+
+    // Keyboard shortcut 'N' for new task
+    window.addEventListener('keydown', (e) => {
+      if ((e.key === 'n' || e.key === 'N') && !['INPUT', 'TEXTAREA', 'SELECT'].includes(document.activeElement.tagName)) {
+        e.preventDefault();
+        openTaskModal();
+      }
+      if (e.key === 'Escape') {
+        closeTaskModal();
+      }
+    });
 
     document.getElementById('task-form').addEventListener('submit', async (e) => {
       e.preventDefault();

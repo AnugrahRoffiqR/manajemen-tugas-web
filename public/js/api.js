@@ -22,17 +22,17 @@ function showToast(message, type = 'info') {
   };
 
   const colors = {
-    success: '#10b981',
+    success: '#22c55e',
     error: '#ef4444',
     warning: '#f59e0b',
-    info: '#3b82f6',
+    info: '#0080ff',
   };
 
   toast.innerHTML = `
     <span style="display:inline-flex; align-items:center; justify-content:center; width:22px; height:22px; border-radius:50%; background:${colors[type]}22; color:${colors[type]}; font-weight:bold; font-size:12px;">
       ${icons[type] || '•'}
     </span>
-    <span style="flex:1; color:#f8fafc;">${message}</span>
+    <span style="flex:1; color:var(--text); font-weight:600;">${message}</span>
   `;
 
   container.appendChild(toast);

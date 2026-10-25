@@ -44,24 +44,29 @@ async function initNavigation(activeKey = '') {
   const sidebarContainer = document.getElementById('sidebar-container');
   if (sidebarContainer) {
     sidebarContainer.innerHTML = `
-      <aside style="width: 260px; height: 100vh; position: sticky; top: 0; background: var(--surface-shell); border-right: 1px solid var(--border-hairline); display: flex; flex-direction: column; justify-content: space-between; padding: 1.5rem 1rem;">
+      <aside style="width: 260px; height: 100vh; position: sticky; top: 0; background: rgba(255, 255, 255, 0.85); backdrop-filter: blur(16px); border-right: 1px solid rgba(0, 128, 255, 0.12); display: flex; flex-direction: column; justify-content: space-between; padding: 1.5rem 1rem;">
         <div>
-          <!-- Brand Logo & Workspace Pill -->
+          <!-- Brand Logo & Live Pulse Pill (UUPM SaaS Demo Standard) -->
           <div style="padding: 0.5rem 0.5rem 1.25rem;">
             <div style="display: flex; align-items: center; gap: 0.75rem; margin-bottom: 0.875rem;">
-              <div style="width: 38px; height: 38px; border-radius: 10px; background: linear-gradient(135deg, #3b82f6, #1d4ed8); display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 12px rgba(59, 130, 246, 0.4); flex-shrink: 0;">
-                <span style="color: #fff; font-weight: 800; font-size: 18px;">${ICONS.check}</span>
+              <div style="width: 40px; height: 40px; border-radius: 12px; background: linear-gradient(135deg, #0080ff, #8b00ff); display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 14px rgba(0, 128, 255, 0.35); flex-shrink: 0;">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>
               </div>
               <div>
-                <h2 style="font-size: 15px; font-weight: 700; color: #f8fafc; line-height: 1.2;">Manajemen Tugas</h2>
-                <span style="font-size: 11px; color: #94a3b8; font-weight: 500;">Workspace Tim</span>
+                <h2 style="font-size: 16px; font-weight: 700; font-family: 'Poppins', sans-serif; line-height: 1.2;">
+                  <span class="gradient-text">DataPulse</span>
+                </h2>
+                <span style="font-size: 11px; color: #64748b; font-weight: 500;">Manajemen Tugas</span>
               </div>
             </div>
 
-            <!-- Workspace Status Pill (high-end-visual-design) -->
-            <div style="display: inline-flex; align-items: center; gap: 6px; padding: 3px 8px; border-radius: 999px; background: rgba(255, 255, 255, 0.04); border: 1px solid var(--border-hairline); font-size: 11px; color: #cbd5e1; width: 100%;">
-              <span style="width: 6px; height: 6px; border-radius: 50%; background: #10b981; box-shadow: 0 0 6px #10b981; display: inline-block;"></span>
-              <span style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-weight: 500;">Kota Bersih • Neon DB</span>
+            <!-- Workspace Status Pill with Pulse Ring -->
+            <div style="display: inline-flex; align-items: center; gap: 8px; padding: 4px 10px; border-radius: 999px; background: rgba(0, 128, 255, 0.06); border: 1px solid rgba(0, 128, 255, 0.15); font-size: 11px; color: #334155; width: 100%;">
+              <span style="position: relative; display: flex; width: 8px; height: 8px;">
+                <span class="pulse-ring" style="position: absolute; display: inline-flex; width: 100%; height: 100%; border-radius: 50%; background: #22c55e; opacity: 0.75;"></span>
+                <span style="position: relative; display: inline-flex; border-radius: 50%; width: 8px; height: 8px; background: #22c55e;"></span>
+              </span>
+              <span style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-weight: 600;">Real-time Cloud Sync</span>
             </div>
           </div>
 
@@ -110,14 +115,14 @@ async function initNavigation(activeKey = '') {
         </div>
 
         <!-- User Profile Card in Sidebar -->
-        <div style="background: var(--surface-core); border: 1px solid var(--border-hairline); border-radius: 1rem; padding: 0.875rem; display: flex; align-items: center; justify-content: space-between;">
+        <div style="background: #ffffff; border: 1px solid var(--border); border-radius: 1rem; padding: 0.875rem; display: flex; align-items: center; justify-content: space-between; box-shadow: 0 2px 8px rgba(0, 128, 255, 0.05);">
           <div style="display: flex; align-items: center; gap: 0.625rem; overflow: hidden;">
-            <div style="width: 34px; height: 34px; border-radius: 50%; background: #3b82f6; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 13px; color: #fff; flex-shrink: 0;">
+            <div style="width: 36px; height: 36px; border-radius: 50%; background: linear-gradient(135deg, #0080ff, #8b00ff); display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 14px; color: #fff; flex-shrink: 0; box-shadow: 0 2px 8px rgba(0, 128, 255, 0.3);">
               ${currentUser.name.charAt(0).toUpperCase()}
             </div>
             <div style="overflow: hidden;">
-              <p style="font-size: 13px; font-weight: 600; color: #f8fafc; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${currentUser.name}</p>
-              <span style="font-size: 11px; color: ${currentUser.role === 'Owner' ? '#60a5fa' : '#94a3b8'}; font-weight: 600;">${currentUser.role}</span>
+              <p style="font-size: 13px; font-weight: 700; color: #0f172a; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${currentUser.name}</p>
+              <span style="font-size: 11px; color: ${currentUser.role === 'Owner' ? '#0080ff' : '#64748b'}; font-weight: 600;">${currentUser.role}</span>
             </div>
           </div>
           <button onclick="handleLogout()" title="Keluar dari akun" aria-label="Keluar dari akun" class="btn-action-icon" style="flex-shrink: 0; width: 34px; height: 34px;">
@@ -132,15 +137,15 @@ async function initNavigation(activeKey = '') {
   const mobileHeader = document.getElementById('mobile-header');
   if (mobileHeader) {
     mobileHeader.innerHTML = `
-      <header style="display: flex; align-items: center; justify-content: space-between; padding: 0.875rem 1rem; background: var(--surface-shell); border-bottom: 1px solid var(--border-hairline); position: sticky; top: 0; z-index: 100;">
+      <header style="display: flex; align-items: center; justify-content: space-between; padding: 0.875rem 1rem; background: rgba(255, 255, 255, 0.9); backdrop-filter: blur(12px); border-bottom: 1px solid var(--border); position: sticky; top: 0; z-index: 100;">
         <div style="display: flex; align-items: center; gap: 0.625rem;">
-          <div style="width: 32px; height: 32px; border-radius: 8px; background: #3b82f6; display: flex; align-items: center; justify-content: center; color: #fff; font-weight: bold;">
-            ${ICONS.check}
+          <div style="width: 34px; height: 34px; border-radius: 10px; background: linear-gradient(135deg, #0080ff, #8b00ff); display: flex; align-items: center; justify-content: center; color: #fff; font-weight: bold; box-shadow: 0 2px 8px rgba(0, 128, 255, 0.3);">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>
           </div>
-          <span style="font-weight: 700; font-size: 15px; color: #f8fafc;">Manajemen Tugas</span>
+          <span style="font-weight: 700; font-size: 15px; font-family: 'Poppins', sans-serif;" class="gradient-text">DataPulse</span>
         </div>
         <div style="display: flex; align-items: center; gap: 0.625rem;">
-          <span style="font-size: 12px; color: #cbd5e1; font-weight: 600;">${currentUser.name.split(' ')[0]}</span>
+          <span style="font-size: 12px; color: #475569; font-weight: 600;">${currentUser.name.split(' ')[0]}</span>
           <button onclick="handleLogout()" class="btn-action-icon" title="Keluar dari akun" aria-label="Keluar dari akun" style="width: 34px; height: 34px;">
             ${ICONS.logout}
           </button>
@@ -149,11 +154,11 @@ async function initNavigation(activeKey = '') {
     `;
   }
 
-  // 5. Render Mobile Bottom Navigation (< 1024px, baseline-ui safe-area)
+  // 5. Render Mobile Bottom Navigation (< 1024px)
   const mobileBottomNav = document.getElementById('mobile-bottom-nav');
   if (mobileBottomNav) {
     mobileBottomNav.innerHTML = `
-      <nav aria-label="Navigasi Utama Mobile" style="position: fixed; bottom: 0; left: 0; right: 0; height: calc(60px + env(safe-area-inset-bottom, 0px)); padding-bottom: env(safe-area-inset-bottom, 0px); background: rgba(15, 23, 42, 0.96); border-top: 1px solid var(--border-hairline); display: flex; align-items: center; justify-content: space-around; z-index: 99; backdrop-filter: blur(16px);">
+      <nav aria-label="Navigasi Utama Mobile" style="position: fixed; bottom: 0; left: 0; right: 0; height: calc(60px + env(safe-area-inset-bottom, 0px)); padding-bottom: env(safe-area-inset-bottom, 0px); background: rgba(255, 255, 255, 0.95); border-top: 1px solid var(--border); display: flex; align-items: center; justify-content: space-around; z-index: 99; backdrop-filter: blur(16px); box-shadow: 0 -4px 16px rgba(0, 0, 0, 0.05);">
         <a href="/dashboard" class="mobile-nav-link ${activeKey === 'dashboard' ? 'active' : ''}" aria-label="Halaman Utama Dashboard">
           <span class="mobile-nav-icon">${ICONS.dashboard}</span>
           <span class="mobile-nav-label">Home</span>
@@ -229,46 +234,45 @@ navStyle.textContent = `
     justify-content: space-between;
     padding: 0.625rem 0.875rem;
     border-radius: 0.75rem;
-    color: var(--text-secondary);
+    color: #475569;
     text-decoration: none;
     font-size: 0.875rem;
     font-weight: 500;
     border: 1px solid transparent;
-    transition: transform 120ms var(--ease-out), background-color 140ms var(--ease-out), color 140ms var(--ease-out), border-color 140ms var(--ease-out);
+    transition: all 140ms var(--ease-out);
   }
   .nav-item:hover {
-    background: var(--surface-hover);
-    color: var(--text-primary);
+    background: #f1f5f9;
+    color: #0080ff;
   }
   .nav-item:active {
     transform: scale(0.97);
   }
   .nav-item.active {
-    background: linear-gradient(90deg, rgba(59, 130, 246, 0.18) 0%, rgba(59, 130, 246, 0.05) 100%);
-    color: #60a5fa;
-    font-weight: 600;
-    border: 1px solid rgba(59, 130, 246, 0.3);
-    border-left: 3px solid #3b82f6;
+    background: rgba(0, 128, 255, 0.08);
+    color: #0080ff;
+    font-weight: 700;
+    border: 1px solid rgba(0, 128, 255, 0.2);
+    border-left: 3px solid #0080ff;
   }
   .nav-kbd {
     font-family: 'JetBrains Mono', monospace;
     font-size: 10px;
     font-weight: 600;
-    color: var(--text-tertiary);
-    background: rgba(255, 255, 255, 0.06);
-    border: 1px solid var(--border-hairline);
+    color: #64748b;
+    background: #f1f5f9;
+    border: 1px solid #e2e8f0;
     padding: 1px 5px;
     border-radius: 4px;
-    opacity: 0.8;
   }
   .nav-item:hover .nav-kbd {
-    color: var(--text-secondary);
-    background: rgba(255, 255, 255, 0.1);
+    color: #0080ff;
+    background: #e2e8f0;
   }
   .nav-item.active .nav-kbd {
-    color: #60a5fa;
-    border-color: rgba(59, 130, 246, 0.4);
-    background: rgba(59, 130, 246, 0.15);
+    color: #0080ff;
+    border-color: rgba(0, 128, 255, 0.3);
+    background: rgba(0, 128, 255, 0.12);
   }
   .nav-icon {
     display: inline-flex;
@@ -282,7 +286,7 @@ navStyle.textContent = `
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    color: var(--text-tertiary);
+    color: #64748b;
     text-decoration: none;
     flex: 1;
     height: 100%;
@@ -290,7 +294,7 @@ navStyle.textContent = `
     transition: color 150ms ease;
   }
   .mobile-nav-link:hover, .mobile-nav-link.active {
-    color: #60a5fa;
+    color: #0080ff;
   }
   .mobile-nav-icon {
     display: inline-flex;

@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Dashboard — Sistem Manajemen Tugas</title>
+  <title>Dashboard Analitik — Sistem Manajemen Tugas</title>
   <link rel="stylesheet" href="/css/style.css">
 </head>
 <body>
@@ -18,32 +18,39 @@
     <!-- Main Workspace Area -->
     <main class="workspace-main">
       
-      <!-- Header Dashboard & Greeting (Executive Agency Standard) -->
+      <!-- Header Dashboard & Greeting (UUPM SaaS Analytics Standard) -->
       <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 2rem; flex-wrap: wrap; gap: 1.25rem;">
         <div>
-          <div style="display: flex; align-items: center; gap: 0.625rem; margin-bottom: 0.5rem; flex-wrap: wrap;">
-            <span class="badge" style="background: rgba(59, 130, 246, 0.15); color: #60a5fa; border: 1px solid rgba(59, 130, 246, 0.3);">
-              OVERVIEW
-            </span>
-            <span id="dashboard-date-badge" class="font-mono" style="font-size: 11px; color: #94a3b8; background: rgba(255, 255, 255, 0.04); border: 1px solid var(--border-hairline); padding: 2px 8px; border-radius: 999px;">
+          <div style="display: flex; align-items: center; gap: 0.625rem; margin-bottom: 0.625rem; flex-wrap: wrap;">
+            <div style="display: inline-flex; align-items: center; gap: 6px; padding: 3px 10px; border-radius: 9999px; font-size: 11px; font-weight: 600; background: rgba(34, 197, 94, 0.12); color: var(--cta); border: 1px solid rgba(34, 197, 94, 0.3);">
+              <span style="position: relative; display: flex; width: 7px; height: 7px;">
+                <span class="pulse-ring" style="position: absolute; width: 100%; height: 100%; border-radius: 50%; background: var(--cta);"></span>
+                <span style="position: relative; width: 7px; height: 7px; border-radius: 50%; background: var(--cta);"></span>
+              </span>
+              <span>Real-time Workspace</span>
+            </div>
+            <span id="dashboard-date-badge" class="font-mono" style="font-size: 11px; color: var(--text-muted); background: #ffffff; border: 1px solid var(--border); padding: 3px 10px; border-radius: 9999px; box-shadow: 0 1px 3px rgba(0,0,0,0.03);">
               Memuat kalender...
             </span>
-            <span style="display: inline-flex; align-items: center; gap: 5px; font-size: 11px; color: #34d399; background: rgba(16, 185, 129, 0.12); border: 1px solid rgba(16, 185, 129, 0.3); padding: 2px 8px; border-radius: 999px;">
-              <span style="width: 6px; height: 6px; border-radius: 50%; background: #10b981; box-shadow: 0 0 6px #10b981;"></span>
+            <span style="display: inline-flex; align-items: center; gap: 5px; font-size: 11px; font-weight: 600; color: #0080ff; background: rgba(0, 128, 255, 0.08); border: 1px solid rgba(0, 128, 255, 0.25); padding: 3px 10px; border-radius: 9999px;">
+              <span style="width: 6px; height: 6px; border-radius: 50%; background: #0080ff; box-shadow: 0 0 6px #0080ff;"></span>
               Neon Cloud Sync
             </span>
           </div>
-          <h1 style="font-size: 1.875rem; font-weight: 800; color: #f8fafc; letter-spacing: -0.025em; line-height: 1.2;">
-            Selamat Datang, <span id="user-greeting-name" style="background: linear-gradient(135deg, #60a5fa, #38bdf8); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">Rekan</span> 👋
+          <h1 style="font-size: 2rem; font-weight: 800; color: var(--text); letter-spacing: -0.03em; line-height: 1.2;">
+            Transform Data Into <span class="gradient-text">Actionable Insights</span>
           </h1>
-          <p style="color: #94a3b8; font-size: 0.875rem; margin-top: 0.25rem;">Pantau metrik siklus kerja tim dan tenggat waktu hari ini secara real-time.</p>
+          <p style="color: var(--text-muted); font-size: 0.9375rem; margin-top: 0.375rem;">
+            Selamat datang kembali, <b id="user-greeting-name" style="color: var(--text);">Rekan</b>! Pantau metrik siklus kerja tim dan tenggat waktu secara real-time.
+          </p>
         </div>
         <div style="display: flex; gap: 0.75rem; align-items: center;">
           <a href="/reports" class="btn-secondary" style="font-size: 0.8125rem;">
             <span>Rekap KPI</span>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="M12 5l7 7-7 7"/></svg>
           </a>
           <button onclick="openCreateTaskModal()" class="btn-island" aria-label="Buat tugas baru (Shortcut N)">
-            <span>+ Buat Tugas <kbd style="font-size: 10px; opacity: 0.8; background: rgba(0,0,0,0.25); padding: 1px 5px; border-radius: 4px; margin-left: 4px;">N</kbd></span>
+            <span>+ Buat Tugas <kbd style="font-size: 10px; opacity: 0.85; background: rgba(0,0,0,0.2); padding: 1px 5px; border-radius: 4px; margin-left: 4px;">N</kbd></span>
             <span class="btn-icon-pill">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
             </span>
@@ -52,163 +59,280 @@
       </div>
 
       <!-- Urgent Alert Banner (Dynamic) -->
-      <div id="urgent-alert-banner" style="display: none; margin-bottom: 1.75rem;">
-        <div class="doppelrand-shell" style="border-color: rgba(249, 115, 22, 0.4); background: rgba(249, 115, 22, 0.08);">
-          <div class="doppelrand-core" style="background: rgba(15, 23, 42, 0.9); display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 1rem; padding: 1rem 1.25rem;">
-            <div style="display: flex; align-items: center; gap: 0.875rem;">
-              <div style="width: 36px; height: 36px; border-radius: 10px; background: rgba(249, 115, 22, 0.2); display: flex; align-items: center; justify-content: center; color: #fb923c; flex-shrink: 0;">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
-              </div>
-              <div>
-                <h4 style="font-size: 0.9375rem; font-weight: 700; color: #fb923c;" id="urgent-banner-title">Perhatian: Ada Tugas Mendesak!</h4>
-                <p style="font-size: 0.8125rem; color: #cbd5e1;" id="urgent-banner-desc">Segera periksa dan selesaikan tugas sebelum melewati tenggat waktu.</p>
-              </div>
+      <div id="urgent-alert-banner" style="display: none; margin-bottom: 2rem;">
+        <div class="glass-card" style="border-color: rgba(245, 158, 11, 0.4); background: rgba(254, 243, 199, 0.6); padding: 1.25rem 1.5rem; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 1rem;">
+          <div style="display: flex; align-items: center; gap: 1rem;">
+            <div style="width: 40px; height: 40px; border-radius: 12px; background: rgba(245, 158, 11, 0.2); display: flex; align-items: center; justify-content: center; color: #d97706; flex-shrink: 0;">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
             </div>
-            <a href="/reminders" class="btn-secondary" style="font-size: 0.8125rem; padding: 0.5rem 1rem; border-color: rgba(249, 115, 22, 0.35); color: #fb923c;">
-              Lihat di Pengingat →
-            </a>
+            <div>
+              <h4 style="font-size: 0.9375rem; font-weight: 700; color: #b45309;" id="urgent-banner-title">Perhatian: Ada Tugas Mendesak!</h4>
+              <p style="font-size: 0.8125rem; color: #78350f;" id="urgent-banner-desc">Segera periksa dan selesaikan tugas sebelum melewati batas tenggat waktu.</p>
+            </div>
           </div>
+          <a href="/reminders" class="btn-secondary" style="font-size: 0.8125rem; padding: 0.5rem 1rem; border-color: #d97706; color: #b45309;">
+            Lihat di Pengingat →
+          </a>
         </div>
       </div>
 
-      <!-- Bento Grid Stats (4 Kolom Agency Tier) -->
+      <!-- Bento Grid Stats (4 Kolom SaaS Analytics Standard) -->
       <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 1.25rem; margin-bottom: 2rem;">
         <!-- Card 1: Total Tugas -->
-        <div class="doppelrand-shell stat-card stat-card-total">
-          <div class="doppelrand-core">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem;">
-              <span style="font-size: 0.75rem; font-weight: 700; color: #94a3b8; letter-spacing: 0.05em;">TOTAL TUGAS</span>
-              <div style="width: 34px; height: 34px; border-radius: 9px; background: rgba(59, 130, 246, 0.2); display: flex; align-items: center; justify-content: center; color: #60a5fa; box-shadow: 0 0 16px rgba(59, 130, 246, 0.4);">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
-              </div>
-            </div>
-            <h2 id="stat-total" style="font-size: 2.25rem; font-weight: 800; color: #f8fafc;" class="font-mono">0</h2>
-            <div style="display: flex; align-items: center; justify-content: space-between; margin-top: 0.375rem;">
-              <p style="font-size: 0.75rem; color: #94a3b8;">Tercatat dalam sistem</p>
-              <span style="font-size: 10px; font-weight: 600; color: #60a5fa; background: rgba(59, 130, 246, 0.12); padding: 2px 6px; border-radius: 4px;">Aktif</span>
+        <div class="glass-card stat-card stat-card-total" style="padding: 1.25rem 1.5rem;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem;">
+            <span style="font-size: 0.75rem; font-weight: 700; color: var(--text-muted); letter-spacing: 0.05em;">TOTAL TUGAS</span>
+            <div style="width: 36px; height: 36px; border-radius: 10px; background: rgba(0, 128, 255, 0.1); display: flex; align-items: center; justify-content: center; color: var(--primary);">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
             </div>
           </div>
+          <div style="display: flex; align-items: baseline; gap: 0.5rem;">
+            <h2 id="stat-total" style="font-size: 2.25rem; font-weight: 800; color: var(--text);" class="font-mono">0</h2>
+            <span style="font-size: 0.75rem; font-weight: 600; color: var(--cta); background: rgba(34, 197, 94, 0.12); padding: 2px 6px; border-radius: 6px;">+100% Vol</span>
+          </div>
+          <p style="font-size: 0.75rem; color: var(--text-muted); margin-top: 0.375rem;">Tercatat dalam basis data Neon</p>
         </div>
 
         <!-- Card 2: Sedang Dikerjakan -->
-        <div class="doppelrand-shell stat-card stat-card-progress">
-          <div class="doppelrand-core">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem;">
-              <span style="font-size: 0.75rem; font-weight: 700; color: #fbbf24; letter-spacing: 0.05em;">SEDANG BERJALAN</span>
-              <div style="width: 34px; height: 34px; border-radius: 9px; background: rgba(245, 158, 11, 0.2); display: flex; align-items: center; justify-content: center; color: #fbbf24; box-shadow: 0 0 16px rgba(245, 158, 11, 0.4);">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-              </div>
-            </div>
-            <h2 id="stat-in-progress" style="font-size: 2.25rem; font-weight: 800; color: #fbbf24;" class="font-mono">0</h2>
-            <div style="display: flex; align-items: center; justify-content: space-between; margin-top: 0.375rem;">
-              <p style="font-size: 0.75rem; color: #94a3b8;">Status 'In Progress'</p>
-              <span style="font-size: 10px; font-weight: 600; color: #fbbf24; background: rgba(245, 158, 11, 0.12); padding: 2px 6px; border-radius: 4px;">Berlangsung</span>
+        <div class="glass-card stat-card stat-card-progress" style="padding: 1.25rem 1.5rem;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem;">
+            <span style="font-size: 0.75rem; font-weight: 700; color: #8b00ff; letter-spacing: 0.05em;">SEDANG BERJALAN</span>
+            <div style="width: 36px; height: 36px; border-radius: 10px; background: rgba(139, 0, 255, 0.1); display: flex; align-items: center; justify-content: center; color: #8b00ff;">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
             </div>
           </div>
+          <div style="display: flex; align-items: baseline; gap: 0.5rem;">
+            <h2 id="stat-in-progress" style="font-size: 2.25rem; font-weight: 800; color: #8b00ff;" class="font-mono">0</h2>
+            <span style="font-size: 0.75rem; font-weight: 600; color: #8b00ff; background: rgba(139, 0, 255, 0.12); padding: 2px 6px; border-radius: 6px;">Aktif</span>
+          </div>
+          <p style="font-size: 0.75rem; color: var(--text-muted); margin-top: 0.375rem;">Dalam proses pengerjaan tim</p>
         </div>
 
         <!-- Card 3: Selesai -->
-        <div class="doppelrand-shell stat-card stat-card-done">
-          <div class="doppelrand-core">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem;">
-              <span style="font-size: 0.75rem; font-weight: 700; color: #34d399; letter-spacing: 0.05em;">SELESAI</span>
-              <div style="width: 34px; height: 34px; border-radius: 9px; background: rgba(16, 185, 129, 0.2); display: flex; align-items: center; justify-content: center; color: #34d399; box-shadow: 0 0 16px rgba(16, 185, 129, 0.4);">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
-              </div>
-            </div>
-            <h2 id="stat-done" style="font-size: 2.25rem; font-weight: 800; color: #34d399;" class="font-mono">0</h2>
-            <div style="display: flex; align-items: center; justify-content: space-between; margin-top: 0.375rem;">
-              <p style="font-size: 0.75rem; color: #94a3b8;">Tugas telah rampung</p>
-              <span style="font-size: 10px; font-weight: 600; color: #34d399; background: rgba(16, 185, 129, 0.12); padding: 2px 6px; border-radius: 4px;">Rampung</span>
+        <div class="glass-card stat-card stat-card-done" style="padding: 1.25rem 1.5rem;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem;">
+            <span style="font-size: 0.75rem; font-weight: 700; color: var(--cta); letter-spacing: 0.05em;">SELESAI (DONE)</span>
+            <div style="width: 36px; height: 36px; border-radius: 10px; background: rgba(34, 197, 94, 0.1); display: flex; align-items: center; justify-content: center; color: var(--cta);">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
             </div>
           </div>
+          <div style="display: flex; align-items: baseline; gap: 0.5rem;">
+            <h2 id="stat-done" style="font-size: 2.25rem; font-weight: 800; color: var(--cta);" class="font-mono">0</h2>
+            <span style="font-size: 0.75rem; font-weight: 600; color: var(--cta); background: rgba(34, 197, 94, 0.12); padding: 2px 6px; border-radius: 6px;">Rampung</span>
+          </div>
+          <p style="font-size: 0.75rem; color: var(--text-muted); margin-top: 0.375rem;">Tuntas sesuai kriteria kualitas</p>
         </div>
 
         <!-- Card 4: Overdue -->
-        <div class="doppelrand-shell stat-card stat-card-overdue">
-          <div class="doppelrand-core">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem;">
-              <span style="font-size: 0.75rem; font-weight: 700; color: #f87171; letter-spacing: 0.05em;">TERLAMBAT</span>
-              <div style="width: 34px; height: 34px; border-radius: 9px; background: rgba(239, 68, 68, 0.2); display: flex; align-items: center; justify-content: center; color: #f87171; box-shadow: 0 0 16px rgba(239, 68, 68, 0.4);">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
-              </div>
-            </div>
-            <h2 id="stat-overdue" style="font-size: 2.25rem; font-weight: 800; color: #f87171;" class="font-mono">0</h2>
-            <div style="display: flex; align-items: center; justify-content: space-between; margin-top: 0.375rem;">
-              <p style="font-size: 0.75rem; color: #94a3b8;">Melewati tenggat waktu</p>
-              <span style="font-size: 10px; font-weight: 600; color: #f87171; background: rgba(239, 68, 68, 0.12); padding: 2px 6px; border-radius: 4px;">Kritis</span>
+        <div class="glass-card stat-card stat-card-overdue" style="padding: 1.25rem 1.5rem;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem;">
+            <span style="font-size: 0.75rem; font-weight: 700; color: #ef4444; letter-spacing: 0.05em;">TERLAMBAT</span>
+            <div style="width: 36px; height: 36px; border-radius: 10px; background: rgba(239, 68, 68, 0.1); display: flex; align-items: center; justify-content: center; color: #ef4444;">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
             </div>
           </div>
+          <div style="display: flex; align-items: baseline; gap: 0.5rem;">
+            <h2 id="stat-overdue" style="font-size: 2.25rem; font-weight: 800; color: #ef4444;" class="font-mono">0</h2>
+            <span style="font-size: 0.75rem; font-weight: 600; color: #ef4444; background: rgba(239, 68, 68, 0.12); padding: 2px 6px; border-radius: 6px;">Kritis</span>
+          </div>
+          <p style="font-size: 0.75rem; color: var(--text-muted); margin-top: 0.375rem;">Melewati batas tenggat waktu</p>
         </div>
       </div>
 
-      <!-- Completion Rate Progress Widget (Agency Tier Segmented Track) -->
-      <div class="doppelrand-shell" style="margin-bottom: 2rem;">
-        <div class="doppelrand-core" style="padding: 1.25rem 1.5rem;">
-          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.875rem; flex-wrap: wrap; gap: 0.5rem;">
-            <div>
-              <div style="display: flex; align-items: center; gap: 6px;">
-                <span style="font-size: 0.8125rem; font-weight: 700; color: #f8fafc;">Rasio Penyelesaian Tugas (Completion Rate)</span>
-                <span class="badge" style="background: rgba(16, 185, 129, 0.14); color: #34d399; border: 1px solid rgba(16, 185, 129, 0.3); font-size: 9px; padding: 1px 6px;">LIVE KPI</span>
-              </div>
-              <span id="progress-ratio-label" style="font-size: 0.75rem; color: #94a3b8; display: block; margin-top: 2px;">0 dari 0 tugas</span>
+      <!-- Interactive SaaS Analytics Visualizer (SVG Trend Curve + Donut Breakdown) -->
+      <div class="glass-card" style="padding: 1.5rem; margin-bottom: 2rem;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; flex-wrap: wrap; gap: 1rem;">
+          <div>
+            <h3 style="font-size: 1.125rem; font-weight: 700; color: var(--text);">Analytics Overview</h3>
+            <p style="font-size: 0.8125rem; color: var(--text-muted);">Aktivitas penyelesaian tugas & tren performa tim</p>
+          </div>
+          <div style="display: flex; align-items: center; gap: 0.75rem;">
+            <div style="display: flex; align-items: center; gap: 1rem; font-size: 0.8125rem; margin-right: 0.5rem;">
+              <span style="display: inline-flex; align-items: center; gap: 6px; color: var(--text-secondary);">
+                <span style="width: 10px; height: 10px; border-radius: 50%; background: var(--primary);"></span>
+                Tugas Rampung
+              </span>
+              <span style="display: inline-flex; align-items: center; gap: 6px; color: var(--text-secondary);">
+                <span style="width: 10px; height: 10px; border-radius: 50%; background: var(--secondary);"></span>
+                Total Antrean
+              </span>
             </div>
-            <span id="progress-percentage-label" class="font-mono" style="font-size: 1.25rem; font-weight: 800; color: #34d399; letter-spacing: -0.02em;">0%</span>
+            <a href="/reports" class="btn-secondary" style="font-size: 0.75rem; padding: 0.375rem 0.875rem; min-height: 34px;">
+              Buka Analitik Penuh →
+            </a>
+          </div>
+        </div>
+
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 1.5rem;">
+          
+          <!-- Left: Area Trend Curve -->
+          <div style="background: var(--bg-subtle); border: 1px solid var(--border); border-radius: 0.875rem; padding: 1.25rem;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+              <h4 style="font-size: 0.9375rem; font-weight: 700; color: var(--text);">Tren Kinerja Tim</h4>
+              <span style="font-size: 11px; font-weight: 600; color: var(--primary); background: rgba(0,128,255,0.1); padding: 2px 8px; border-radius: 6px;">Live Curve</span>
+            </div>
+
+            <!-- SVG Smooth Area Curve Chart -->
+            <div style="position: relative; height: 190px; width: 100%;">
+              <svg viewBox="0 0 400 170" style="width: 100%; height: 100%; overflow: visible;" preserveAspectRatio="none">
+                <defs>
+                  <linearGradient id="primaryGradient" x1="0%" y1="0%" x2="0%" y2="100%">
+                    <stop offset="0%" stop-color="#0080ff" stop-opacity="0.3"></stop>
+                    <stop offset="100%" stop-color="#0080ff" stop-opacity="0.01"></stop>
+                  </linearGradient>
+                </defs>
+                <!-- Grid Lines -->
+                <line x1="0" y1="20" x2="400" y2="20" stroke="#e2e8f0" stroke-width="1" stroke-dasharray="4,4"></line>
+                <line x1="0" y1="60" x2="400" y2="60" stroke="#e2e8f0" stroke-width="1" stroke-dasharray="4,4"></line>
+                <line x1="0" y1="100" x2="400" y2="100" stroke="#e2e8f0" stroke-width="1" stroke-dasharray="4,4"></line>
+                <line x1="0" y1="140" x2="400" y2="140" stroke="#e2e8f0" stroke-width="1" stroke-dasharray="4,4"></line>
+
+                <!-- Primary Gradient Area Fill -->
+                <path id="trend-area-fill" d="M0,135 C50,125 90,105 140,95 C190,85 230,65 280,50 C330,35 370,25 400,18 L400,160 L0,160 Z" fill="url(#primaryGradient)"></path>
+
+                <!-- Primary Curve (Completed) -->
+                <path id="trend-curve-primary" d="M0,135 C50,125 90,105 140,95 C190,85 230,65 280,50 C330,35 370,25 400,18" fill="none" stroke="var(--primary)" stroke-width="3" stroke-linecap="round"></path>
+
+                <!-- Secondary Dashed Curve (Active Pipeline) -->
+                <path id="trend-curve-secondary" d="M0,150 C50,145 90,135 140,125 C190,118 230,105 280,95 C330,85 370,78 400,70" fill="none" stroke="var(--secondary)" stroke-width="2.5" stroke-linecap="round" stroke-dasharray="6,4"></path>
+
+                <!-- Data Node Markers -->
+                <circle cx="140" cy="95" r="4" fill="#ffffff" stroke="var(--primary)" stroke-width="2.5"></circle>
+                <circle cx="280" cy="50" r="4" fill="#ffffff" stroke="var(--primary)" stroke-width="2.5"></circle>
+                <circle cx="400" cy="18" r="4.5" fill="var(--cta)" stroke="#ffffff" stroke-width="2"></circle>
+              </svg>
+
+              <!-- Month Axis Labels -->
+              <div style="display: flex; justify-content: space-between; margin-top: 8px; font-size: 11px; color: var(--text-muted); font-family: 'JetBrains Mono', monospace;">
+                <span>Minggu 1</span>
+                <span>Minggu 2</span>
+                <span>Minggu 3</span>
+                <span>Minggu 4</span>
+                <span>Hari Ini</span>
+              </div>
+            </div>
           </div>
 
-          <div style="position: relative; width: 100%; height: 10px; background: rgba(255, 255, 255, 0.08); border-radius: 999px; overflow: hidden; box-shadow: inset 0 1px 2px rgba(0,0,0,0.5);">
-            <div id="progress-bar-fill" style="width: 0%; height: 100%; background: linear-gradient(90deg, #3b82f6 0%, #06b6d4 50%, #10b981 100%); border-radius: 999px; transition: width 600ms var(--ease-spring); box-shadow: 0 0 10px rgba(59, 130, 246, 0.4);"></div>
-            <!-- Milestone markers -->
-            <div class="progress-milestone-marker" style="left: 25%;"></div>
-            <div class="progress-milestone-marker" style="left: 50%;"></div>
-            <div class="progress-milestone-marker" style="left: 75%;"></div>
+          <!-- Right: Category Sources Donut Chart -->
+          <div style="background: var(--bg-subtle); border: 1px solid var(--border); border-radius: 0.875rem; padding: 1.25rem; display: flex; flex-direction: column; justify-content: space-between;">
+            <div>
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                <h4 style="font-size: 0.9375rem; font-weight: 700; color: var(--text);">Distribusi Kategori</h4>
+                <span style="font-size: 11px; font-weight: 600; color: var(--secondary); background: rgba(139,0,255,0.1); padding: 2px 8px; border-radius: 6px;">Komposisi</span>
+              </div>
+
+              <!-- SVG Donut Chart + Legend -->
+              <div style="display: flex; align-items: center; justify-content: center; gap: 1.5rem; padding: 0.5rem 0;">
+                <div style="position: relative; width: 104px; height: 104px; flex-shrink: 0;">
+                  <svg viewBox="0 0 36 36" style="width: 100%; height: 100%; transform: rotate(-90deg);">
+                    <!-- Base Track -->
+                    <circle cx="18" cy="18" r="15.9" fill="none" stroke="#e2e8f0" stroke-width="3.4"></circle>
+                    <!-- Segments (Calculated Dynamically) -->
+                    <circle id="donut-seg-1" cx="18" cy="18" r="15.9" fill="none" stroke="var(--primary)" stroke-width="3.4" stroke-dasharray="45 100"></circle>
+                    <circle id="donut-seg-2" cx="18" cy="18" r="15.9" fill="none" stroke="var(--secondary)" stroke-width="3.4" stroke-dasharray="30 100" stroke-dashoffset="-45"></circle>
+                    <circle id="donut-seg-3" cx="18" cy="18" r="15.9" fill="none" stroke="var(--cta)" stroke-width="3.4" stroke-dasharray="25 100" stroke-dashoffset="-75"></circle>
+                  </svg>
+                  <div style="position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center;">
+                    <span id="donut-center-pct" style="font-size: 1rem; font-weight: 800; color: var(--text);" class="font-mono">100%</span>
+                  </div>
+                </div>
+
+                <!-- Category Legend -->
+                <div id="donut-legend-list" style="display: flex; flex-direction: column; gap: 0.5rem; flex: 1; font-size: 0.8125rem;">
+                  <div style="display: flex; align-items: center; justify-content: space-between;">
+                    <span style="display: inline-flex; align-items: center; gap: 6px; color: var(--text-secondary);">
+                      <span style="width: 8px; height: 8px; border-radius: 50%; background: var(--primary);"></span>
+                      Teknis
+                    </span>
+                    <span id="legend-pct-1" class="font-mono" style="font-weight: 700; color: var(--text);">40%</span>
+                  </div>
+                  <div style="display: flex; align-items: center; justify-content: space-between;">
+                    <span style="display: inline-flex; align-items: center; gap: 6px; color: var(--text-secondary);">
+                      <span style="width: 8px; height: 8px; border-radius: 50%; background: var(--secondary);"></span>
+                      Operasional
+                    </span>
+                    <span id="legend-pct-2" class="font-mono" style="font-weight: 700; color: var(--text);">35%</span>
+                  </div>
+                  <div style="display: flex; align-items: center; justify-content: space-between;">
+                    <span style="display: inline-flex; align-items: center; gap: 6px; color: var(--text-secondary);">
+                      <span style="width: 8px; height: 8px; border-radius: 50%; background: var(--cta);"></span>
+                      Lainnya
+                    </span>
+                    <span id="legend-pct-3" class="font-mono" style="font-weight: 700; color: var(--text);">25%</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Mini Footnote -->
+            <div style="border-top: 1px solid var(--border); padding-top: 0.75rem; margin-top: 0.75rem; font-size: 11px; color: var(--text-muted); display: flex; justify-content: space-between;">
+              <span>Sinkronisasi Kategori Otomatis</span>
+              <span style="color: var(--cta); font-weight: 600;">✓ Terverifikasi</span>
+            </div>
           </div>
 
-          <div style="display: flex; justify-content: space-between; margin-top: 6px; font-size: 10px; color: #64748b; font-family: 'JetBrains Mono', monospace;">
-            <span>0%</span>
-            <span>25%</span>
-            <span>50%</span>
-            <span>75%</span>
-            <span>100% Selesai</span>
+        </div>
+      </div>
+
+      <!-- Completion Rate Progress Widget (SaaS Analytics Track) -->
+      <div class="glass-card" style="padding: 1.25rem 1.5rem; margin-bottom: 2rem;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.875rem; flex-wrap: wrap; gap: 0.5rem;">
+          <div>
+            <div style="display: flex; align-items: center; gap: 6px;">
+              <span style="font-size: 0.875rem; font-weight: 700; color: var(--text);">Target Penyelesaian Tugas (Completion Rate)</span>
+              <span class="badge" style="background: rgba(34, 197, 94, 0.12); color: var(--cta); border: 1px solid rgba(34, 197, 94, 0.3); font-size: 10px;">LIVE KPI</span>
+            </div>
+            <span id="progress-ratio-label" style="font-size: 0.75rem; color: var(--text-muted); display: block; margin-top: 2px;">0 dari 0 tugas selesai</span>
           </div>
+          <span id="progress-percentage-label" class="font-mono" style="font-size: 1.375rem; font-weight: 800; color: var(--cta); letter-spacing: -0.02em;">0%</span>
+        </div>
+
+        <div style="position: relative; width: 100%; height: 10px; background: #e2e8f0; border-radius: 9999px; overflow: hidden; box-shadow: inset 0 1px 2px rgba(0,0,0,0.06);">
+          <div id="progress-bar-fill" style="width: 0%; height: 100%; background: linear-gradient(90deg, #0080ff 0%, #8b00ff 50%, #22c55e 100%); border-radius: 9999px; transition: width 600ms var(--ease-spring); box-shadow: 0 0 10px rgba(0, 128, 255, 0.4);"></div>
+        </div>
+
+        <div style="display: flex; justify-content: space-between; margin-top: 6px; font-size: 11px; color: var(--text-muted); font-family: 'JetBrains Mono', monospace;">
+          <span>0%</span>
+          <span>25% Target</span>
+          <span>50% Setengah</span>
+          <span>75% Optimal</span>
+          <span>100% Sempurna</span>
         </div>
       </div>
 
       <!-- Recent Priority Tasks Table -->
-      <div class="doppelrand-shell">
-        <div class="doppelrand-core" style="padding: 1.5rem;">
-          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.25rem; flex-wrap: wrap; gap: 0.5rem;">
-            <div>
-              <h3 style="font-size: 1.125rem; font-weight: 700; color: #f8fafc;">Tugas Prioritas Terdekat</h3>
-              <p style="font-size: 0.8125rem; color: #94a3b8;">Daftar tugas aktif yang paling mendekati tenggat waktu</p>
-            </div>
-            <a href="/tasks" style="font-size: 0.8125rem; font-weight: 600; color: #60a5fa; text-decoration: none; display: inline-flex; align-items: center; gap: 4px;">
-              <span>Buka Semua Tugas</span>
-              <span>→</span>
-            </a>
+      <div class="glass-card" style="padding: 1.5rem;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.25rem; flex-wrap: wrap; gap: 0.5rem;">
+          <div>
+            <h3 style="font-size: 1.125rem; font-weight: 700; color: var(--text);">Tugas Prioritas Terdekat</h3>
+            <p style="font-size: 0.8125rem; color: var(--text-muted);">Daftar tugas aktif yang paling mendekati tenggat waktu</p>
           </div>
+          <a href="/tasks" style="font-size: 0.8125rem; font-weight: 600; color: var(--primary); text-decoration: none; display: inline-flex; align-items: center; gap: 4px;">
+            <span>Buka Semua Tugas</span>
+            <span>→</span>
+          </a>
+        </div>
 
-          <div style="overflow-x: auto;">
-            <table style="width: 100%; border-collapse: collapse; text-align: left;">
-              <thead>
-                <tr style="border-bottom: 1px solid var(--border-hairline); color: #94a3b8; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.05em;">
-                  <th style="padding: 0.75rem 0.5rem; width: 44px; text-align: center;">Aksi</th>
-                  <th style="padding: 0.75rem 1rem;">Judul Tugas</th>
-                  <th style="padding: 0.75rem 1rem;">Kategori</th>
-                  <th style="padding: 0.75rem 1rem;">Prioritas</th>
-                  <th style="padding: 0.75rem 1rem;">Tenggat Waktu</th>
-                  <th style="padding: 0.75rem 1rem; text-align: right;">Kelola</th>
-                </tr>
-              </thead>
-              <tbody id="priority-task-rows">
-                <tr>
-                  <td colspan="6" style="text-align: center; padding: 2rem; color: #94a3b8; font-size: 0.875rem;">
-                    Memuat daftar tugas...
-                  </td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
+        <div style="overflow-x: auto;">
+          <table style="width: 100%; border-collapse: collapse; text-align: left;">
+            <thead>
+              <tr style="border-bottom: 1px solid var(--border); color: var(--text-muted); font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.05em;">
+                <th style="padding: 0.75rem 0.5rem; width: 44px; text-align: center;">Aksi</th>
+                <th style="padding: 0.75rem 1rem;">Judul Tugas</th>
+                <th style="padding: 0.75rem 1rem;">Kategori</th>
+                <th style="padding: 0.75rem 1rem;">Prioritas</th>
+                <th style="padding: 0.75rem 1rem;">Tenggat Waktu</th>
+                <th style="padding: 0.75rem 1rem; text-align: right;">Kelola</th>
+              </tr>
+            </thead>
+            <tbody id="priority-task-rows">
+              <tr>
+                <td colspan="6" style="text-align: center; padding: 2.5rem; color: var(--text-muted); font-size: 0.875rem;">
+                  Memuat data tugas...
+                </td>
+              </tr>
+            </tbody>
+          </table>
         </div>
       </div>
 
@@ -218,27 +342,27 @@
   <!-- Mobile Bottom Nav (< 1024px) -->
   <div id="mobile-bottom-nav"></div>
 
-  <!-- Modal Tambah Tugas Cepat -->
+  <!-- Modal Tambah Tugas Cepat (Glassmorphic) -->
   <div id="task-modal" class="modal-overlay">
-    <div class="modal-container">
-      <div style="padding: 1.25rem 1.5rem; border-bottom: 1px solid var(--border-hairline); display: flex; justify-content: space-between; align-items: center;">
-        <h3 style="font-size: 1.125rem; font-weight: 700; color: #f8fafc;">+ Tambah Tugas Baru</h3>
-        <button onclick="closeTaskModal()" class="btn-action-icon" style="width: 32px; height: 32px;">✕</button>
+    <div class="modal-container glass-card" style="background: #ffffff; border: 1px solid var(--border);">
+      <div style="padding: 1.25rem 1.5rem; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center;">
+        <h3 style="font-size: 1.125rem; font-weight: 700; color: var(--text);">+ Tambah Tugas Baru</h3>
+        <button onclick="closeTaskModal()" class="btn-action-icon" style="width: 32px; height: 32px;" aria-label="Tutup modal">✕</button>
       </div>
       <form id="create-task-form" class="modal-body">
         <div style="margin-bottom: 1rem;">
-          <label style="display: block; font-size: 0.8125rem; font-weight: 600; color: #cbd5e1; margin-bottom: 0.375rem;">Judul Tugas *</label>
-          <input type="text" id="task-title" class="form-input" placeholder="Contoh: Audit PRD & Sistem Desain" required>
+          <label for="task-title" style="display: block; font-size: 0.8125rem; font-weight: 600; color: var(--text); margin-bottom: 0.375rem;">Judul Tugas *</label>
+          <input type="text" id="task-title" class="form-input" placeholder="Contoh: Optimasi Dashboard UI & Metrik" required>
         </div>
 
         <div style="margin-bottom: 1rem;">
-          <label style="display: block; font-size: 0.8125rem; font-weight: 600; color: #cbd5e1; margin-bottom: 0.375rem;">Deskripsi</label>
+          <label for="task-desc" style="display: block; font-size: 0.8125rem; font-weight: 600; color: var(--text); margin-bottom: 0.375rem;">Deskripsi</label>
           <textarea id="task-desc" class="form-textarea" rows="3" placeholder="Rincian catatan pekerjaan..."></textarea>
         </div>
 
         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem;">
           <div>
-            <label style="display: block; font-size: 0.8125rem; font-weight: 600; color: #cbd5e1; margin-bottom: 0.375rem;">Kategori</label>
+            <label for="task-category" style="display: block; font-size: 0.8125rem; font-weight: 600; color: var(--text); margin-bottom: 0.375rem;">Kategori</label>
             <select id="task-category" class="form-select">
               <option value="Umum">Umum</option>
               <option value="Operasional">Operasional</option>
@@ -248,7 +372,7 @@
             </select>
           </div>
           <div>
-            <label style="display: block; font-size: 0.8125rem; font-weight: 600; color: #cbd5e1; margin-bottom: 0.375rem;">Prioritas</label>
+            <label for="task-priority" style="display: block; font-size: 0.8125rem; font-weight: 600; color: var(--text); margin-bottom: 0.375rem;">Prioritas</label>
             <select id="task-priority" class="form-select">
               <option value="Low">Low</option>
               <option value="Medium" selected>Medium</option>
@@ -258,7 +382,7 @@
         </div>
 
         <div style="margin-bottom: 1.5rem;">
-          <label style="display: block; font-size: 0.8125rem; font-weight: 600; color: #cbd5e1; margin-bottom: 0.375rem;">Tenggat Waktu (Deadline) *</label>
+          <label for="task-due-date" style="display: block; font-size: 0.8125rem; font-weight: 600; color: var(--text); margin-bottom: 0.375rem;">Tenggat Waktu (Deadline) *</label>
           <input type="datetime-local" id="task-due-date" class="form-input" required>
         </div>
 
@@ -318,6 +442,7 @@
           document.getElementById('progress-percentage-label').textContent = `${compRate}%`;
           document.getElementById('progress-bar-fill').style.width = `${compRate}%`;
           document.getElementById('progress-ratio-label').textContent = `${kpi.completed_tasks} dari ${kpi.total_tasks} tugas selesai`;
+          document.getElementById('donut-center-pct').textContent = `${compRate}%`;
         }
 
         // Ambil Notifikasi Kritis
@@ -328,26 +453,79 @@
           if (totalUrgent > 0) {
             urgentBanner.style.display = 'block';
             document.getElementById('urgent-banner-title').textContent = `Perhatian: Ada ${totalUrgent} Tugas Mendesak / Terlambat!`;
-            document.getElementById('urgent-banner-desc').textContent = `Terdapat ${remRes.data.total_overdue} tugas yang lewat tenggat dan ${remRes.data.total_urgent} tugas yang jatuh tempo dalam < 24 jam.`;
+            document.getElementById('urgent-banner-desc').textContent = `Terdapat ${remRes.data.total_overdue} tugas yang lewat tenggat dan ${remRes.data.total_urgent} tugas jatuh tempo dalam < 24 jam.`;
           } else {
             urgentBanner.style.display = 'none';
           }
         }
 
-        // Ambil 5 Tugas Prioritas Terdekat
+        // Ambil Data Tugas untuk Donut Breakdown dan Prioritas
         const tasksRes = await apiFetch('/api/tasks?status=Semua');
         const rowsContainer = document.getElementById('priority-task-rows');
 
         if (tasksRes && tasksRes.data && tasksRes.data.length > 0) {
-          const activeTasks = tasksRes.data.filter(t => !t.completed).slice(0, 5);
+          const allTasks = tasksRes.data;
+
+          // Hitung Distribusi Kategori Real-Time untuk Donut Chart
+          const catCounts = {};
+          allTasks.forEach(t => {
+            const cat = t.category || 'Umum';
+            catCounts[cat] = (catCounts[cat] || 0) + 1;
+          });
+          const catKeys = Object.keys(catCounts).sort((a, b) => catCounts[b] - catCounts[a]);
+          const totalCatTasks = allTasks.length;
+
+          if (catKeys.length > 0) {
+            const pct1 = Math.round((catCounts[catKeys[0]] / totalCatTasks) * 100);
+            const pct2 = catKeys[1] ? Math.round((catCounts[catKeys[1]] / totalCatTasks) * 100) : 0;
+            const pct3 = Math.max(0, 100 - pct1 - pct2);
+
+            // Update SVG Segments
+            const seg1 = document.getElementById('donut-seg-1');
+            const seg2 = document.getElementById('donut-seg-2');
+            const seg3 = document.getElementById('donut-seg-3');
+
+            if (seg1) seg1.setAttribute('stroke-dasharray', `${pct1} 100`);
+            if (seg2) {
+              seg2.setAttribute('stroke-dasharray', `${pct2} 100`);
+              seg2.setAttribute('stroke-dashoffset', `-${pct1}`);
+            }
+            if (seg3) {
+              seg3.setAttribute('stroke-dasharray', `${pct3} 100`);
+              seg3.setAttribute('stroke-dashoffset', `-${pct1 + pct2}`);
+            }
+
+            // Update Legend labels
+            const legendList = document.getElementById('donut-legend-list');
+            if (legendList) {
+              const colors = ['var(--primary)', 'var(--secondary)', 'var(--cta)'];
+              let legendHtml = '';
+              for (let i = 0; i < Math.min(3, catKeys.length); i++) {
+                const p = i === 0 ? pct1 : (i === 1 ? pct2 : pct3);
+                legendHtml += `
+                  <div style="display: flex; align-items: center; justify-content: space-between;">
+                    <span style="display: inline-flex; align-items: center; gap: 6px; color: var(--text-secondary);">
+                      <span style="width: 8px; height: 8px; border-radius: 50%; background: ${colors[i]};"></span>
+                      ${catKeys[i]}
+                    </span>
+                    <span class="font-mono" style="font-weight: 700; color: var(--text);">${p}%</span>
+                  </div>
+                `;
+              }
+              legendList.innerHTML = legendHtml;
+            }
+          }
+
+          // Prioritas 5 Tugas Terdekat
+          const activeTasks = allTasks.filter(t => !t.completed).slice(0, 5);
           if (activeTasks.length === 0) {
             rowsContainer.innerHTML = `
               <tr>
                 <td colspan="6" style="padding: 2.5rem 1rem;">
                   <div class="empty-state-box">
-                    <div class="empty-state-icon" style="color: #34d399; background: rgba(16,185,129,0.1); border-color: rgba(16,185,129,0.3);">✓</div>
-                    <h4 style="font-size: 0.9375rem; font-weight: 700; color: #f8fafc; margin-bottom: 0.25rem;">Semua Tugas Selesai Dikerjakan!</h4>
-                    <p style="font-size: 0.8125rem; color: #94a3b8; margin-bottom: 1rem;">Tidak ada antrean tugas aktif saat ini. Kerja bagus!</p>
+                    <div class="empty-state-icon" style="color: var(--cta); background: rgba(34,197,94,0.1); border-color: rgba(34,197,94,0.3);">✓</div>
+                    <h4 style="font-size: 0.9375rem; font-weight: 700; color: var(--text); margin-bottom: 0.25rem;">Semua Tugas Selesai Dikerjakan!</h4>
+                    <p style="font-size: 0.8125rem; color: var(--text-muted); margin-bottom: 1rem;">Tidak ada antrean tugas aktif saat ini. Kerja luar biasa!</p>
                     <button onclick="openCreateTaskModal()" class="btn-island" style="font-size: 0.8125rem;">+ Tambah Tugas Baru</button>
                   </div>
                 </td>
@@ -358,9 +536,9 @@
 
           rowsContainer.innerHTML = activeTasks.map(task => {
             const priorityPill = {
-              High: '<span class="badge" style="background:rgba(239,68,68,0.2); color:#f87171; border:1px solid rgba(239,68,68,0.3);">HIGH</span>',
-              Medium: '<span class="badge" style="background:rgba(245,158,11,0.2); color:#fbbf24; border:1px solid rgba(245,158,11,0.3);">MED</span>',
-              Low: '<span class="badge" style="background:rgba(16,185,129,0.2); color:#34d399; border:1px solid rgba(16,185,129,0.3);">LOW</span>',
+              High: '<span class="badge" style="background:rgba(239,68,68,0.12); color:#ef4444; border:1px solid rgba(239,68,68,0.25);">HIGH</span>',
+              Medium: '<span class="badge" style="background:rgba(245,158,11,0.12); color:#d97706; border:1px solid rgba(245,158,11,0.25);">MED</span>',
+              Low: '<span class="badge" style="background:rgba(34,197,94,0.12); color:#16a34a; border:1px solid rgba(34,197,94,0.25);">LOW</span>',
             }[task.priority] || task.priority;
 
             const catClass = `cat-${(task.category || 'umum').toLowerCase()}`;
@@ -373,15 +551,15 @@
             }
 
             return `
-              <tr style="border-bottom: 1px solid var(--border-hairline); font-size: 0.875rem;">
+              <tr style="border-bottom: 1px solid var(--border); font-size: 0.875rem;">
                 <td style="padding: 1rem 0.5rem; text-align: center;">
-                  <button onclick="toggleTaskStatus(${task.id}, 'Done')" title="Tandai Selesai" aria-label="Tandai selesai tugas ${task.title}" class="btn-action-icon" style="width: 32px; height: 32px; color: #34d399;">
+                  <button onclick="toggleTaskStatus(${task.id}, 'Done')" title="Tandai Selesai" aria-label="Tandai selesai tugas ${task.title}" class="btn-action-icon" style="width: 32px; height: 32px; color: var(--cta); border-color: rgba(34,197,94,0.3);">
                     ✓
                   </button>
                 </td>
-                <td style="padding: 1rem; font-weight: 600; color: #f8fafc;">
+                <td style="padding: 1rem; font-weight: 600; color: var(--text);">
                   ${task.title}
-                  ${task.description ? `<p style="font-size: 0.75rem; color: #94a3b8; font-weight: 400; margin-top: 2px;">${task.description}</p>` : ''}
+                  ${task.description ? `<p style="font-size: 0.75rem; color: var(--text-muted); font-weight: 400; margin-top: 2px;">${task.description}</p>` : ''}
                 </td>
                 <td style="padding: 1rem;">
                   <span class="cat-badge ${catClass}">
@@ -392,12 +570,12 @@
                 <td style="padding: 1rem;">
                   ${priorityPill}
                 </td>
-                <td style="padding: 1rem; color: #cbd5e1; font-size: 0.8125rem;">
+                <td style="padding: 1rem; color: var(--text-secondary); font-size: 0.8125rem;">
                   <span class="font-mono">${formatDateWIB(task.due_date)}</span>
                   ${deadlineBadge}
                 </td>
                 <td style="padding: 1rem; text-align: right;">
-                  <button onclick="toggleTaskStatus(${task.id}, 'Done')" class="btn-secondary" style="font-size: 0.75rem; padding: 0.375rem 0.75rem; min-height: 32px; color: #34d399; border-color: rgba(16,185,129,0.3);">
+                  <button onclick="toggleTaskStatus(${task.id}, 'Done')" class="btn-secondary" style="font-size: 0.75rem; padding: 0.375rem 0.75rem; min-height: 32px; color: var(--cta); border-color: rgba(34,197,94,0.4);">
                     Selesaikan ✓
                   </button>
                 </td>
@@ -410,8 +588,8 @@
               <td colspan="6" style="padding: 2.5rem 1rem;">
                 <div class="empty-state-box">
                   <div class="empty-state-icon">📋</div>
-                  <h4 style="font-size: 0.9375rem; font-weight: 700; color: #f8fafc; margin-bottom: 0.25rem;">Belum Ada Tugas Tercatat</h4>
-                  <p style="font-size: 0.8125rem; color: #94a3b8; margin-bottom: 1rem;">Mulai delegasikan dan kelola siklus kerja tim hari ini.</p>
+                  <h4 style="font-size: 0.9375rem; font-weight: 700; color: var(--text); margin-bottom: 0.25rem;">Belum Ada Tugas Tercatat</h4>
+                  <p style="font-size: 0.8125rem; color: var(--text-muted); margin-bottom: 1rem;">Mulai delegasikan dan kelola siklus kerja tim hari ini.</p>
                   <button onclick="openCreateTaskModal()" class="btn-island" style="font-size: 0.8125rem;">+ Buat Tugas Baru</button>
                 </div>
               </td>
@@ -451,6 +629,17 @@
       document.body.classList.remove('modal-open');
       document.getElementById('task-modal').classList.remove('active');
     }
+
+    // Keyboard shortcut 'N' for new task
+    window.addEventListener('keydown', (e) => {
+      if ((e.key === 'n' || e.key === 'N') && !['INPUT', 'TEXTAREA', 'SELECT'].includes(document.activeElement.tagName)) {
+        e.preventDefault();
+        openCreateTaskModal();
+      }
+      if (e.key === 'Escape') {
+        closeTaskModal();
+      }
+    });
 
     document.getElementById('create-task-form').addEventListener('submit', async (e) => {
       e.preventDefault();
