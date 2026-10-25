@@ -334,7 +334,7 @@
       }[task.priority] || '';
 
       return `
-        <div style="background: var(--surface-core); border: 1px solid var(--border-hairline); border-radius: 0.875rem; padding: 1.125rem; box-shadow: 0 4px 12px rgba(0,0,0,0.35); transition: border-color 200ms ease;" onmouseover="this.style.borderColor='var(--border-subtle)'" onmouseout="this.style.borderColor='var(--border-hairline)'">
+        <div style="background: var(--surface-core); border: 1px solid var(--border-hairline); border-radius: 0.875rem; padding: 1.125rem; box-shadow: 0 4px 12px rgba(0,0,0,0.35); transition: transform 140ms var(--ease-out), border-color 140ms var(--ease-out), box-shadow 140ms var(--ease-out);" onmouseover="this.style.borderColor='var(--border-subtle)'; this.style.transform='translateY(-2px)';" onmouseout="this.style.borderColor='var(--border-hairline)'; this.style.transform='translateY(0)';">
           <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.625rem;">
             ${priorityPill}
             <span style="font-size: 11px; color: #94a3b8; font-weight: 600; text-transform: uppercase;">${task.category}</span>

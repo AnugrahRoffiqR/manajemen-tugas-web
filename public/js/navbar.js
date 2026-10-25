@@ -191,11 +191,14 @@ navStyle.textContent = `
     text-decoration: none;
     font-size: 0.875rem;
     font-weight: 500;
-    transition: all 200ms ease;
+    transition: transform 120ms var(--ease-out), background-color 140ms var(--ease-out), color 140ms var(--ease-out);
   }
   .nav-item:hover {
     background: var(--surface-hover);
     color: var(--text-primary);
+  }
+  .nav-item:active {
+    transform: scale(0.97);
   }
   .nav-item.active {
     background: rgba(59, 130, 246, 0.16);

@@ -39,9 +39,9 @@ function showToast(message, type = 'info') {
 
   setTimeout(() => {
     toast.style.opacity = '0';
-    toast.style.transform = 'translateX(20px)';
-    toast.style.transition = 'all 200ms ease';
-    setTimeout(() => toast.remove(), 200);
+    toast.style.transform = 'translateY(-8px) scale(0.96)';
+    toast.style.transition = 'transform 160ms cubic-bezier(0.23, 1, 0.32, 1), opacity 160ms cubic-bezier(0.23, 1, 0.32, 1)';
+    setTimeout(() => toast.remove(), 160);
   }, 3500);
 }
 

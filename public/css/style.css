@@ -37,9 +37,11 @@
   --status-urgent: #fb923c;
   --status-overdue: #f87171;
 
-  /* Haptic Physics */
-  --ease-spring: cubic-bezier(0.32, 0.72, 0, 1);
-  --ease-bounce: cubic-bezier(0.34, 1.56, 0.64, 1);
+  /* Haptic Physics & Animation Curves (Emil Kowalski Standard) */
+  --ease-out: cubic-bezier(0.23, 1, 0.32, 1);       /* Strong ease-out: starts fast, feels instant */
+  --ease-in-out: cubic-bezier(0.77, 0, 0.175, 1);   /* Natural on-screen movement */
+  --ease-drawer: cubic-bezier(0.32, 0.72, 0, 1);    /* iOS-grade smooth sheet physics */
+  --ease-spring: cubic-bezier(0.23, 1, 0.32, 1);
 }
 
 /* ==========================================================================
@@ -157,7 +159,7 @@ body.modal-open {
 }
 
 /* ==========================================================================
-   BUTTONS & INTERACTIVE ELEMENTS (WCAG 44x44px Tap Target Rule)
+   BUTTONS & INTERACTIVE ELEMENTS (Emil Kowalski Tactile Standard)
    ========================================================================== */
 .btn-island {
   display: inline-flex;
@@ -172,7 +174,7 @@ body.modal-open {
   border-radius: 9999px;
   border: 1px solid rgba(255, 255, 255, 0.2);
   cursor: pointer;
-  transition: all 250ms var(--ease-spring);
+  transition: transform 140ms var(--ease-out), background-color 140ms var(--ease-out), box-shadow 140ms var(--ease-out);
   text-decoration: none;
   min-height: 44px;
   white-space: nowrap;
@@ -185,7 +187,7 @@ body.modal-open {
 }
 
 .btn-island:active {
-  transform: scale(0.98);
+  transform: scale(0.97);
 }
 
 .btn-icon-pill {
@@ -196,7 +198,7 @@ body.modal-open {
   height: 1.875rem;
   background-color: rgba(255, 255, 255, 0.22);
   border-radius: 9999px;
-  transition: transform 250ms var(--ease-spring);
+  transition: transform 140ms var(--ease-out);
 }
 
 .btn-island:hover .btn-icon-pill {
@@ -217,7 +219,7 @@ body.modal-open {
   border-radius: 0.75rem;
   border: 1px solid var(--border-hairline);
   cursor: pointer;
-  transition: all 200ms var(--ease-spring);
+  transition: transform 140ms var(--ease-out), background-color 140ms var(--ease-out), border-color 140ms var(--ease-out);
   min-height: 44px;
   text-decoration: none;
 }
@@ -226,6 +228,10 @@ body.modal-open {
   background: var(--surface-hover);
   border-color: var(--border-subtle);
   color: #ffffff;
+}
+
+.btn-secondary:active {
+  transform: scale(0.97);
 }
 
 /* Danger Button */
@@ -242,7 +248,7 @@ body.modal-open {
   border-radius: 0.75rem;
   border: 1px solid rgba(239, 68, 68, 0.3);
   cursor: pointer;
-  transition: all 200ms var(--ease-spring);
+  transition: transform 140ms var(--ease-out), background-color 140ms var(--ease-out), border-color 140ms var(--ease-out);
   min-height: 44px;
 }
 
@@ -250,6 +256,10 @@ body.modal-open {
   background: rgba(239, 68, 68, 0.25);
   border-color: #ef4444;
   color: #ffffff;
+}
+
+.btn-danger:active {
+  transform: scale(0.97);
 }
 
 /* Icon Action Button (Small button with 44px touch target) */
@@ -264,7 +274,7 @@ body.modal-open {
   background: var(--surface-shell);
   color: var(--text-secondary);
   cursor: pointer;
-  transition: all 180ms ease;
+  transition: transform 120ms var(--ease-out), background-color 120ms var(--ease-out), border-color 120ms var(--ease-out);
   padding: 0;
 }
 
@@ -273,6 +283,19 @@ body.modal-open {
   border-color: var(--border-subtle);
   color: var(--text-primary);
   transform: translateY(-1px);
+}
+
+.btn-action-icon:active {
+  transform: scale(0.92);
+}
+
+/* Tactile Checkbox micro-physics */
+input[type="checkbox"] {
+  transition: transform 120ms var(--ease-out);
+}
+
+input[type="checkbox"]:active {
+  transform: scale(0.85);
 }
 
 button:disabled {
@@ -418,13 +441,13 @@ button:disabled {
   box-shadow: 0 12px 28px -4px rgba(0, 0, 0, 0.7);
   font-size: 0.875rem;
   font-weight: 500;
-  animation: toastSlideIn 250ms var(--ease-spring);
+  animation: toastSlideIn 180ms var(--ease-out);
 }
 
 @keyframes toastSlideIn {
   from {
     opacity: 0;
-    transform: translateY(-10px) scale(0.96);
+    transform: translateY(-8px) scale(0.96);
   }
   to {
     opacity: 1;
@@ -433,13 +456,13 @@ button:disabled {
 }
 
 /* ==========================================================================
-   MODAL DIALOG ARCHITECTURE
+   MODAL DIALOG ARCHITECTURE (Emil Kowalski Centered Physics)
    ========================================================================== */
 .modal-overlay {
   position: fixed;
   inset: 0;
   background: rgba(0, 0, 0, 0.8);
-  backdrop-filter: blur(10px);
+  backdrop-filter: blur(8px);
   z-index: 1000;
   display: flex;
   align-items: center;
@@ -447,7 +470,7 @@ button:disabled {
   padding: 1rem;
   opacity: 0;
   pointer-events: none;
-  transition: opacity 220ms var(--ease-spring);
+  transition: opacity 160ms var(--ease-out);
 }
 
 .modal-overlay.active {
@@ -465,13 +488,15 @@ button:disabled {
   border: 1px solid var(--border-subtle);
   border-radius: 1.25rem;
   box-shadow: 0 24px 48px -12px rgba(0, 0, 0, 0.85);
-  transform: scale(0.95) translateY(12px);
-  transition: transform 250ms var(--ease-spring);
+  transform: scale(0.96) translateY(8px);
+  opacity: 0;
+  transition: transform 180ms var(--ease-out), opacity 180ms var(--ease-out);
   overflow: hidden;
 }
 
 .modal-overlay.active .modal-container {
   transform: scale(1) translateY(0);
+  opacity: 1;
 }
 
 .modal-body {
