@@ -13,7 +13,11 @@ const ICONS = {
   users: svg(18, '<path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>'),
   logout: svg(16, '<path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/>'),
   check: svg(18, '<polyline points="20 6 9 17 4 12"/>'),
+  shield: svg(16, '<path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>'),
 };
+
+const accountLink = (activeKey) => `
+  <a href="/account" class="btn-action-icon${activeKey === 'account' ? ' active" aria-current="page' : ''}" title="Keamanan akun" aria-label="Keamanan akun">${ICONS.shield}</a>`;
 
 const BRAND_HTML = `
   <div class="brand-mark">${ICONS.check}</div>
@@ -84,7 +88,8 @@ async function initNavigation(activeKey = '') {
             <p class="profile-name">${safeName}</p>
             <span class="profile-role">${isOwner ? 'Owner' : 'User'}</span>
           </div>
-          <button type="button" onclick="handleLogout()" title="Keluar dari akun" aria-label="Keluar dari akun" class="btn-action-icon">
+          ${accountLink(activeKey)}
+          <button type="button" data-click="handleLogout" title="Keluar dari akun" aria-label="Keluar dari akun" class="btn-action-icon">
             ${ICONS.logout}
           </button>
         </div>
@@ -100,7 +105,8 @@ async function initNavigation(activeKey = '') {
         <div class="brand">${BRAND_HTML}</div>
         <div class="mobile-user">
           <span>${escapeHtml(currentUser.name.split(' ')[0])}</span>
-          <button type="button" onclick="handleLogout()" class="btn-action-icon" title="Keluar dari akun" aria-label="Keluar dari akun">
+          ${accountLink(activeKey)}
+          <button type="button" data-click="handleLogout" class="btn-action-icon" title="Keluar dari akun" aria-label="Keluar dari akun">
             ${ICONS.logout}
           </button>
         </div>

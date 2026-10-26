@@ -5,6 +5,7 @@
 
 require('dotenv').config();
 const app = require('./server');
+const totp = require('./lib/totp');
 
 const PORT = process.env.PORT || 3005;
 const BASE_URL = `http://localhost:${PORT}`;
@@ -368,6 +369,68 @@ async function runTests() {
       'TC-16', 'Simpan ulang tugas Done mempertahankan completed_at'
     );
     if (t16Id) await fetch(`${BASE_URL}/api/tasks/${t16Id}`, { method: 'DELETE', headers: { 'Cookie': ownerCookie } });
+
+    // ----------------------------------------------------
+    // TC-20: 2FA (TOTP) — setup, login 2 langkah, anti-replay, reset oleh Owner
+    // ----------------------------------------------------
+    const postJson = (url, body, cookie) => fetch(`${BASE_URL}${url}`, {
+      method: 'POST', headers: cookie ? jsonHeaders(cookie) : { 'Content-Type': 'application/json' }, body: JSON.stringify(body || {}),
+    });
+    const codeAt = (secret, offsetMs = 0) => totp.hotp(totp.base32Decode(secret), totp.currentStep(Date.now() + offsetMs));
+    const setup = await (await postJson('/api/auth/2fa/setup', {}, u2NewCookie)).json();
+    const secret = setup.data?.secret;
+    const badEnable = await postJson('/api/auth/2fa/enable', { code: '000000' }, u2NewCookie);
+    const enableRes = await postJson('/api/auth/2fa/enable', { code: codeAt(secret) }, u2NewCookie);
+    const u2TwoFaCookie = enableRes.headers.get('set-cookie')?.split(';')[0] || '';
+    assert(secret && /^otpauth:\/\/totp\//.test(setup.data.otpauthUri) && badEnable.status === 400 && enableRes.status === 200,
+      'TC-20a', `2FA aktif hanya dengan kode yang benar (salah ${badEnable.status}, benar ${enableRes.status})`);
+    const oldDevice = await fetch(`${BASE_URL}/api/tasks`, { headers: { 'Cookie': u2NewCookie } });
+    const thisDevice = await fetch(`${BASE_URL}/api/tasks`, { headers: { 'Cookie': u2TwoFaCookie } });
+    assert(oldDevice.status === 401 && thisDevice.status === 200, 'TC-20b', 'Aktivasi 2FA mengeluarkan perangkat lain, perangkat ini tetap login');
+
+    const step1 = await postJson('/api/auth/login', { email: user2Email, password: 'GantiBaru123' });
+    const step1Body = await step1.json();
+    assert(step1.status === 200 && step1Body.twoFactorRequired && !step1.headers.get('set-cookie'),
+      'TC-20c', 'Kata sandi benar saja tidak memberi sesi bila 2FA aktif');
+    const challengeAsSession = await fetch(`${BASE_URL}/api/tasks`, { headers: { 'Cookie': `session_token=${step1Body.challenge}` } });
+    assert(challengeAsSession.status === 401, 'TC-20d', `Token challenge tidak bisa dipakai sebagai sesi (dapat ${challengeAsSession.status})`);
+    const wrongCode = await postJson('/api/auth/login/2fa', { challenge: step1Body.challenge, code: '123456' });
+    // The current step was consumed by /enable, so log in with the next step (within the ±1 drift window).
+    const nextCode = codeAt(secret, 30000);
+    const goodCode = await postJson('/api/auth/login/2fa', { challenge: step1Body.challenge, code: nextCode });
+    const replay = await postJson('/api/auth/login/2fa', { challenge: step1Body.challenge, code: nextCode });
+    assert(wrongCode.status === 401 && goodCode.status === 200 && !!goodCode.headers.get('set-cookie') && replay.status === 401,
+      'TC-20e', `Kode salah ditolak, kode benar masuk, kode sama tidak bisa dipakai ulang (${wrongCode.status}/${goodCode.status}/${replay.status})`);
+    const disableBad = await postJson('/api/auth/2fa/disable', { password: 'salah-sekali', code: codeAt(secret) }, u2TwoFaCookie);
+    const stillIn = await fetch(`${BASE_URL}/api/tasks`, { headers: { 'Cookie': u2TwoFaCookie } });
+    assert(disableBad.status === 400 && stillIn.status === 200, 'TC-20f', 'Nonaktifkan 2FA dengan kata sandi salah ditolak tanpa mengeluarkan sesi');
+
+    const resetMember = await postJson(`/api/users/${testUser2Id}/reset-2fa`, {}, u2TwoFaCookie);
+    const resetOwner = await postJson(`/api/users/${testUser2Id}/reset-2fa`, {}, ownerCookie);
+    const afterReset = await fetch(`${BASE_URL}/api/tasks`, { headers: { 'Cookie': u2TwoFaCookie } });
+    const plainLogin = await (await postJson('/api/auth/login', { email: user2Email, password: 'GantiBaru123' })).json();
+    assert(resetMember.status === 403 && resetOwner.status === 200 && afterReset.status === 401 && plainLogin.success && !plainLogin.twoFactorRequired,
+      'TC-20g', 'Hanya Owner yang bisa reset 2FA; sesi dicabut dan login kembali tanpa kode');
+
+    // ----------------------------------------------------
+    // TC-21: Batas per akun — penyerang dengan banyak IP tetap diblokir
+    // ----------------------------------------------------
+    let acctStatuses = [];
+    for (let i = 0; i < 10; i++) {
+      const r = await fetch(`${BASE_URL}/api/auth/login`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'X-Forwarded-For': `203.0.113.${i + 1}` },
+        body: JSON.stringify({ email: user2Email, password: `tebak-${i}` }),
+      });
+      acctStatuses.push(r.status);
+    }
+    const correctButLocked = await fetch(`${BASE_URL}/api/auth/login`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'X-Forwarded-For': '203.0.113.200' },
+      body: JSON.stringify({ email: user2Email, password: 'GantiBaru123' }),
+    });
+    assert(acctStatuses.every((s) => s === 401) && correctButLocked.status === 429, 'TC-21',
+      `10 tebakan dari 10 IP berbeda mengunci akun (dapat ${correctButLocked.status})`);
 
     // ----------------------------------------------------
     // TC-14: Rate limit login (dijalankan terakhir karena mengunci IP ini 60 detik)

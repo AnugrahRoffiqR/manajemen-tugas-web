@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Keamanan Akun — Sistem Manajemen Tugas</title>
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+
+  <div id="mobile-header"></div>
+
+  <div class="app-shell">
+    <div id="sidebar-container"></div>
+
+    <main class="workspace-main">
+
+      <header class="page-head">
+        <div>
+          <h1 class="page-title">Keamanan Akun</h1>
+          <p class="page-sub">Lindungi akun Anda dengan verifikasi dua langkah.</p>
+        </div>
+      </header>
+
+      <section class="card card-pad account-card" aria-labelledby="twofa-title">
+        <div class="section-head">
+          <div>
+            <h2 id="twofa-title" class="section-title">Verifikasi Dua Langkah (2FA)</h2>
+            <p class="section-sub">Setelah kata sandi, login juga meminta kode 6 digit dari aplikasi authenticator di ponsel Anda.</p>
+          </div>
+          <span id="twofa-badge" class="badge badge-todo">Memeriksa…</span>
+        </div>
+
+        <!-- 2FA nonaktif -->
+        <div id="twofa-off" class="hidden">
+          <p class="account-text">Kalau kata sandi Anda bocor, orang lain tetap tidak bisa masuk tanpa ponsel Anda.</p>
+          <button type="button" id="start-setup-btn" class="btn-primary" data-click="startTwoFactorSetup">Aktifkan 2FA</button>
+        </div>
+
+        <!-- Penyiapan -->
+        <div id="twofa-setup" class="hidden">
+          <ol class="setup-steps">
+            <li>
+              Pasang aplikasi authenticator, misalnya Google Authenticator, Microsoft Authenticator, atau Authy.
+            </li>
+            <li>
+              Di aplikasi, pilih <strong>Tambah akun → Masukkan kunci penyiapan</strong>, lalu ketik kunci ini (jenis: berbasis waktu):
+              <div class="secret-box">
+                <code id="twofa-secret" class="font-mono"></code>
+                <button type="button" class="btn-secondary btn-sm" data-click="copySecret">Salin</button>
+              </div>
+              <a id="twofa-link" class="field-hint" href="#">Buka langsung di aplikasi authenticator (di ponsel ini)</a>
+            </li>
+            <li>
+              <form id="enable-form" class="inline-form">
+                <label for="enable-code" class="field-label">Masukkan kode 6 digit yang muncul di aplikasi</label>
+                <div class="inline-form-row">
+                  <input type="text" id="enable-code" class="form-input code-input font-mono" inputmode="numeric"
+                    autocomplete="one-time-code" pattern="[0-9]{6}" maxlength="6" required>
+                  <button type="submit" id="enable-btn" class="btn-primary">Verifikasi &amp; Aktifkan</button>
+                </div>
+              </form>
+            </li>
+          </ol>
+          <button type="button" class="btn-ghost btn-sm" data-click="cancelTwoFactorSetup">Batal</button>
+        </div>
+
+        <!-- 2FA aktif -->
+        <div id="twofa-on" class="hidden">
+          <p class="account-text">Login ke akun ini meminta kode dari aplikasi authenticator Anda. Kalau ponsel hilang, minta Owner mereset 2FA akun Anda.</p>
+          <form id="disable-form" class="inline-form">
+            <p class="field-label">Nonaktifkan 2FA</p>
+            <div class="field-row">
+              <div class="field">
+                <label for="disable-password" class="field-label">Kata sandi</label>
+                <input type="password" id="disable-password" class="form-input" autocomplete="current-password" required>
+              </div>
+              <div class="field">
+                <label for="disable-code" class="field-label">Kode 6 digit</label>
+                <input type="text" id="disable-code" class="form-input code-input font-mono" inputmode="numeric"
+                  autocomplete="one-time-code" pattern="[0-9]{6}" maxlength="6" required>
+              </div>
+            </div>
+            <button type="submit" id="disable-btn" class="btn-danger">Nonaktifkan 2FA</button>
+          </form>
+        </div>
+      </section>
+
+    </main>
+  </div>
+
+  <div id="mobile-bottom-nav"></div>
+
+  <script src="/js/api.js"></script>
+  <script src="/js/navbar.js"></script>
+  <script src="/js/pages/account.js"></script>
+</body>
+</html>

@@ -156,7 +156,7 @@ function formatHoursRemaining(hoursLeft) {
 function showLoadError(selectors, retryFnName, err) {
   if (err?.handled) return; // session expired: already redirecting to /login
   const retry = retryFnName
-    ? ` <button type="button" class="btn-secondary btn-sm" onclick="${retryFnName}()">Coba lagi</button>`
+    ? ` <button type="button" class="btn-secondary btn-sm" data-click="${escapeHtml(retryFnName)}">Coba lagi</button>`
     : '';
   selectors.forEach((sel) => {
     const el = document.querySelector(sel);
@@ -181,6 +181,28 @@ function debounce(func, wait) {
     timeout = setTimeout(() => func.apply(this, args), wait);
   };
 }
+
+// Delegated event handlers (CSP forbids inline on*= attributes).
+// Markup: data-click="fnName" data-args='[1,"Done"]'. The function must be a global;
+// it receives only the parsed args (so default parameters still apply), with `this` = the element.
+function bindDelegatedEvents() {
+  const dispatch = (attr) => (event) => {
+    const el = event.target.closest(`[${attr}]`);
+    if (!el) return;
+    const fn = window[el.getAttribute(attr)];
+    if (typeof fn !== 'function') {
+      console.error(`Handler tidak ditemukan: ${el.getAttribute(attr)}`);
+      return;
+    }
+    let args = [];
+    try { args = JSON.parse(el.dataset.args || '[]'); } catch { /* malformed args: call without them */ }
+    fn.apply(el, args);
+  };
+  document.addEventListener('click', dispatch('data-click'));
+  document.addEventListener('change', dispatch('data-change'));
+  document.addEventListener('input', dispatch('data-input'));
+}
+bindDelegatedEvents();
 
 // User Logout
 async function handleLogout() {

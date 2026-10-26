@@ -17,6 +17,7 @@ const path = require('path');
 require('dotenv').config();
 
 const db = require('./lib/db');
+const totp = require('./lib/totp');
 const {
   COOKIE_NAME,
   COOKIE_OPTIONS,
@@ -28,6 +29,10 @@ const {
   ownerOnlyMiddleware,
   sameOriginMiddleware,
   loginRateLimit,
+  accountLockedFor,
+  sendTooMany,
+  generateChallenge,
+  verifyChallenge,
   recordLoginFailure,
   clearLoginFailures,
   recordLoginEvent,
@@ -40,10 +45,10 @@ const PORT = process.env.PORT || 3000;
 app.set('trust proxy', 1);
 
 // Browser security headers. Keep in sync with "headers" in vercel.json (Vercel serves static files itself).
-// 'unsafe-inline' is required by the inline <script> blocks and onclick handlers in public/*.html.
+// No inline scripts/handlers allowed: page code lives in /js/pages, events use data-click (api.js).
 app.disable('x-powered-by');
 const SECURITY_HEADERS = {
-  'Content-Security-Policy': "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data:; connect-src 'self'; frame-ancestors 'none'; base-uri 'self'; form-action 'self'; object-src 'none'",
+  'Content-Security-Policy': "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data:; connect-src 'self'; frame-ancestors 'none'; base-uri 'self'; form-action 'self'; object-src 'none'",
   'X-Frame-Options': 'DENY',
   'X-Content-Type-Options': 'nosniff',
   'Referrer-Policy': 'strict-origin-when-cross-origin',
@@ -202,13 +207,17 @@ app.post('/api/auth/login', loginRateLimit, async (req, res) => {
       });
     }
 
+    const lockedFor = await accountLockedFor(email);
+    if (lockedFor) return sendTooMany(res, lockedFor);
+
     const userRes = await db.query(
-      'SELECT id, name, email, password, role, status, session_version FROM users WHERE LOWER(email) = LOWER($1)',
+      `SELECT id, name, email, password, role, status, session_version, totp_enabled
+       FROM users WHERE LOWER(email) = LOWER($1)`,
       [email.trim()]
     );
 
     if (userRes.rows.length === 0) {
-      await recordLoginFailure(req.ip);
+      await recordLoginFailure(req.ip, email);
       await recordLoginEvent(req, { email: email.trim(), success: false, reason: 'UNKNOWN_EMAIL' });
       return res.status(401).json({
         success: false,
@@ -221,7 +230,7 @@ app.post('/api/auth/login', loginRateLimit, async (req, res) => {
 
     const isMatch = await comparePassword(password, user.password);
     if (!isMatch) {
-      await recordLoginFailure(req.ip);
+      await recordLoginFailure(req.ip, user.email);
       await recordLoginEvent(req, { userId: user.id, email: user.email, success: false, reason: 'WRONG_PASSWORD' });
       return res.status(401).json({
         success: false,
@@ -240,23 +249,91 @@ app.post('/api/auth/login', loginRateLimit, async (req, res) => {
       });
     }
 
-    await clearLoginFailures(req.ip);
-    await recordLoginEvent(req, { userId: user.id, email: user.email, success: true, reason: 'OK' });
-    const token = generateToken(user);
-    res.cookie(COOKIE_NAME, token, COOKIE_OPTIONS);
+    // Password is right but 2FA is on: no session yet, only a 5-minute challenge token.
+    if (user.totp_enabled) {
+      return res.json({
+        success: true,
+        twoFactorRequired: true,
+        challenge: generateChallenge(user),
+        message: 'Masukkan kode 6 digit dari aplikasi authenticator Anda.',
+      });
+    }
 
-    return res.json({
-      success: true,
-      data: {
-        id: user.id,
-        name: user.name,
-        email: user.email,
-        role: user.role,
-      },
-      message: `Selamat datang kembali, ${user.name}!`,
-    });
+    return completeLogin(req, res, user);
   } catch (err) {
     console.error('[API AUTH LOGIN]', err);
+    return res.status(500).json({
+      success: false,
+      error: 'SERVER_ERROR',
+      message: 'Terjadi kesalahan sistem internal. Silakan coba lagi nanti.',
+    });
+  }
+});
+
+async function completeLogin(req, res, user) {
+  await clearLoginFailures(req.ip, user.email);
+  await recordLoginEvent(req, { userId: user.id, email: user.email, success: true, reason: 'OK' });
+  res.cookie(COOKIE_NAME, generateToken(user), COOKIE_OPTIONS);
+  return res.json({
+    success: true,
+    data: { id: user.id, name: user.name, email: user.email, role: user.role },
+    message: `Selamat datang kembali, ${user.name}!`,
+  });
+}
+
+const INVALID_2FA = {
+  success: false,
+  error: 'INVALID_2FA_CODE',
+  message: 'Kode verifikasi salah atau sudah dipakai. Periksa aplikasi authenticator Anda.',
+};
+
+app.post('/api/auth/login/2fa', loginRateLimit, async (req, res) => {
+  try {
+    const { challenge, code } = req.body || {};
+    const decoded = verifyChallenge(challenge);
+    if (!decoded) {
+      return res.status(401).json({
+        success: false,
+        error: 'CHALLENGE_EXPIRED',
+        message: 'Waktu verifikasi habis. Silakan masukkan email dan kata sandi lagi.',
+      });
+    }
+
+    const userRes = await db.query(
+      `SELECT id, name, email, role, status, session_version, totp_enabled, totp_secret, totp_last_step
+       FROM users WHERE id = $1`,
+      [decoded.cid]
+    );
+    const user = userRes.rows[0];
+    // Account removed, deactivated, password changed or 2FA reset since the password step.
+    if (!user || user.status !== 'Active' || !user.totp_enabled || user.session_version !== decoded.sv) {
+      return res.status(401).json({
+        success: false,
+        error: 'CHALLENGE_EXPIRED',
+        message: 'Sesi verifikasi tidak berlaku lagi. Silakan masuk ulang.',
+      });
+    }
+
+    const lockedFor = await accountLockedFor(user.email);
+    if (lockedFor) return sendTooMany(res, lockedFor);
+
+    const step = totp.verify(user.totp_secret, code, { lastUsedStep: user.totp_last_step });
+    // Conditional update makes the one-time use atomic even for two parallel requests.
+    const claimed = step !== null && (await db.query(
+      `UPDATE users SET totp_last_step = $1
+       WHERE id = $2 AND (totp_last_step IS NULL OR totp_last_step < $1)`,
+      [step, user.id]
+    )).rowCount === 1;
+
+    if (!claimed) {
+      await recordLoginFailure(req.ip, user.email);
+      await recordLoginEvent(req, { userId: user.id, email: user.email, success: false, reason: 'WRONG_2FA' });
+      return res.status(401).json(INVALID_2FA);
+    }
+
+    return completeLogin(req, res, user);
+  } catch (err) {
+    console.error('[API AUTH LOGIN 2FA]', err);
     return res.status(500).json({
       success: false,
       error: 'SERVER_ERROR',
@@ -274,10 +351,87 @@ app.post('/api/auth/logout', (req, res) => {
 });
 
 app.get('/api/auth/me', authMiddleware, (req, res) => {
+  const { id, name, email, role, totp_enabled } = req.user;
   return res.json({
     success: true,
-    data: req.user,
+    data: { id, name, email, role, totp_enabled },
   });
+});
+
+// ------------------------------------------
+// 2FA (TOTP) — every user manages their own
+// ------------------------------------------
+// Step 1: create a pending secret. It only takes effect after /enable confirms a code.
+app.post('/api/auth/2fa/setup', authMiddleware, async (req, res) => {
+  try {
+    if (req.user.totp_enabled) {
+      return res.status(409).json({ success: false, error: 'ALREADY_ENABLED', message: '2FA sudah aktif.' });
+    }
+    const secret = totp.generateSecret();
+    await db.query('UPDATE users SET totp_secret = $1, totp_last_step = NULL WHERE id = $2', [secret, req.user.id]);
+    return res.json({ success: true, data: { secret, otpauthUri: totp.otpauthUri(secret, req.user.email) } });
+  } catch (err) {
+    console.error('[API 2FA SETUP]', err);
+    return res.status(500).json({ success: false, message: 'Gagal menyiapkan 2FA.' });
+  }
+});
+
+// Step 2: confirm the authenticator works. Logs out other devices (like a password change).
+app.post('/api/auth/2fa/enable', authMiddleware, async (req, res) => {
+  try {
+    const r = await db.query('SELECT totp_secret, totp_enabled FROM users WHERE id = $1', [req.user.id]);
+    const row = r.rows[0];
+    if (!row?.totp_secret || row.totp_enabled) {
+      return res.status(400).json({ success: false, error: 'NO_PENDING_SETUP', message: 'Mulai penyiapan 2FA terlebih dahulu.' });
+    }
+    const step = totp.verify(row.totp_secret, req.body?.code);
+    if (step === null) return res.status(400).json(INVALID_2FA);
+
+    const upd = await db.query(
+      `UPDATE users SET totp_enabled = true, totp_last_step = $1, session_version = session_version + 1
+       WHERE id = $2 RETURNING id, name, email, role, session_version`,
+      [step, req.user.id]
+    );
+    res.cookie(COOKIE_NAME, generateToken(upd.rows[0]), COOKIE_OPTIONS);
+    return res.json({ success: true, message: '2FA aktif. Perangkat lain yang sedang login telah dikeluarkan.' });
+  } catch (err) {
+    console.error('[API 2FA ENABLE]', err);
+    return res.status(500).json({ success: false, message: 'Gagal mengaktifkan 2FA.' });
+  }
+});
+
+// Turning 2FA off needs both factors, so a hijacked open session alone cannot remove it.
+app.post('/api/auth/2fa/disable', authMiddleware, async (req, res) => {
+  try {
+    const { password, code } = req.body || {};
+    const lockedFor = await accountLockedFor(req.user.email);
+    if (lockedFor) return sendTooMany(res, lockedFor);
+
+    const r = await db.query('SELECT password, totp_secret, totp_enabled, totp_last_step FROM users WHERE id = $1', [req.user.id]);
+    const row = r.rows[0];
+    if (!row?.totp_enabled) {
+      return res.status(400).json({ success: false, error: 'NOT_ENABLED', message: '2FA belum aktif.' });
+    }
+    const passwordOk = typeof password === 'string' && await comparePassword(password, row.password);
+    const step = passwordOk ? totp.verify(row.totp_secret, code, { lastUsedStep: row.totp_last_step }) : null;
+    if (step === null) {
+      await recordLoginFailure(req.ip, req.user.email);
+      // 400, not 401: the session is still valid and apiFetch treats 401 as "logged out".
+      return res.status(400).json({
+        success: false,
+        error: 'INVALID_CREDENTIALS',
+        message: 'Kata sandi atau kode verifikasi salah.',
+      });
+    }
+    await db.query(
+      'UPDATE users SET totp_enabled = false, totp_secret = NULL, totp_last_step = NULL WHERE id = $1',
+      [req.user.id]
+    );
+    return res.json({ success: true, message: '2FA dinonaktifkan.' });
+  } catch (err) {
+    console.error('[API 2FA DISABLE]', err);
+    return res.status(500).json({ success: false, message: 'Gagal menonaktifkan 2FA.' });
+  }
 });
 
 // ==========================================
@@ -711,7 +865,7 @@ app.get('/api/reports/analytics', authMiddleware, async (req, res) => {
 app.get('/api/users', authMiddleware, ownerOnlyMiddleware, async (req, res) => {
   try {
     const result = await db.query(
-      `SELECT u.id, u.name, u.email, u.role, u.status, u.created_at,
+      `SELECT u.id, u.name, u.email, u.role, u.status, u.totp_enabled, u.created_at,
               COUNT(t.id) AS total_tasks,
               COUNT(t.id) FILTER (WHERE t.status = 'Done') AS completed_tasks
        FROM users u
@@ -857,6 +1011,30 @@ app.get('/api/login-events', authMiddleware, ownerOnlyMiddleware, async (req, re
   }
 });
 
+// Recovery for a member who lost their phone. Also logs that account out everywhere.
+app.post('/api/users/:id/reset-2fa', authMiddleware, ownerOnlyMiddleware, async (req, res) => {
+  try {
+    const targetId = parseInt(req.params.id, 10);
+    if (targetId === req.user.id) {
+      return res.status(400).json({
+        success: false,
+        message: 'Untuk akun sendiri, nonaktifkan 2FA lewat halaman Keamanan Akun.',
+      });
+    }
+    const upd = await db.query(
+      `UPDATE users SET totp_enabled = false, totp_secret = NULL, totp_last_step = NULL,
+              session_version = session_version + 1
+       WHERE id = $1`,
+      [targetId]
+    );
+    if (upd.rowCount === 0) return res.status(404).json({ success: false, message: 'Pengguna tidak ditemukan.' });
+    return res.json({ success: true, message: '2FA akun ini direset. Pengguna perlu login ulang.' });
+  } catch (err) {
+    console.error('[API USERS RESET 2FA]', err);
+    return res.status(500).json({ success: false, message: 'Gagal mereset 2FA.' });
+  }
+});
+
 app.delete('/api/users/:id', authMiddleware, ownerOnlyMiddleware, async (req, res) => {
   try {
     const targetId = parseInt(req.params.id, 10);
@@ -906,6 +1084,10 @@ app.get('/reports', (req, res) => {
 
 app.get('/users', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'users.html'));
+});
+
+app.get('/account', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'account.html'));
 });
 
 // Unknown API routes answer in JSON so apiFetch can show a readable message.

@@ -41,7 +41,8 @@ CREATE INDEX IF NOT EXISTS idx_reminders_user_id   ON reminders(user_id);
 CREATE INDEX IF NOT EXISTS idx_reminders_remind_at ON reminders(remind_at);
 CREATE INDEX IF NOT EXISTS idx_tasks_user_id       ON tasks(user_id);
 
--- Penghitung login gagal per IP (dipakai bersama oleh semua instance Vercel).
+-- Penghitung login gagal (dipakai bersama oleh semua instance Vercel).
+-- Kolom ip berisi kunci: alamat IP, atau "acct:<email>" untuk batas per akun.
 CREATE TABLE IF NOT EXISTS login_attempts (
   ip        TEXT PRIMARY KEY,
   count     INTEGER NOT NULL DEFAULT 1,
@@ -63,6 +64,12 @@ CREATE INDEX IF NOT EXISTS idx_login_events_created_at ON login_events(created_a
 
 -- Versi sesi: dinaikkan saat kata sandi diganti, sehingga semua token lama ditolak.
 ALTER TABLE users ADD COLUMN IF NOT EXISTS session_version INTEGER NOT NULL DEFAULT 0;
+
+-- 2FA (TOTP). totp_secret terisi saat penyiapan; baru berlaku setelah totp_enabled = true.
+-- totp_last_step mencegah kode yang sama dipakai dua kali.
+ALTER TABLE users ADD COLUMN IF NOT EXISTS totp_secret    VARCHAR(64);
+ALTER TABLE users ADD COLUMN IF NOT EXISTS totp_enabled   BOOLEAN NOT NULL DEFAULT false;
+ALTER TABLE users ADD COLUMN IF NOT EXISTS totp_last_step BIGINT;
 
 -- ------------------------------------------------------------------
 -- Migrasi untuk database lama (sudah diterapkan di production).
