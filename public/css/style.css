@@ -461,10 +461,12 @@ body:not([data-role="User"]) .member-only { display: none !important; }
 .btn-action-icon.is-danger { color: var(--status-overdue); }
 .btn-action-icon.is-danger:hover { background: #fef2f2; }
 
-kbd.key-hint {
-  font-family: 'JetBrains Mono', monospace;
-  font-size: 11px;
-  padding: 0 5px;
+.key-hint {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
   border-radius: 4px;
   background: rgba(0, 0, 0, 0.18);
 }
