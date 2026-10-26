@@ -85,15 +85,18 @@ function renderUsersTable(users) {
     return;
   }
 
+  // Every task has an Owner as PJ, so the Owners' totals add up to the team's task count.
+  const teamTotal = users.reduce((sum, u) => sum + (u.role === 'Owner' ? parseInt(u.total_tasks, 10) || 0 : 0), 0);
+
   tbody.innerHTML = users.map(u => {
     const id = Number(u.id);
     const name = escapeHtml(u.name);
     const isSelf = loggedInUser && loggedInUser.id === u.id;
     const isOwner = u.role === 'Owner';
     const active = u.status === 'Active';
-    const total = parseInt(u.total_tasks, 10) || 0;
-    const done = parseInt(u.completed_tasks, 10) || 0;
-    const pct = total > 0 ? Math.round((done / total) * 100) : 0;
+    const given = parseInt(u.total_tasks, 10) || 0;
+    const reported = parseInt(u.reported_tasks, 10) || 0;
+    const pct = teamTotal > 0 ? Math.round((reported / teamTotal) * 100) : 0;
 
     return `
       <tr>
@@ -112,13 +115,13 @@ function renderUsersTable(users) {
           ${u.totp_enabled ? '<span class="badge badge-in-progress" title="Verifikasi dua langkah aktif">2FA</span>' : ''}
         </td>
         <td>
-          ${isOwner ? `
-          <div style="width: 110px;" title="Tugas yang Owner ini tanggung jawabi">
+          ${isOwner ? `<span class="font-mono" style="font-size: 0.8125rem;">${given}</span> <span class="muted" style="font-size: 0.75rem;">tugas diberikan</span>` : `
+          <div style="width: 110px;" title="Tugas tim yang dilaporkan selesai oleh anggota ini">
             <div class="bar-row-head font-mono" style="font-size: 0.75rem; margin-bottom: 4px;">
-              <span>${done}/${total}</span><span class="muted">${pct}%</span>
+              <span>${reported}/${teamTotal}</span><span class="muted">${pct}%</span>
             </div>
             <div class="bar-track" style="height: 6px;"><div class="bar-fill" style="width: ${pct}%; background: var(--primary);"></div></div>
-          </div>` : `<span class="font-mono" style="font-size: 0.8125rem;">${parseInt(u.reported_tasks, 10) || 0}</span> <span class="muted" style="font-size: 0.75rem;">dilaporkan selesai</span>`}
+          </div>`}
         </td>
         <td class="nowrap font-mono muted" style="font-size: 0.8125rem;">${formatDateWIB(u.created_at)}</td>
         <td class="right">
