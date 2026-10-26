@@ -21,7 +21,7 @@
       <header class="page-head">
         <div>
           <h1 class="page-title">Pengingat</h1>
-          <p class="page-sub">Tugas yang lewat tenggat atau jatuh tempo dalam 24 jam, plus catatan pengingat mandiri.</p>
+          <p class="page-sub">Tugas yang lewat tenggat atau jatuh tempo dalam 24 jam, plus pengingat dari Owner untuk anggota.</p>
         </div>
       </header>
 
@@ -53,30 +53,35 @@
         </div>
       </section>
 
-      <!-- Section 3: Custom Reminders -->
+      <!-- Section 3: Reminders from the Owner -->
       <section class="card card-pad" aria-labelledby="custom-title">
         <div class="section-head">
           <div>
-            <h2 id="custom-title" class="section-title">Pengingat Mandiri</h2>
-            <p class="section-sub">Catatan pengingat dengan waktu terjadwal</p>
+            <h2 id="custom-title" class="section-title"><span class="owner-only">Pengingat untuk Anggota</span><span class="member-only">Pengingat dari Owner</span></h2>
+            <p class="section-sub owner-only">Kirim pengingat ke satu anggota atau semua anggota</p>
+            <p class="section-sub member-only">Pesan pengingat yang dikirim Owner untuk Anda</p>
           </div>
-          <button type="button" id="toggle-reminder-form" class="btn-secondary" aria-expanded="false" aria-controls="custom-reminder-form">
+          <button type="button" id="toggle-reminder-form" class="btn-secondary owner-only" aria-expanded="false" aria-controls="custom-reminder-form">
             Buat Pengingat
           </button>
         </div>
 
-        <form id="custom-reminder-form" class="subform hidden">
+        <form id="custom-reminder-form" class="subform hidden owner-only">
           <div class="field-row" style="align-items: end;">
             <div class="field">
               <label for="rem-title" class="field-label">Pesan Pengingat *</label>
               <input type="text" id="rem-title" class="form-input" required maxlength="255">
             </div>
             <div class="field">
+              <label for="rem-recipient" class="field-label">Kirim ke *</label>
+              <select id="rem-recipient" class="form-select" required></select>
+            </div>
+            <div class="field">
               <label for="rem-time" class="field-label">Waktu Pengingat *</label>
               <input type="datetime-local" id="rem-time" class="form-input" required>
             </div>
             <div class="field">
-              <button type="submit" class="btn-primary btn-block">Simpan Pengingat</button>
+              <button type="submit" id="rem-submit" class="btn-primary btn-block">Kirim Pengingat</button>
             </div>
           </div>
         </form>

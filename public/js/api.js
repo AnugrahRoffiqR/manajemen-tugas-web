@@ -55,30 +55,34 @@ function deadlineBadge(dueDate) {
   return '';
 }
 
-function priorityBadge(priority) {
-  const cls = { High: 'badge-high', Medium: 'badge-medium', Low: 'badge-low' }[priority];
-  return cls ? `<span class="badge ${cls}">${priority}</span>` : '';
-}
-
-function categoryBadge(category) {
-  const name = category || 'Umum';
-  const known = ['teknis', 'operasional', 'bisnis', 'administrasi', 'umum'];
-  const key = name.toLowerCase();
-  return `<span class="cat-badge cat-${known.includes(key) ? key : 'umum'}"><span class="cat-dot" aria-hidden="true"></span>${escapeHtml(name)}</span>`;
+// Shown to the Owner (and the reporter) while a member's "Lapor selesai" waits for review.
+function reportedBadge(task) {
+  if (!task.done_reported_at || task.status === 'Done') return '';
+  const who = task.done_reported_by_name ? ` oleh ${escapeHtml(task.done_reported_by_name.split(' ')[0])}` : '';
+  return `<span class="badge badge-reported" title="Dilaporkan ${formatDateWIB(task.done_reported_at)}">Dilaporkan selesai${who}</span>`;
 }
 
 const isOwnerView = () => document.body.dataset.role === 'Owner';
 
-// Owner picks who a task belongs to; list holds active users only.
+// Penanggung Jawab is always an active Owner; names are listed as-is since every option is an Owner.
 async function fillAssigneeSelect(select, selectedId) {
   if (!select.options.length) {
     const res = await apiFetch('/api/users');
     select.innerHTML = (res.data || [])
-      .filter((u) => u.status === 'Active')
-      .map((u) => `<option value="${Number(u.id)}">${escapeHtml(u.name)}${u.role === 'Owner' ? ' (Owner)' : ''}</option>`)
+      .filter((u) => u.status === 'Active' && u.role === 'Owner')
+      .map((u) => `<option value="${Number(u.id)}">${escapeHtml(u.name)}</option>`)
       .join('');
   }
   if (selectedId) select.value = String(selectedId);
+}
+
+// Reminder recipients: "Semua anggota" plus each active member.
+async function fillMemberSelect(select) {
+  const res = await apiFetch('/api/users');
+  const members = (res.data || []).filter((u) => u.status === 'Active' && u.role === 'User');
+  select.innerHTML = `<option value="all">Semua anggota (${members.length})</option>`
+    + members.map((u) => `<option value="${Number(u.id)}">${escapeHtml(u.name)}</option>`).join('');
+  return members.length;
 }
 
 // Global API Fetch

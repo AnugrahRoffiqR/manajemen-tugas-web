@@ -42,6 +42,10 @@ async function initNavigation(activeKey = '') {
     return;
   }
 
+  // CSS hides .owner-only / .member-only controls by role; the API enforces the same rules.
+  document.body.dataset.role = currentUser.role;
+  document.body.dataset.userId = currentUser.id;
+
   // 2. Cek Notifikasi Mendesak untuk Counter Badge
   let urgentCount = 0;
   try {
@@ -53,9 +57,6 @@ async function initNavigation(activeKey = '') {
   } catch (e) {}
 
   const isOwner = currentUser.role === 'Owner';
-  // CSS hides .owner-only controls unless this is Owner; the API enforces the same rules.
-  document.body.dataset.role = currentUser.role;
-  document.body.dataset.userId = currentUser.id;
   if (activeKey === 'reports' && !isOwner) {
     window.location.replace('/dashboard');
     return null;
@@ -208,4 +209,6 @@ async function initNavigation(activeKey = '') {
       first.focus();
     }
   });
+
+  return currentUser;
 }

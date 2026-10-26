@@ -1,8 +1,6 @@
 initNavigation('reports');
 
 const PERIOD_LABELS = { all: 'Semua Waktu', month: 'Bulan Ini', week: 'Minggu Ini', today: 'Hari Ini' };
-const CAT_COLORS = { Teknis: '#0284c7', Operasional: '#d97706', Bisnis: '#16a34a', Administrasi: '#7c3aed', Umum: '#64748b' };
-const PRIO_COLORS = { High: '#b91c1c', Medium: '#b45309', Low: '#15803d' };
 const STATUS_SEGMENTS = [
   { key: 'todo_tasks', label: 'To Do', color: 'var(--status-todo)' },
   { key: 'in_progress_tasks', label: 'In Progress', color: 'var(--status-in-progress)' },
@@ -24,9 +22,9 @@ function changePeriod(period) {
 }
 
 // Bar width is relative to the largest group; label shows share of total.
-function renderBars(el, rows, total, labelFn, colorFn) {
+function renderBars(el, rows, total, labelFn, colorFn, emptyText = 'Belum ada data tugas pada periode ini.') {
   if (!rows.length) {
-    el.innerHTML = '<p class="muted" style="font-size: 0.8125rem;">Belum ada data tugas pada periode ini.</p>';
+    el.innerHTML = `<p class="muted" style="font-size: 0.8125rem;">${emptyText}</p>`;
     return;
   }
   const max = Math.max(...rows.map(r => parseInt(r.count, 10)), 1);
@@ -103,7 +101,6 @@ async function loadReportsData() {
     renderTrend((tasksRes && tasksRes.data) || []);
 
     const m = res.data.metrics;
-    const total = parseInt(m.total_tasks, 10) || 0;
     document.getElementById('kpi-completion-rate').textContent = `${m.completion_rate}%`;
     document.getElementById('kpi-ontime-rate').textContent = parseInt(m.completed_tasks, 10) > 0 ? `${m.on_time_rate}%` : '–';
     document.getElementById('kpi-completed-tasks').textContent = m.completed_tasks;
@@ -118,23 +115,18 @@ async function loadReportsData() {
       emptyText: 'Belum ada tugas pada periode ini.',
     });
 
+    const reports = res.data.member_reports || [];
     renderBars(
-      document.getElementById('category-bars'),
-      res.data.category_distribution || [],
-      total,
-      c => categoryBadge(c.category),
-      c => CAT_COLORS[c.category] || 'var(--primary)',
-    );
-    renderBars(
-      document.getElementById('priority-bars'),
-      res.data.priority_distribution || [],
-      total,
-      p => priorityBadge(p.priority) || escapeHtml(p.priority),
-      p => PRIO_COLORS[p.priority] || 'var(--primary)',
+      document.getElementById('member-bars'),
+      reports,
+      reports.reduce((sum, r) => sum + (parseInt(r.count, 10) || 0), 0),
+      r => `<span style="font-weight: 600; overflow-wrap: anywhere;">${escapeHtml(r.name)}</span>`,
+      () => 'var(--cta)',
+      'Belum ada laporan selesai dari anggota pada periode ini.',
     );
   } catch (err) {
     if (seq === loadSeq) {
-      showLoadError(['#trend-chart', '#status-chart', '#category-bars', '#priority-bars'], 'loadReportsData', err);
+      showLoadError(['#trend-chart', '#status-chart', '#member-bars'], 'loadReportsData', err);
     }
   }
 }

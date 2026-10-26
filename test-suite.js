@@ -139,31 +139,69 @@ async function runTests() {
     const memberReport = await fetch(`${BASE_URL}/api/reports/analytics`, { headers: { 'Cookie': memberCookie } });
     assert(memberReport.status === 403, 'TC-24b', `User dilarang membuka laporan (dapat ${memberReport.status})`);
 
-    // Owner membuat tugas untuk anggota
+    const ownerMe = await (await fetch(`${BASE_URL}/api/auth/me`, { headers: { 'Cookie': ownerCookie } })).json();
+    const ownerSelfId = ownerMe.data?.id;
+    const due5h = new Date(Date.now() + 5 * 3600000).toISOString();
+
+    // Penanggung jawab harus Owner: anggota sebagai user_id ditolak
+    const memberAssignee = await fetch(`${BASE_URL}/api/tasks`, {
+      method: 'POST',
+      headers: jsonHeaders(ownerCookie),
+      body: JSON.stringify({ user_id: testMemberId, title: 'Salah PJ', due_date: due5h }),
+    });
+    assert(memberAssignee.status === 400, 'TC-05c', `Penanggung jawab anggota ditolak (dapat ${memberAssignee.status})`);
+
     const validTaskRes = await fetch(`${BASE_URL}/api/tasks`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'Cookie': ownerCookie },
+      headers: jsonHeaders(ownerCookie),
       body: JSON.stringify({
-        user_id: testMemberId,
+        user_id: ownerSelfId,
         title: 'Tugas Uji Otomatis',
         description: 'Verifikasi state machine',
-        category: 'Teknis',
-        priority: 'High',
-        due_date: new Date(Date.now() + 5 * 3600000).toISOString(), // 5 jam ke depan
+        due_date: due5h,
       }),
     });
     const taskResult = await validTaskRes.json();
     testTaskId = taskResult.data?.id;
-    assert(validTaskRes.status === 201 && testTaskId && taskResult.data?.user_id === testMemberId, 'TC-05b', 'Owner membuat tugas untuk anggota dengan status default To Do');
+    assert(
+      validTaskRes.status === 201 && testTaskId && taskResult.data?.user_id === ownerSelfId && taskResult.data?.status === 'To Do',
+      'TC-05b', 'Owner membuat tugas (PJ = Owner) dengan status default To Do'
+    );
     const memberDelete = await fetch(`${BASE_URL}/api/tasks/${testTaskId}`, { method: 'DELETE', headers: { 'Cookie': memberCookie } });
-    assert(memberDelete.status === 403, 'TC-24c', `User dilarang menghapus tugas miliknya (dapat ${memberDelete.status})`);
+    assert(memberDelete.status === 403, 'TC-24c', `User dilarang menghapus tugas (dapat ${memberDelete.status})`);
+
+    // TC-25: Anggota melihat semua tugas, tidak bisa ubah status, hanya lapor selesai
+    const memberList = await (await fetch(`${BASE_URL}/api/tasks`, { headers: { 'Cookie': memberCookie } })).json();
+    assert((memberList.data || []).some(t => t.id === testTaskId), 'TC-25a', 'Anggota melihat tugas yang dibuat Owner');
+    const memberPut = await fetch(`${BASE_URL}/api/tasks/${testTaskId}`, {
+      method: 'PUT', headers: jsonHeaders(memberCookie), body: JSON.stringify({ status: 'Done' }),
+    });
+    assert(memberPut.status === 403, 'TC-25b', `Anggota dilarang mengubah status (dapat ${memberPut.status})`);
+    const report1 = await fetch(`${BASE_URL}/api/tasks/${testTaskId}/report-done`, { method: 'POST', headers: { 'Cookie': memberCookie } });
+    assert(report1.status === 200, 'TC-25c', `Anggota bisa lapor selesai (dapat ${report1.status})`);
+    const report2 = await fetch(`${BASE_URL}/api/tasks/${testTaskId}/report-done`, { method: 'POST', headers: { 'Cookie': memberCookie } });
+    assert(report2.status === 409, 'TC-25d', `Lapor selesai kedua kali ditolak (dapat ${report2.status})`);
+    const ownerReport = await fetch(`${BASE_URL}/api/tasks/${testTaskId}/report-done`, { method: 'POST', headers: { 'Cookie': ownerCookie } });
+    assert(ownerReport.status === 403, 'TC-25e', `Owner tidak memakai lapor selesai (dapat ${ownerReport.status})`);
+    const reportMissing = await fetch(`${BASE_URL}/api/tasks/2147483000/report-done`, { method: 'POST', headers: { 'Cookie': memberCookie } });
+    assert(reportMissing.status === 404, 'TC-25f', `Lapor tugas yang tidak ada → 404 (dapat ${reportMissing.status})`);
+    const ownerView = await (await fetch(`${BASE_URL}/api/tasks`, { headers: { 'Cookie': ownerCookie } })).json();
+    const seen = (ownerView.data || []).find(t => t.id === testTaskId);
+    assert(seen?.done_reported_by === testMemberId && seen?.done_reported_by_name === 'Budi Tester', 'TC-25g', 'Owner melihat siapa yang melapor selesai');
+
+    // Owner memindahkan status (bukan ke Done) → laporan dibersihkan
+    const moveRes = await fetch(`${BASE_URL}/api/tasks/${testTaskId}`, {
+      method: 'PUT', headers: jsonHeaders(ownerCookie), body: JSON.stringify({ status: 'In Progress' }),
+    });
+    const moveData = await moveRes.json();
+    assert(moveRes.status === 200 && moveData.data?.done_reported_at === null, 'TC-25h', 'Pindah status oleh Owner menghapus laporan selesai');
 
     // ----------------------------------------------------
     // TC-06: Transisi Status Tugas ke Done (Timestamp Otomatis)
     // ----------------------------------------------------
     const doneRes = await fetch(`${BASE_URL}/api/tasks/${testTaskId}`, {
       method: 'PUT',
-      headers: { 'Content-Type': 'application/json', 'Cookie': memberCookie },
+      headers: { 'Content-Type': 'application/json', 'Cookie': ownerCookie },
       body: JSON.stringify({ status: 'Done' }),
     });
     const doneData = await doneRes.json();
@@ -179,9 +217,12 @@ async function runTests() {
     // ----------------------------------------------------
     // TC-07: Membuka Kembali Tugas (Re-open to In Progress)
     // ----------------------------------------------------
+    const reportOnDone = await fetch(`${BASE_URL}/api/tasks/${testTaskId}/report-done`, { method: 'POST', headers: { 'Cookie': memberCookie } });
+    assert(reportOnDone.status === 409, 'TC-25i', `Lapor selesai pada tugas Done ditolak (dapat ${reportOnDone.status})`);
+
     const reopenRes = await fetch(`${BASE_URL}/api/tasks/${testTaskId}`, {
       method: 'PUT',
-      headers: { 'Content-Type': 'application/json', 'Cookie': memberCookie },
+      headers: { 'Content-Type': 'application/json', 'Cookie': ownerCookie },
       body: JSON.stringify({ status: 'In Progress' }),
     });
     const reopenData = await reopenRes.json();
@@ -217,7 +258,45 @@ async function runTests() {
       method: 'DELETE',
       headers: { 'Cookie': user2Cookie },
     });
-    assert(tamperRes.status === 403, 'TC-08', 'User lain dilarang memanipulasi tugas pengguna berbeda (403 Forbidden)');
+    assert(tamperRes.status === 403, 'TC-08', 'Anggota lain dilarang menghapus tugas (403 Forbidden)');
+
+    // TC-26: Pengingat hanya dari Owner; "Semua anggota" = satu baris per anggota aktif
+    const remAt = new Date(Date.now() + 2 * 3600000).toISOString();
+    const memberRem = await fetch(`${BASE_URL}/api/reminders`, {
+      method: 'POST', headers: jsonHeaders(memberCookie), body: JSON.stringify({ title: 'X', remind_at: remAt, recipient: 'all' }),
+    });
+    assert(memberRem.status === 403, 'TC-26a', `Anggota dilarang membuat pengingat (dapat ${memberRem.status})`);
+    const ownerToOwner = await fetch(`${BASE_URL}/api/reminders`, {
+      method: 'POST', headers: jsonHeaders(ownerCookie), body: JSON.stringify({ title: 'X', remind_at: remAt, recipient: ownerSelfId }),
+    });
+    assert(ownerToOwner.status === 400, 'TC-26b', `Penerima pengingat harus anggota (dapat ${ownerToOwner.status})`);
+    const activeMembers = ((await (await fetch(`${BASE_URL}/api/users`, { headers: { 'Cookie': ownerCookie } })).json()).data || [])
+      .filter(u => u.role === 'User' && u.status === 'Active').length;
+    const allRem = await fetch(`${BASE_URL}/api/reminders`, {
+      method: 'POST', headers: jsonHeaders(ownerCookie), body: JSON.stringify({ title: 'Uji semua anggota', remind_at: remAt, recipient: 'all' }),
+    });
+    const allRemData = await allRem.json();
+    assert(allRem.status === 201 && allRemData.data?.count === activeMembers && allRemData.data?.batch_id, 'TC-26c', `Pengingat "Semua anggota" terkirim ke ${activeMembers} anggota`);
+    const oneRem = await fetch(`${BASE_URL}/api/reminders`, {
+      method: 'POST', headers: jsonHeaders(ownerCookie), body: JSON.stringify({ title: 'Uji satu anggota', remind_at: remAt, recipient: testUser2Id }),
+    });
+    const oneRemData = await oneRem.json();
+    assert(oneRem.status === 201 && oneRemData.data?.count === 1, 'TC-26d', 'Pengingat ke satu anggota terkirim');
+    const u2Rems = (await (await fetch(`${BASE_URL}/api/reminders`, { headers: { 'Cookie': user2Cookie } })).json()).data || [];
+    assert(u2Rems.some(r => r.title === 'Uji semua anggota') && u2Rems.some(r => r.title === 'Uji satu anggota' && r.sender_name),
+      'TC-26e', 'Anggota menerima pengingat beserta nama pengirim');
+    const m1Rems = (await (await fetch(`${BASE_URL}/api/reminders`, { headers: { 'Cookie': memberCookie } })).json()).data || [];
+    assert(m1Rems.some(r => r.title === 'Uji semua anggota') && !m1Rems.some(r => r.title === 'Uji satu anggota'),
+      'TC-26f', 'Pengingat satu anggota tidak terlihat anggota lain');
+    const ownerRems = (await (await fetch(`${BASE_URL}/api/reminders`, { headers: { 'Cookie': ownerCookie } })).json()).data || [];
+    const batchItems = ownerRems.filter(r => r.batch_id === allRemData.data?.batch_id);
+    assert(batchItems.length === 1 && batchItems[0].recipient_count === activeMembers, 'TC-26g', 'Owner melihat pengingat semua anggota sebagai satu item');
+    const memberDelRem = await fetch(`${BASE_URL}/api/reminders/${allRemData.data?.id}`, { method: 'DELETE', headers: { 'Cookie': memberCookie } });
+    assert(memberDelRem.status === 403, 'TC-26h', `Anggota dilarang menghapus pengingat (dapat ${memberDelRem.status})`);
+    const delBatch = await fetch(`${BASE_URL}/api/reminders/${allRemData.data?.id}`, { method: 'DELETE', headers: { 'Cookie': ownerCookie } });
+    const u2RemsAfter = (await (await fetch(`${BASE_URL}/api/reminders`, { headers: { 'Cookie': user2Cookie } })).json()).data || [];
+    assert(delBatch.status === 200 && !u2RemsAfter.some(r => r.title === 'Uji semua anggota'), 'TC-26i', 'Hapus pengingat semua anggota menghapus seluruh batch');
+    await fetch(`${BASE_URL}/api/reminders/${oneRemData.data?.id}`, { method: 'DELETE', headers: { 'Cookie': ownerCookie } });
 
     // ----------------------------------------------------
     // TC-09 & TC-10: Deteksi Pengingat Mendesak & Overdue
@@ -296,7 +375,7 @@ async function runTests() {
     const due = new Date(Date.now() + 3600000).toISOString();
     const badCases = [
       ['TC-15a', 'POST', '/api/tasks', { title: 'X', due_date: due, status: 'Selesai' }, 400, 'Status tugas di luar enum ditolak'],
-      ['TC-15b', 'POST', '/api/tasks', { title: 'X', due_date: due, priority: 'Urgent' }, 400, 'Prioritas di luar enum ditolak'],
+      ['TC-15b', 'POST', '/api/reminders', { title: 'X', remind_at: due, recipient: 'abc' }, 400, 'Penerima pengingat tidak valid ditolak'],
       ['TC-15c', 'POST', '/api/tasks', { title: 'X', due_date: 'bukan-tanggal' }, 400, 'Tanggal tidak valid ditolak'],
       ['TC-15d', 'POST', '/api/tasks', { title: 'X', due_date: due, description: 123 }, 400, 'Deskripsi non-string ditolak'],
       ['TC-15e', 'POST', '/api/tasks', { title: 'X', due_date: due, user_id: 2147483000 }, 400, 'Assignee yang tidak ada ditolak'],
@@ -307,7 +386,7 @@ async function runTests() {
       ['TC-15j', 'DELETE', '/api/reminders/2147483000', undefined, 404, 'Hapus pengingat yang tidak ada → 404'],
       ['TC-15k', 'GET', '/api/tasks?status=Done&status=To%20Do', undefined, 200, 'Query param ganda tidak membuat 500'],
       ['TC-15l', 'GET', '/api/reports/analytics?period=today&period=week', undefined, 200, 'Period ganda di laporan tidak membuat 500'],
-      ['TC-15m', 'GET', '/api/tasks?user_id=abc', undefined, 400, 'Filter user_id non-angka ditolak'],
+      ['TC-15m', 'POST', '/api/tasks/abc/report-done', undefined, 400, 'ID tugas non-angka pada lapor selesai ditolak'],
       ['TC-15n', 'POST', '/api/users', { name: 'X', email: 'bukan-email', password: 'Password1' }, 400, 'Format email salah ditolak'],
       ['TC-15o', 'PUT', '/api/users/2147483000', { status: 'Dibekukan' }, 400, 'Status user di luar enum ditolak'],
     ];

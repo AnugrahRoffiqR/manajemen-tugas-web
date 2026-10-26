@@ -95,13 +95,17 @@
           <p id="ontime-label" class="stat-note" style="margin-top: 1rem;"></p>
         </section>
 
-        <!-- Category Distribution (real data) -->
-        <section class="card card-pad" aria-labelledby="category-chart-title">
+        <!-- Member reports waiting for the Owner to move the task to Done -->
+        <section class="card card-pad" aria-labelledby="reported-title">
           <div class="section-head">
-            <h2 id="category-chart-title" class="section-title">Distribusi Kategori</h2>
-            <a href="/reports" class="link-arrow owner-only">Detail <span aria-hidden="true">→</span></a>
+            <div>
+              <h2 id="reported-title" class="section-title">Laporan Selesai</h2>
+              <p class="section-sub owner-only">Dilaporkan anggota, menunggu Anda tandai Done</p>
+              <p class="section-sub member-only">Menunggu Owner menandai Done</p>
+            </div>
+            <span id="reported-count" class="badge badge-done font-mono">0</span>
           </div>
-          <div id="category-chart"><div class="chart-empty">Memuat…</div></div>
+          <ul id="reported-list" class="reported-list"><li class="chart-empty">Memuat…</li></ul>
         </section>
       </div>
 
@@ -139,14 +143,13 @@
             <thead>
               <tr>
                 <th>Judul Tugas</th>
-                <th>Kategori</th>
-                <th>Prioritas</th>
+                <th>Status</th>
                 <th>Tenggat Waktu</th>
                 <th class="right"><span class="sr-only">Aksi</span></th>
               </tr>
             </thead>
             <tbody id="priority-task-rows">
-              <tr><td colspan="5" class="loading-text">Memuat data tugas…</td></tr>
+              <tr><td colspan="4" class="loading-text">Memuat data tugas…</td></tr>
             </tbody>
           </table>
         </div>
@@ -180,34 +183,15 @@
 
         <div class="field-row">
           <div class="field">
-            <label for="task-category" class="field-label">Kategori</label>
-            <select id="task-category" class="form-select">
-              <option value="Umum">Umum</option>
-              <option value="Operasional">Operasional</option>
-              <option value="Teknis">Teknis</option>
-              <option value="Administrasi">Administrasi</option>
-              <option value="Bisnis">Bisnis</option>
-            </select>
+            <label for="task-due-date" class="field-label">Tenggat Waktu *</label>
+            <input type="datetime-local" id="task-due-date" class="form-input" required>
           </div>
           <div class="field">
-            <label for="task-priority" class="field-label">Prioritas</label>
-            <select id="task-priority" class="form-select">
-              <option value="Low">Low</option>
-              <option value="Medium" selected>Medium</option>
-              <option value="High">High</option>
-            </select>
+            <label for="task-assignee" class="field-label">Penanggung Jawab</label>
+            <select id="task-assignee" class="form-select"></select>
           </div>
         </div>
-
-        <div class="field">
-          <label for="task-due-date" class="field-label">Tenggat Waktu *</label>
-          <input type="datetime-local" id="task-due-date" class="form-input" required>
-        </div>
-
-        <div class="field">
-          <label for="task-assignee" class="field-label">Penanggung Jawab</label>
-          <select id="task-assignee" class="form-select"></select>
-        </div>
+        <p class="field-hint" style="margin-top: -0.25rem;">Tugas dikerjakan semua anggota. Anggota melapor selesai, Anda yang memindahkan statusnya.</p>
 
         <div class="form-actions">
           <button type="button" data-click="closeTaskModal" class="btn-secondary">Batal</button>

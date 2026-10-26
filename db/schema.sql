@@ -91,6 +91,16 @@ ALTER TABLE users ADD COLUMN IF NOT EXISTS totp_secret    VARCHAR(64);
 ALTER TABLE users ADD COLUMN IF NOT EXISTS totp_enabled   BOOLEAN NOT NULL DEFAULT false;
 ALTER TABLE users ADD COLUMN IF NOT EXISTS totp_last_step BIGINT;
 
+-- Model tugas: Owner membuat & mengatur status; semua anggota mengerjakan dan bisa "Lapor selesai".
+-- tasks.user_id = penanggung jawab (selalu Owner). category/priority tidak dipakai lagi tapi dibiarkan.
+ALTER TABLE tasks ADD COLUMN IF NOT EXISTS done_reported_by INTEGER REFERENCES users(id) ON DELETE SET NULL;
+ALTER TABLE tasks ADD COLUMN IF NOT EXISTS done_reported_at TIMESTAMPTZ;
+
+-- Pengingat dibuat Owner untuk anggota. reminders.user_id = penerima; "Semua anggota" = satu baris per anggota.
+ALTER TABLE reminders ADD COLUMN IF NOT EXISTS created_by INTEGER REFERENCES users(id) ON DELETE SET NULL;
+ALTER TABLE reminders ADD COLUMN IF NOT EXISTS batch_id UUID;
+CREATE INDEX IF NOT EXISTS idx_reminders_created_by ON reminders(created_by);
+
 -- ------------------------------------------------------------------
 -- Migrasi untuk database lama (sudah diterapkan di production).
 -- ------------------------------------------------------------------

@@ -86,7 +86,6 @@ function isValidPassword(password) {
 // INPUT VALIDATION HELPERS
 // ==========================================
 const TASK_STATUSES = ['To Do', 'In Progress', 'Done'];
-const TASK_PRIORITIES = ['Low', 'Medium', 'High'];
 const USER_ROLES = ['Owner', 'User'];
 const USER_STATUSES = ['Active', 'Inactive'];
 const MAX_INT = 2147483647;
@@ -122,17 +121,13 @@ function isBlankOptional(value) {
 
 /** Returns an error message, or null when the task body is valid. */
 function validateTaskBody(body, isCreate) {
-  const { title, description, category, priority, status, due_date, user_id } = body;
+  const { title, description, status, due_date, user_id } = body;
   if (isCreate || title !== undefined) {
     if (typeof title !== 'string' || !title.trim()) return 'Judul tugas wajib diisi.';
     if (title.trim().length > 200) return 'Judul tugas maksimal 200 karakter.';
   }
   if (description !== undefined && description !== null && typeof description !== 'string') return 'Deskripsi tidak valid.';
   if (typeof description === 'string' && description.trim().length > 5000) return 'Deskripsi maksimal 5000 karakter.';
-  if (category !== undefined && (typeof category !== 'string' || !category.trim() || category.trim().length > 50)) {
-    return 'Kategori tidak valid (maksimal 50 karakter).';
-  }
-  if (priority !== undefined && !TASK_PRIORITIES.includes(priority)) return 'Prioritas harus Low, Medium, atau High.';
   if (status !== undefined && !TASK_STATUSES.includes(status)) return 'Status harus To Do, In Progress, atau Done.';
   if (isCreate && isBlankOptional(due_date)) return 'Tenggat waktu (deadline) wajib diisi.';
   if (!isBlankOptional(due_date) && !parseDateInput(due_date)) return 'Format tenggat waktu tidak valid.';
@@ -140,11 +135,11 @@ function validateTaskBody(body, isCreate) {
   return null;
 }
 
-/** Owner may assign tasks to any active user; returns the id, or null if the target is invalid. */
-async function resolveAssignee(req, rawUserId, fallbackId) {
-  if (req.user.role !== 'Owner' || isBlankOptional(rawUserId)) return fallbackId;
+/** Penanggung jawab must be an active Owner; returns the id, or null if the target is invalid. */
+async function resolveAssignee(rawUserId, fallbackId) {
+  if (isBlankOptional(rawUserId)) return fallbackId;
   const id = Number(rawUserId);
-  const result = await db.query(`SELECT id FROM users WHERE id = $1 AND status = 'Active'`, [id]);
+  const result = await db.query(`SELECT id FROM users WHERE id = $1 AND status = 'Active' AND role = 'Owner'`, [id]);
   return result.rows.length ? id : null;
 }
 
@@ -553,46 +548,21 @@ app.post('/api/auth/2fa/disable', authMiddleware, async (req, res) => {
 app.get('/api/tasks', authMiddleware, async (req, res) => {
   try {
     const status = queryString(req.query.status);
-    const priority = queryString(req.query.priority);
-    const category = queryString(req.query.category);
     const search = queryString(req.query.search);
-    const user_id = queryString(req.query.user_id);
-    const isOwner = req.user.role === 'Owner';
 
-    if (isOwner && user_id && !isPositiveIntLike(user_id)) {
-      return badRequest(res, 'Filter pengguna tidak valid.');
-    }
-
+    // Every task is worked on by the whole team, so members see all tasks too.
     let queryText = `
-      SELECT t.*, u.name AS assignee_name, u.email AS assignee_email
+      SELECT t.*, u.name AS assignee_name, u.email AS assignee_email, r.name AS done_reported_by_name
       FROM tasks t
       JOIN users u ON t.user_id = u.id
+      LEFT JOIN users r ON t.done_reported_by = r.id
       WHERE 1=1
     `;
     const params = [];
 
-    // Otorisasi RBAC: User biasa hanya melihat miliknya sendiri
-    if (!isOwner) {
-      params.push(req.user.id);
-      queryText += ` AND t.user_id = $${params.length}`;
-    } else if (user_id) {
-      params.push(user_id);
-      queryText += ` AND t.user_id = $${params.length}`;
-    }
-
     if (status && status !== 'Semua') {
       params.push(status);
       queryText += ` AND t.status = $${params.length}`;
-    }
-
-    if (priority && priority !== 'Semua') {
-      params.push(priority);
-      queryText += ` AND t.priority = $${params.length}`;
-    }
-
-    if (category && category !== 'Semua') {
-      params.push(category);
-      queryText += ` AND t.category = $${params.length}`;
     }
 
     if (search) {
@@ -613,32 +583,30 @@ app.get('/api/tasks', authMiddleware, async (req, res) => {
   }
 });
 
-// Only the Owner creates and deletes tasks; members work on what they are assigned.
+// Only the Owner creates, edits, moves and deletes tasks; members work on them and report done.
 app.post('/api/tasks', authMiddleware, ownerOnlyMiddleware, async (req, res) => {
   try {
     const body = req.body || {};
-    const { title, description, category, priority, due_date, user_id } = body;
+    const { title, description, due_date, user_id } = body;
 
     const validationError = validateTaskBody(body, true);
     if (validationError) return badRequest(res, validationError);
 
-    const assigneeId = await resolveAssignee(req, user_id, req.user.id);
-    if (assigneeId === null) return badRequest(res, 'Penanggung jawab tidak ditemukan atau tidak aktif.');
+    const assigneeId = await resolveAssignee(user_id, req.user.id);
+    if (assigneeId === null) return badRequest(res, 'Penanggung jawab harus Owner yang aktif.');
 
     // Honour the column the task was added from (e.g. "+" on In Progress); defaults to To Do.
     const initialStatus = body.status || 'To Do';
     const isDone = initialStatus === 'Done';
 
     const insertRes = await db.query(
-      `INSERT INTO tasks (user_id, title, description, category, priority, status, due_date, completed, completed_at)
-       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+      `INSERT INTO tasks (user_id, title, description, status, due_date, completed, completed_at)
+       VALUES ($1, $2, $3, $4, $5, $6, $7)
        RETURNING *`,
       [
         assigneeId,
         title.trim(),
         description ? description.trim() || null : null,
-        category ? category.trim() : 'Umum',
-        priority || 'Medium',
         initialStatus,
         parseDateInput(due_date),
         isDone,
@@ -657,40 +625,35 @@ app.post('/api/tasks', authMiddleware, ownerOnlyMiddleware, async (req, res) => 
   }
 });
 
-app.put('/api/tasks/:id', authMiddleware, async (req, res) => {
+app.put('/api/tasks/:id', authMiddleware, ownerOnlyMiddleware, async (req, res) => {
   try {
     const taskId = parseInt(req.params.id, 10);
     const body = req.body || {};
-    const { title, description, category, priority, status, due_date, user_id } = body;
+    const { title, description, status, due_date, user_id } = body;
 
     const validationError = validateTaskBody(body, false);
     if (validationError) return badRequest(res, validationError);
 
-    // Cek kepemilikan task
     const checkRes = await db.query('SELECT * FROM tasks WHERE id = $1', [taskId]);
     if (checkRes.rows.length === 0) {
       return res.status(404).json({ success: false, message: 'Tugas tidak ditemukan.' });
     }
-
     const existingTask = checkRes.rows[0];
-    const isOwner = req.user.role === 'Owner';
-    if (!isOwner && existingTask.user_id !== req.user.id) {
-      return res.status(403).json({ success: false, message: 'Anda tidak memiliki hak mengubah tugas ini.' });
-    }
 
-    // State machine logic untuk status Done vs lainnya
-    let newStatus = status !== undefined ? status : existingTask.status;
+    const newStatus = status !== undefined ? status : existingTask.status;
     let isCompleted = existingTask.completed;
     let completedAt = existingTask.completed_at;
+    let reportedBy = existingTask.done_reported_by;
+    let reportedAt = existingTask.done_reported_at;
 
     // Only a real status change touches completed_at, so re-saving a Done task keeps its original timestamp.
+    // Moving a task back out of Done (or elsewhere) also clears a pending "Lapor selesai".
     if (status !== undefined && status !== existingTask.status) {
-      if (newStatus === 'Done') {
-        isCompleted = true;
-        completedAt = new Date();
-      } else {
-        isCompleted = false;
-        completedAt = null;
+      isCompleted = newStatus === 'Done';
+      completedAt = isCompleted ? new Date() : null;
+      if (!isCompleted) {
+        reportedBy = null;
+        reportedAt = null;
       }
     }
 
@@ -698,28 +661,26 @@ app.put('/api/tasks/:id', authMiddleware, async (req, res) => {
     const updatedDesc = description === undefined
       ? existingTask.description
       : (description ? description.trim() || null : null);
-    const updatedCategory = category !== undefined ? category.trim() : existingTask.category;
-    const updatedPriority = priority !== undefined ? priority : existingTask.priority;
     const updatedDueDate = isBlankOptional(due_date) ? existingTask.due_date : parseDateInput(due_date);
-    const updatedUserId = await resolveAssignee(req, user_id, existingTask.user_id);
-    if (updatedUserId === null) return badRequest(res, 'Penanggung jawab tidak ditemukan atau tidak aktif.');
+    const updatedUserId = await resolveAssignee(user_id, existingTask.user_id);
+    if (updatedUserId === null) return badRequest(res, 'Penanggung jawab harus Owner yang aktif.');
 
     const updateRes = await db.query(
       `UPDATE tasks
-       SET title = $1, description = $2, category = $3, priority = $4, status = $5,
-           completed = $6, completed_at = $7, due_date = $8, user_id = $9, updated_at = CURRENT_TIMESTAMP
+       SET title = $1, description = $2, status = $3, completed = $4, completed_at = $5,
+           due_date = $6, user_id = $7, done_reported_by = $8, done_reported_at = $9, updated_at = CURRENT_TIMESTAMP
        WHERE id = $10
        RETURNING *`,
       [
         updatedTitle,
         updatedDesc,
-        updatedCategory,
-        updatedPriority,
         newStatus,
         isCompleted,
         completedAt,
         updatedDueDate,
         updatedUserId,
+        reportedBy,
+        reportedAt,
         taskId,
       ]
     );
@@ -744,11 +705,6 @@ app.delete('/api/tasks/:id', authMiddleware, ownerOnlyMiddleware, async (req, re
       return res.status(404).json({ success: false, message: 'Tugas tidak ditemukan.' });
     }
 
-    const task = checkRes.rows[0];
-    if (req.user.role !== 'Owner' && task.user_id !== req.user.id) {
-      return res.status(403).json({ success: false, message: 'Anda tidak memiliki hak menghapus tugas ini.' });
-    }
-
     await db.query('DELETE FROM tasks WHERE id = $1', [taskId]);
     return res.json({ success: true, message: 'Tugas telah dihapus dari daftar.' });
   } catch (err) {
@@ -757,28 +713,46 @@ app.delete('/api/tasks/:id', authMiddleware, ownerOnlyMiddleware, async (req, re
   }
 });
 
+// Members cannot change status; they report a task as finished and the Owner moves it to Done.
+app.post('/api/tasks/:id/report-done', authMiddleware, async (req, res) => {
+  try {
+    if (req.user.role === 'Owner') {
+      return res.status(403).json({ success: false, message: 'Owner mengubah status langsung, bukan melapor selesai.' });
+    }
+    if (!isPositiveIntLike(req.params.id)) return badRequest(res, 'Tugas tidak valid.');
+    const result = await db.query(
+      `UPDATE tasks SET done_reported_by = $1, done_reported_at = CURRENT_TIMESTAMP, updated_at = CURRENT_TIMESTAMP
+       WHERE id = $2 AND status <> 'Done' AND done_reported_at IS NULL
+       RETURNING id, done_reported_at`,
+      [req.user.id, Number(req.params.id)]
+    );
+    if (!result.rows.length) {
+      const exists = await db.query('SELECT status, done_reported_at FROM tasks WHERE id = $1', [Number(req.params.id)]);
+      if (!exists.rows.length) return res.status(404).json({ success: false, message: 'Tugas tidak ditemukan.' });
+      return res.status(409).json({
+        success: false,
+        message: exists.rows[0].status === 'Done' ? 'Tugas ini sudah selesai.' : 'Tugas ini sudah dilaporkan selesai.',
+      });
+    }
+    return res.json({ success: true, data: result.rows[0], message: 'Laporan terkirim. Owner akan memeriksa dan menandai selesai.' });
+  } catch (err) {
+    console.error('[API TASKS REPORT DONE]', err);
+    return res.status(500).json({ success: false, message: 'Gagal melaporkan tugas selesai.' });
+  }
+});
+
 // ==========================================
 // MODUL PENGINGAT DEADLINE (/api/reminders)
 // ==========================================
 app.get('/api/reminders/urgent', authMiddleware, async (req, res) => {
   try {
-    const isOwner = req.user.role === 'Owner';
-    let query = `
-      SELECT t.id, t.title, t.category, t.priority, t.due_date, t.status,
-             ROUND(EXTRACT(EPOCH FROM (t.due_date - CURRENT_TIMESTAMP)) / 3600.0, 1) AS hours_left
-      FROM tasks t
-      WHERE t.completed = false
-    `;
-    const params = [];
-
-    if (!isOwner) {
-      params.push(req.user.id);
-      query += ` AND t.user_id = $${params.length}`;
-    }
-
-    query += ` ORDER BY t.due_date ASC`;
-
-    const result = await db.query(query, params);
+    const result = await db.query(
+      `SELECT t.id, t.title, t.due_date, t.status, t.done_reported_at,
+              ROUND(EXTRACT(EPOCH FROM (t.due_date - CURRENT_TIMESTAMP)) / 3600.0, 1) AS hours_left
+       FROM tasks t
+       WHERE t.completed = false
+       ORDER BY t.due_date ASC`
+    );
     const overdueTasks = [];
     const urgentTasks = [];
 
@@ -806,26 +780,45 @@ app.get('/api/reminders/urgent', authMiddleware, async (req, res) => {
   }
 });
 
+// Owner sees every reminder they sent (with recipient); members see the ones sent to them.
 app.get('/api/reminders', authMiddleware, async (req, res) => {
   try {
+    const isOwner = req.user.role === 'Owner';
     const result = await db.query(
-      `SELECT r.*, t.title AS task_title
+      `SELECT r.id, r.title, r.remind_at, r.task_id, r.created_at, r.batch_id,
+              t.title AS task_title, u.name AS recipient_name, c.name AS sender_name
        FROM reminders r
        LEFT JOIN tasks t ON r.task_id = t.id
-       WHERE r.user_id = $1
-       ORDER BY r.remind_at ASC`,
+       JOIN users u ON r.user_id = u.id
+       LEFT JOIN users c ON r.created_by = c.id
+       WHERE ${isOwner ? 'r.created_by = $1' : 'r.user_id = $1'}
+       ORDER BY r.remind_at ASC, u.name ASC`,
       [req.user.id]
     );
-    return res.json({ success: true, data: result.rows });
+    if (!isOwner) return res.json({ success: true, data: result.rows });
+
+    // A "Semua anggota" reminder is one row per member; the Owner sees it once.
+    const seen = new Map();
+    const data = [];
+    for (const row of result.rows) {
+      if (!row.batch_id) { data.push(row); continue; }
+      const group = seen.get(row.batch_id);
+      if (group) { group.recipient_count += 1; continue; }
+      const item = { ...row, recipient_name: 'Semua anggota', recipient_count: 1 };
+      seen.set(row.batch_id, item);
+      data.push(item);
+    }
+    return res.json({ success: true, data });
   } catch (err) {
     console.error('[API REMINDERS GET]', err);
     return res.status(500).json({ success: false, message: 'Gagal mengambil daftar pengingat kustom.' });
   }
 });
 
-app.post('/api/reminders', authMiddleware, async (req, res) => {
+// recipient: a member id, or 'all' for every active member (one row each, sharing a batch_id).
+app.post('/api/reminders', authMiddleware, ownerOnlyMiddleware, async (req, res) => {
   try {
-    const { title, remind_at, task_id } = req.body || {};
+    const { title, remind_at, task_id, recipient } = req.body || {};
     if (typeof title !== 'string' || !title.trim() || isBlankOptional(remind_at)) {
       return badRequest(res, 'Catatan pengingat dan waktu wajib diisi.');
     }
@@ -838,23 +831,35 @@ app.post('/api/reminders', authMiddleware, async (req, res) => {
     if (!isBlankOptional(task_id)) {
       if (!isPositiveIntLike(task_id)) return badRequest(res, 'Tugas terkait tidak valid.');
       taskId = Number(task_id);
-      const taskRes = await db.query('SELECT user_id FROM tasks WHERE id = $1', [taskId]);
-      const canLink = taskRes.rows.length
-        && (req.user.role === 'Owner' || taskRes.rows[0].user_id === req.user.id);
-      if (!canLink) return badRequest(res, 'Tugas terkait tidak ditemukan.');
+      const taskRes = await db.query('SELECT id FROM tasks WHERE id = $1', [taskId]);
+      if (!taskRes.rows.length) return badRequest(res, 'Tugas terkait tidak ditemukan.');
+    }
+
+    let recipients;
+    let batchId = null;
+    if (recipient === 'all') {
+      const r = await db.query(`SELECT id FROM users WHERE role = 'User' AND status = 'Active'`);
+      recipients = r.rows.map((row) => row.id);
+      if (!recipients.length) return badRequest(res, 'Belum ada anggota aktif untuk diingatkan.');
+      batchId = crypto.randomUUID();
+    } else {
+      if (!isPositiveIntLike(recipient)) return badRequest(res, 'Pilih anggota yang akan diingatkan.');
+      const r = await db.query(`SELECT id FROM users WHERE id = $1 AND role = 'User' AND status = 'Active'`, [Number(recipient)]);
+      if (!r.rows.length) return badRequest(res, 'Anggota tujuan tidak ditemukan atau tidak aktif.');
+      recipients = [r.rows[0].id];
     }
 
     const insertRes = await db.query(
-      `INSERT INTO reminders (user_id, task_id, title, remind_at)
-       VALUES ($1, $2, $3, $4)
-       RETURNING *`,
-      [req.user.id, taskId, title.trim(), remindAt]
+      `INSERT INTO reminders (user_id, task_id, title, remind_at, created_by, batch_id)
+       SELECT uid, $2, $3, $4, $5, $6 FROM UNNEST($1::int[]) AS uid
+       RETURNING id`,
+      [recipients, taskId, title.trim(), remindAt, req.user.id, batchId]
     );
 
     return res.status(201).json({
       success: true,
-      data: insertRes.rows[0],
-      message: 'Pengingat kustom berhasil dijadwalkan.',
+      data: { count: insertRes.rowCount, batch_id: batchId, id: insertRes.rows[0].id },
+      message: batchId ? `Pengingat dikirim ke ${insertRes.rowCount} anggota.` : 'Pengingat dikirim ke anggota.',
     });
   } catch (err) {
     console.error('[API REMINDERS POST]', err);
@@ -862,10 +867,15 @@ app.post('/api/reminders', authMiddleware, async (req, res) => {
   }
 });
 
-app.delete('/api/reminders/:id', authMiddleware, async (req, res) => {
+// Deleting a "Semua anggota" reminder removes it for every recipient.
+app.delete('/api/reminders/:id', authMiddleware, ownerOnlyMiddleware, async (req, res) => {
   try {
-    const id = parseInt(req.params.id, 10);
-    const delRes = await db.query('DELETE FROM reminders WHERE id = $1 AND user_id = $2', [id, req.user.id]);
+    if (!isPositiveIntLike(req.params.id)) return badRequest(res, 'Pengingat tidak valid.');
+    const delRes = await db.query(
+      `DELETE FROM reminders
+       WHERE created_by = $2 AND (id = $1 OR batch_id = (SELECT batch_id FROM reminders WHERE id = $1 AND batch_id IS NOT NULL))`,
+      [Number(req.params.id), req.user.id]
+    );
     if (delRes.rowCount === 0) {
       return res.status(404).json({ success: false, message: 'Pengingat tidak ditemukan.' });
     }
@@ -883,7 +893,6 @@ app.get('/api/reports/analytics', authMiddleware, ownerOnlyMiddleware, async (re
   try {
     const rawPeriod = queryString(req.query.period);
     const period = ['today', 'week', 'month', 'all'].includes(rawPeriod) ? rawPeriod : 'all';
-    const isOwner = req.user.role === 'Owner';
 
     // Period boundaries in WIB (UTC+7, no DST) regardless of the host timezone (Vercel runs in UTC).
     const WIB_OFFSET_MS = 7 * 3600 * 1000;
@@ -901,13 +910,6 @@ app.get('/api/reports/analytics', authMiddleware, ownerOnlyMiddleware, async (re
     }
 
     const params = [dateFilter];
-    let userConstraint = '';
-    if (!isOwner) {
-      params.push(req.user.id);
-      userConstraint = `AND user_id = $2`;
-    }
-
-    // 1. Ringkasan KPI
     const kpiRes = await db.query(
       `SELECT 
          COUNT(*) AS total_tasks,
@@ -917,7 +919,7 @@ app.get('/api/reports/analytics', authMiddleware, ownerOnlyMiddleware, async (re
          COUNT(*) FILTER (WHERE status != 'Done' AND due_date < CURRENT_TIMESTAMP) AS overdue_tasks,
          COUNT(*) FILTER (WHERE status = 'Done' AND completed_at <= due_date) AS on_time_tasks
        FROM tasks
-       WHERE created_at >= $1 ${userConstraint}`,
+       WHERE created_at >= $1`,
       params
     );
 
@@ -926,28 +928,18 @@ app.get('/api/reports/analytics', authMiddleware, ownerOnlyMiddleware, async (re
     const completed = parseInt(kpi.completed_tasks, 10);
     const onTime = parseInt(kpi.on_time_tasks, 10);
 
+    // Who reports work as finished, among tasks created in the period.
+    const memberRes = await db.query(
+      `SELECT u.name, COUNT(t.id) AS count
+       FROM users u
+       JOIN tasks t ON t.done_reported_by = u.id AND t.created_at >= $1
+       GROUP BY u.id, u.name
+       ORDER BY count DESC, u.name ASC`,
+      params
+    );
+
     const completionRate = total > 0 ? Math.round((completed / total) * 100 * 10) / 10 : 0;
     const onTimeRate = completed > 0 ? Math.round((onTime / completed) * 100 * 10) / 10 : 100;
-
-    // 2. Distribusi Kategori
-    const catRes = await db.query(
-      `SELECT category, COUNT(*) as count
-       FROM tasks
-       WHERE created_at >= $1 ${userConstraint}
-       GROUP BY category
-       ORDER BY count DESC`,
-      params
-    );
-
-    // 3. Distribusi Prioritas
-    const prioRes = await db.query(
-      `SELECT priority, COUNT(*) as count
-       FROM tasks
-       WHERE created_at >= $1 ${userConstraint}
-       GROUP BY priority
-       ORDER BY count DESC`,
-      params
-    );
 
     return res.json({
       success: true,
@@ -963,8 +955,7 @@ app.get('/api/reports/analytics', authMiddleware, ownerOnlyMiddleware, async (re
           completion_rate: completionRate,
           on_time_rate: onTimeRate,
         },
-        category_distribution: catRes.rows,
-        priority_distribution: prioRes.rows,
+        member_reports: memberRes.rows,
       },
     });
   } catch (err) {
@@ -980,11 +971,10 @@ app.get('/api/users', authMiddleware, ownerOnlyMiddleware, async (req, res) => {
   try {
     const result = await db.query(
       `SELECT u.id, u.name, u.email, u.role, u.status, u.totp_enabled, u.created_at, u.reset_requested_at,
-              COUNT(t.id) AS total_tasks,
-              COUNT(t.id) FILTER (WHERE t.status = 'Done') AS completed_tasks
+              (SELECT COUNT(*) FROM tasks t WHERE t.user_id = u.id) AS total_tasks,
+              (SELECT COUNT(*) FROM tasks t WHERE t.user_id = u.id AND t.status = 'Done') AS completed_tasks,
+              (SELECT COUNT(*) FROM tasks t WHERE t.done_reported_by = u.id) AS reported_tasks
        FROM users u
-       LEFT JOIN tasks t ON u.id = t.user_id
-       GROUP BY u.id
        ORDER BY u.created_at ASC`
     );
     return res.json({ success: true, data: result.rows });

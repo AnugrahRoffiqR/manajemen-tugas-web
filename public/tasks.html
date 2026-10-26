@@ -21,7 +21,8 @@
       <header class="page-head">
         <div>
           <h1 class="page-title">Daftar Tugas</h1>
-          <p class="page-sub">Kelola siklus pekerjaan tim, ubah status antrean, dan pantau tenggat waktu.</p>
+          <p class="page-sub owner-only">Buat tugas, pindahkan statusnya, dan periksa laporan selesai dari anggota.</p>
+          <p class="page-sub member-only">Kerjakan tugas tim dan tekan "Lapor selesai" bila sudah beres. Owner yang memindahkan statusnya.</p>
         </div>
         <div class="page-actions">
           <div class="segmented" role="group" aria-label="Tampilan">
@@ -38,7 +39,7 @@
       <section class="card toolbar" aria-label="Filter tugas">
         <div class="chip-row" role="group" aria-label="Filter cepat">
           <button type="button" class="filter-chip active" id="chip-all" data-click="applyQuickChip" data-args='["all"]' aria-pressed="true">Semua Tugas</button>
-          <button type="button" class="filter-chip" id="chip-urgent" data-click="applyQuickChip" data-args='["urgent"]' aria-pressed="false">Prioritas High</button>
+          <button type="button" class="filter-chip" id="chip-todo" data-click="applyQuickChip" data-args='["todo"]' aria-pressed="false">Belum Dikerjakan</button>
           <button type="button" class="filter-chip" id="chip-inprogress" data-click="applyQuickChip" data-args='["inprogress"]' aria-pressed="false">Sedang Berjalan</button>
           <button type="button" class="filter-chip" id="chip-done" data-click="applyQuickChip" data-args='["done"]' aria-pressed="false">Selesai</button>
         </div>
@@ -56,24 +57,6 @@
               <option value="To Do">To Do</option>
               <option value="In Progress">In Progress</option>
               <option value="Done">Done</option>
-            </select>
-
-            <label for="filter-priority" class="sr-only">Prioritas</label>
-            <select id="filter-priority" class="form-select auto" data-change="loadTasks">
-              <option value="Semua">Semua Prioritas</option>
-              <option value="High">High</option>
-              <option value="Medium">Medium</option>
-              <option value="Low">Low</option>
-            </select>
-
-            <label for="filter-category" class="sr-only">Kategori</label>
-            <select id="filter-category" class="form-select auto" data-change="loadTasks">
-              <option value="Semua">Semua Kategori</option>
-              <option value="Operasional">Operasional</option>
-              <option value="Teknis">Teknis</option>
-              <option value="Administrasi">Administrasi</option>
-              <option value="Bisnis">Bisnis</option>
-              <option value="Umum">Umum</option>
             </select>
 
             <button type="button" data-click="resetFilters" class="btn-secondary">Reset</button>
@@ -124,18 +107,16 @@
           <table>
             <thead>
               <tr>
-                <th class="center"><span class="sr-only">Selesai</span></th>
+                <th class="center owner-only"><span class="sr-only">Selesai</span></th>
                 <th>Judul Tugas</th>
-                <th>Kategori</th>
-                <th>Prioritas</th>
                 <th>Status</th>
                 <th>Tenggat Waktu</th>
-                <th>Pemilik</th>
+                <th>Penanggung Jawab</th>
                 <th class="right"><span class="sr-only">Aksi</span></th>
               </tr>
             </thead>
             <tbody id="task-table-rows">
-              <tr><td colspan="8" class="loading-text">Memuat data tugas…</td></tr>
+              <tr><td colspan="6" class="loading-text">Memuat data tugas…</td></tr>
             </tbody>
           </table>
         </div>
@@ -171,27 +152,6 @@
 
         <div class="field-row">
           <div class="field">
-            <label for="task-category" class="field-label">Kategori</label>
-            <select id="task-category" class="form-select">
-              <option value="Operasional">Operasional</option>
-              <option value="Teknis">Teknis</option>
-              <option value="Administrasi">Administrasi</option>
-              <option value="Bisnis">Bisnis</option>
-              <option value="Umum" selected>Umum</option>
-            </select>
-          </div>
-          <div class="field">
-            <label for="task-priority" class="field-label">Prioritas</label>
-            <select id="task-priority" class="form-select">
-              <option value="Low">Low</option>
-              <option value="Medium" selected>Medium</option>
-              <option value="High">High</option>
-            </select>
-          </div>
-        </div>
-
-        <div class="field-row">
-          <div class="field">
             <label for="task-status" class="field-label">Status</label>
             <select id="task-status" class="form-select">
               <option value="To Do">To Do</option>
@@ -207,7 +167,8 @@
 
         <div class="field owner-only">
           <label for="task-assignee" class="field-label">Penanggung Jawab</label>
-          <select id="task-assignee" class="form-select"></select>
+          <select id="task-assignee" class="form-select" aria-describedby="task-assignee-hint"></select>
+          <p id="task-assignee-hint" class="field-hint">Tugas dikerjakan semua anggota. Anggota melapor selesai, Anda yang memindahkan statusnya.</p>
         </div>
 
         <div class="form-actions">

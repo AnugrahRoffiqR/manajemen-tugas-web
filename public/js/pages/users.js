@@ -112,12 +112,13 @@ function renderUsersTable(users) {
           ${u.totp_enabled ? '<span class="badge badge-in-progress" title="Verifikasi dua langkah aktif">2FA</span>' : ''}
         </td>
         <td>
-          <div style="width: 110px;">
+          ${isOwner ? `
+          <div style="width: 110px;" title="Tugas yang Owner ini tanggung jawabi">
             <div class="bar-row-head font-mono" style="font-size: 0.75rem; margin-bottom: 4px;">
               <span>${done}/${total}</span><span class="muted">${pct}%</span>
             </div>
             <div class="bar-track" style="height: 6px;"><div class="bar-fill" style="width: ${pct}%; background: var(--primary);"></div></div>
-          </div>
+          </div>` : `<span class="font-mono" style="font-size: 0.8125rem;">${parseInt(u.reported_tasks, 10) || 0}</span> <span class="muted" style="font-size: 0.75rem;">dilaporkan selesai</span>`}
         </td>
         <td class="nowrap font-mono muted" style="font-size: 0.8125rem;">${formatDateWIB(u.created_at)}</td>
         <td class="right">

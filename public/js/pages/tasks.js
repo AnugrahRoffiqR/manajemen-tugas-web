@@ -1,4 +1,5 @@
-initNavigation('tasks');
+// Cards render differently per role, so wait for the session before the first load.
+const navReady = initNavigation('tasks');
 
 let allTasks = [];
 let currentView = 'kanban';
@@ -37,23 +38,14 @@ function setActiveChip(type) {
 
 function applyQuickChip(type) {
   setActiveChip(type);
-  const presets = {
-    all: ['Semua', 'Semua'],
-    urgent: ['Semua', 'High'],
-    inprogress: ['In Progress', 'Semua'],
-    done: ['Done', 'Semua'],
-  };
-  const [status, priority] = presets[type] || presets.all;
-  document.getElementById('filter-status').value = status;
-  document.getElementById('filter-priority').value = priority;
+  const presets = { all: 'Semua', todo: 'To Do', inprogress: 'In Progress', done: 'Done' };
+  document.getElementById('filter-status').value = presets[type] || presets.all;
   loadTasks();
 }
 
 function resetFilters() {
   document.getElementById('filter-search').value = '';
   document.getElementById('filter-status').value = 'Semua';
-  document.getElementById('filter-priority').value = 'Semua';
-  document.getElementById('filter-category').value = 'Semua';
   setActiveChip('all');
   loadTasks();
 }
@@ -61,14 +53,10 @@ function resetFilters() {
 async function loadTasks() {
   const search = document.getElementById('filter-search').value;
   const status = document.getElementById('filter-status').value;
-  const priority = document.getElementById('filter-priority').value;
-  const category = document.getElementById('filter-category').value;
 
   const params = new URLSearchParams();
   if (search) params.append('search', search);
   if (status !== 'Semua') params.append('status', status);
-  if (priority !== 'Semua') params.append('priority', priority);
-  if (category !== 'Semua') params.append('category', category);
 
   try {
     const res = await apiFetch(`/api/tasks?${params.toString()}`);
@@ -97,18 +85,32 @@ function renderKanban(tasks) {
   });
 }
 
-function createKanbanCard(task) {
+// Owner: move/edit/delete. Member: only "Lapor selesai" until someone has reported it.
+function taskActions(task, title) {
   const id = Number(task.id);
+  if (isOwnerView()) {
+    const moveBtn = (status, icon, label, extra = '') =>
+      `<button type="button" data-click="updateTaskStatus" data-args='[${id},"${status}"]' class="btn-action-icon${extra}" aria-label="${label}: ${title}" title="${label}">${icon}</button>`;
+    return `
+      ${task.status !== 'To Do' ? moveBtn('To Do', ICON.todo, 'Pindah ke To Do') : ''}
+      ${task.status !== 'In Progress' ? moveBtn('In Progress', ICON.progress, 'Pindah ke In Progress') : ''}
+      ${task.status !== 'Done' ? moveBtn('Done', ICON.done, 'Tandai selesai', ' is-done') : ''}
+      <button type="button" data-click="openEditTaskModal" data-args='[${id}]' class="btn-action-icon" aria-label="Edit: ${title}" title="Edit">${ICON.edit}</button>
+      <button type="button" data-click="deleteTask" data-args='[${id}]' class="btn-action-icon is-danger" aria-label="Hapus: ${title}" title="Hapus">${ICON.trash}</button>`;
+  }
+  if (task.status === 'Done' || task.done_reported_at) return '';
+  return `<button type="button" data-click="reportTaskDone" data-args='[${id}]' class="btn-secondary btn-sm" aria-label="Lapor selesai: ${title}">${ICON.done} Lapor selesai</button>`;
+}
+
+function createKanbanCard(task) {
   const title = escapeHtml(task.title);
-  const moveBtn = (status, icon, label, extra = '') =>
-    `<button type="button" data-click="updateTaskStatus" data-args='[${id},"${status}"]' class="btn-action-icon${extra}" aria-label="${label}: ${title}" title="${label}">${icon}</button>`;
+  const reported = reportedBadge(task);
+  const overdue = !task.completed && new Date(task.due_date) < new Date();
+  const actions = taskActions(task, title);
 
   return `
-    <article class="kanban-card" data-priority="${escapeHtml(task.priority)}">
-      <div class="kanban-card-tags">
-        ${priorityBadge(task.priority)}
-        ${categoryBadge(task.category)}
-      </div>
+    <article class="kanban-card${reported ? ' is-reported' : overdue ? ' is-overdue' : ''}">
+      ${reported ? `<div class="kanban-card-tags">${reported}</div>` : ''}
       <h3 class="kanban-card-title${task.completed ? ' is-complete' : ''}">${title}</h3>
       ${task.description ? `<p class="kanban-card-desc">${escapeHtml(task.description)}</p>` : ''}
       <div class="kanban-card-due">
@@ -116,14 +118,8 @@ function createKanbanCard(task) {
         ${task.completed ? '' : deadlineBadge(task.due_date)}
       </div>
       <div class="kanban-card-foot">
-        <span class="muted" style="font-size: 0.75rem; font-weight: 600;">${escapeHtml(task.assignee_name ? task.assignee_name.split(' ')[0] : '')}</span>
-        <div class="kanban-card-actions">
-          ${task.status !== 'To Do' ? moveBtn('To Do', ICON.todo, 'Pindah ke To Do') : ''}
-          ${task.status !== 'In Progress' ? moveBtn('In Progress', ICON.progress, 'Pindah ke In Progress') : ''}
-          ${task.status !== 'Done' ? moveBtn('Done', ICON.done, 'Tandai selesai', ' is-done') : ''}
-          <button type="button" data-click="openEditTaskModal" data-args='[${id}]' class="btn-action-icon" aria-label="Edit: ${title}" title="Edit">${ICON.edit}</button>
-          <button type="button" data-click="deleteTask" data-args='[${id}]' class="btn-action-icon is-danger owner-only" aria-label="Hapus: ${title}" title="Hapus">${ICON.trash}</button>
-        </div>
+        <span class="muted" style="font-size: 0.75rem; font-weight: 600;" title="Penanggung jawab">${escapeHtml(task.assignee_name ? task.assignee_name.split(' ')[0] : '')}</span>
+        ${actions ? `<div class="kanban-card-actions">${actions}</div>` : ''}
       </div>
     </article>`;
 }
@@ -132,7 +128,7 @@ function renderTable(tasks) {
   const tbody = document.getElementById('task-table-rows');
   if (!tasks.length) {
     tbody.innerHTML = `
-      <tr><td colspan="8">
+      <tr><td colspan="${isOwnerView() ? 6 : 5}">
         <div class="empty-state-box">
           <h4>Tidak ada tugas ditemukan</h4>
           <p>Sesuaikan kata kunci pencarian atau reset filter.</p>
@@ -145,15 +141,17 @@ function renderTable(tasks) {
   tbody.innerHTML = tasks.map(t => {
     const id = Number(t.id);
     const title = escapeHtml(t.title);
+    const reported = reportedBadge(t);
     return `
       <tr>
-        <td class="center">
+        <td class="center owner-only">
           <input type="checkbox" class="table-check" ${t.completed ? 'checked' : ''} aria-label="Tandai selesai: ${title}" data-change="toggleTaskDone" data-args='[${id}]'>
         </td>
         <td class="cell-title${t.completed ? ' is-complete' : ''}">${title}</td>
-        <td>${categoryBadge(t.category)}</td>
-        <td>${priorityBadge(t.priority)}</td>
-        <td><span class="badge ${STATUS_BADGE[t.status] || 'badge-todo'}">${escapeHtml(t.status)}</span></td>
+        <td>
+          <span class="badge ${STATUS_BADGE[t.status] || 'badge-todo'}">${escapeHtml(t.status)}</span>
+          ${reported ? `<div style="margin-top: 4px;">${reported}</div>` : ''}
+        </td>
         <td class="nowrap">
           <span class="font-mono" style="font-size: 0.8125rem;">${formatDateWIB(t.due_date)}</span>
           ${t.completed ? '' : `<div style="margin-top: 4px;">${deadlineBadge(t.due_date)}</div>`}
@@ -161,8 +159,10 @@ function renderTable(tasks) {
         <td class="muted">${escapeHtml(t.assignee_name || '–')}</td>
         <td class="right">
           <div class="cell-actions">
-            <button type="button" data-click="openEditTaskModal" data-args='[${id}]' class="btn-action-icon" aria-label="Edit: ${title}" title="Edit">${ICON.edit}</button>
-            <button type="button" data-click="deleteTask" data-args='[${id}]' class="btn-action-icon is-danger owner-only" aria-label="Hapus: ${title}" title="Hapus">${ICON.trash}</button>
+            ${isOwnerView()
+              ? `<button type="button" data-click="openEditTaskModal" data-args='[${id}]' class="btn-action-icon" aria-label="Edit: ${title}" title="Edit">${ICON.edit}</button>
+                 <button type="button" data-click="deleteTask" data-args='[${id}]' class="btn-action-icon is-danger" aria-label="Hapus: ${title}" title="Hapus">${ICON.trash}</button>`
+              : taskActions(t, title)}
           </div>
         </td>
       </tr>`;
@@ -178,6 +178,17 @@ async function updateTaskStatus(taskId, status) {
     showToast('Status berhasil diubah!', 'success');
     loadTasks();
   } catch (e) {}
+}
+
+async function reportTaskDone(taskId) {
+  this.disabled = true;
+  try {
+    const res = await apiFetch(`/api/tasks/${taskId}/report-done`, { method: 'POST' });
+    showToast(res.message || 'Laporan terkirim ke Owner.', 'success');
+    loadTasks();
+  } catch (e) {
+    this.disabled = false;
+  }
 }
 
 // Delegated change handler: `this` is the checkbox.
@@ -229,18 +240,14 @@ window.openTaskModal = openTaskModal;
 
 async function openEditTaskModal(id) {
   const task = allTasks.find(t => t.id === id);
-  if (!task) return;
-  if (isOwnerView()) {
-    try {
-      await fillAssigneeSelect(document.getElementById('task-assignee'), task.user_id);
-    } catch { return; }
-  }
+  if (!task || !isOwnerView()) return;
+  try {
+    await fillAssigneeSelect(document.getElementById('task-assignee'), task.user_id);
+  } catch { return; }
 
   document.getElementById('edit-task-id').value = task.id;
   document.getElementById('task-title').value = task.title;
   document.getElementById('task-desc').value = task.description || '';
-  document.getElementById('task-category').value = task.category;
-  document.getElementById('task-priority').value = task.priority;
   document.getElementById('task-status').value = task.status;
   document.getElementById('task-due-date').value = toLocalInputValue(task.due_date ? new Date(task.due_date) : new Date());
 
@@ -274,12 +281,10 @@ document.getElementById('task-form').addEventListener('submit', async (e) => {
   const payload = {
     title: document.getElementById('task-title').value,
     description: document.getElementById('task-desc').value,
-    category: document.getElementById('task-category').value,
-    priority: document.getElementById('task-priority').value,
     status: document.getElementById('task-status').value,
     due_date: localInputToISO(document.getElementById('task-due-date').value),
+    user_id: Number(document.getElementById('task-assignee').value),
   };
-  if (isOwnerView()) payload.user_id = Number(document.getElementById('task-assignee').value);
 
   try {
     if (editId) {
@@ -297,4 +302,4 @@ document.getElementById('task-form').addEventListener('submit', async (e) => {
   }
 });
 
-loadTasks();
+navReady.then((user) => { if (user) loadTasks(); });

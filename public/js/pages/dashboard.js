@@ -1,6 +1,7 @@
-initNavigation('dashboard');
+// Rows render differently per role, so wait for the session before the first load.
+const navReady = initNavigation('dashboard');
 
-const CAT_COLORS = { Teknis: '#0284c7', Operasional: '#d97706', Bisnis: '#16a34a', Administrasi: '#7c3aed', Umum: '#64748b' };
+const STATUS_BADGE = { 'To Do': 'badge-todo', 'In Progress': 'badge-in-progress', Done: 'badge-done' };
 const STATUS_SEGMENTS = [
   { key: 'todo_tasks', label: 'To Do', color: 'var(--status-todo)' },
   { key: 'in_progress_tasks', label: 'In Progress', color: 'var(--status-in-progress)' },
@@ -15,8 +16,6 @@ function computeMetrics(tasks) {
   const now = Date.now();
   const completed = count(t => t.status === 'Done');
   const onTime = count(t => t.status === 'Done' && t.completed_at && new Date(t.completed_at) <= new Date(t.due_date));
-  const cats = {};
-  tasks.forEach(t => { cats[t.category] = (cats[t.category] || 0) + 1; });
   return {
     total_tasks: tasks.length,
     completed_tasks: completed,
@@ -26,9 +25,6 @@ function computeMetrics(tasks) {
     on_time_tasks: onTime,
     completion_rate: tasks.length ? Math.round((completed / tasks.length) * 1000) / 10 : 0,
     on_time_rate: completed ? Math.round((onTime / completed) * 1000) / 10 : 100,
-    category_distribution: Object.entries(cats)
-      .map(([category, n]) => ({ category, count: n }))
-      .sort((a, b) => b.count - a.count),
   };
 }
 
@@ -71,7 +67,7 @@ async function loadDashboardData() {
         ariaLabel: 'Komposisi status tugas',
         emptyText: 'Belum ada tugas.',
       });
-      renderCategoryChart(m.category_distribution);
+      renderReported(allTasks);
     }
 
     // Ambil Notifikasi Kritis
@@ -97,10 +93,10 @@ async function loadDashboardData() {
     if (!activeTasks.length) {
       const hasAny = allTasks.length > 0;
       rowsContainer.innerHTML = `
-        <tr><td colspan="5">
+        <tr><td colspan="4">
           <div class="empty-state-box">
             <h4>${hasAny ? 'Semua tugas sudah selesai' : 'Belum ada tugas'}</h4>
-            <p>${hasAny ? 'Tidak ada tugas aktif saat ini.' : 'Tugas yang dibuat atau ditugaskan akan muncul di sini.'}</p>
+            <p>${hasAny ? 'Tidak ada tugas aktif saat ini.' : 'Tugas yang dibuat Owner akan muncul di sini.'}</p>
             <button type="button" data-click="openCreateTaskModal" class="btn-primary owner-only">Buat Tugas</button>
           </div>
         </td></tr>`;
@@ -113,34 +109,61 @@ async function loadDashboardData() {
           ${escapeHtml(task.title)}
           ${task.description ? `<p class="cell-sub">${escapeHtml(task.description)}</p>` : ''}
         </td>
-        <td>${categoryBadge(task.category)}</td>
-        <td>${priorityBadge(task.priority)}</td>
+        <td>
+          <span class="badge ${STATUS_BADGE[task.status] || 'badge-todo'}">${escapeHtml(task.status)}</span>
+          ${reportedBadge(task) ? `<div style="margin-top: 4px;">${reportedBadge(task)}</div>` : ''}
+        </td>
         <td class="nowrap">
           <span class="font-mono" style="font-size: 0.8125rem;">${formatDateWIB(task.due_date)}</span>
           <div style="margin-top: 4px;">${deadlineBadge(task.due_date)}</div>
         </td>
-        <td class="right">
-          <button type="button" data-click="toggleTaskStatus" data-args='[${Number(task.id)},"Done"]' class="btn-secondary btn-sm" aria-label="Tandai selesai: ${escapeHtml(task.title)}">Selesaikan</button>
-        </td>
+        <td class="right">${taskActionButton(task)}</td>
       </tr>`).join('');
   } catch (err) {
     console.error(err);
-    showLoadError(['#status-chart', '#category-chart', '#trend-chart', '#priority-task-rows'], 'loadDashboardData', err);
+    showLoadError(['#status-chart', '#reported-list', '#trend-chart', '#priority-task-rows'], 'loadDashboardData', err);
   }
 }
 
-function renderCategoryChart(cats) {
-  ChartKit.donut(document.getElementById('category-chart'), {
-    segments: cats.map(c => ({
-      label: c.category || 'Umum',
-      labelHtml: categoryBadge(c.category),
-      value: parseInt(c.count, 10),
-      color: CAT_COLORS[c.category] || CAT_COLORS.Umum,
-    })),
-    centerLabel: 'tugas',
-    ariaLabel: 'Distribusi kategori tugas',
-    emptyText: 'Belum ada tugas.',
-  });
+// Owner closes the task; a member can only report it (once).
+function taskActionButton(task) {
+  const id = Number(task.id);
+  const title = escapeHtml(task.title);
+  if (isOwnerView()) {
+    return `<button type="button" data-click="toggleTaskStatus" data-args='[${id},"Done"]' class="btn-secondary btn-sm" aria-label="Tandai selesai: ${title}">Selesaikan</button>`;
+  }
+  if (task.done_reported_at) return '';
+  return `<button type="button" data-click="reportTaskDone" data-args='[${id}]' class="btn-secondary btn-sm" aria-label="Lapor selesai: ${title}">Lapor selesai</button>`;
+}
+
+function renderReported(tasks) {
+  const list = document.getElementById('reported-list');
+  const reported = tasks.filter(t => t.done_reported_at && t.status !== 'Done')
+    .sort((a, b) => new Date(a.done_reported_at) - new Date(b.done_reported_at));
+  document.getElementById('reported-count').textContent = reported.length;
+  if (!reported.length) {
+    list.innerHTML = `<li class="chart-empty">${isOwnerView() ? 'Belum ada laporan dari anggota.' : 'Belum ada tugas yang dilaporkan selesai.'}</li>`;
+    return;
+  }
+  list.innerHTML = reported.slice(0, 6).map(t => `
+    <li class="reported-item">
+      <div style="min-width: 0;">
+        <p class="cell-title">${escapeHtml(t.title)}</p>
+        <p class="cell-sub">${escapeHtml(t.done_reported_by_name || 'Anggota')} · <span class="font-mono">${formatDateWIB(t.done_reported_at)}</span></p>
+      </div>
+      ${isOwnerView() ? `<button type="button" data-click="toggleTaskStatus" data-args='[${Number(t.id)},"Done"]' class="btn-primary btn-sm" aria-label="Tandai Done: ${escapeHtml(t.title)}">Tandai Done</button>` : ''}
+    </li>`).join('');
+}
+
+async function reportTaskDone(taskId) {
+  this.disabled = true;
+  try {
+    const res = await apiFetch(`/api/tasks/${taskId}/report-done`, { method: 'POST' });
+    showToast(res.message || 'Laporan terkirim ke Owner.', 'success');
+    loadDashboardData();
+  } catch (err) {
+    this.disabled = false;
+  }
 }
 
 function renderTrend() {
@@ -217,14 +240,12 @@ document.getElementById('create-task-form').addEventListener('submit', async (e)
 
   const title = document.getElementById('task-title').value;
   const description = document.getElementById('task-desc').value;
-  const category = document.getElementById('task-category').value;
-  const priority = document.getElementById('task-priority').value;
   const due_date = localInputToISO(document.getElementById('task-due-date').value);
 
   try {
     await apiFetch('/api/tasks', {
       method: 'POST',
-      body: JSON.stringify({ title, description, category, priority, due_date, user_id: Number(document.getElementById('task-assignee').value) }),
+      body: JSON.stringify({ title, description, due_date, user_id: Number(document.getElementById('task-assignee').value) }),
     });
     showToast('Tugas baru berhasil disimpan!', 'success');
     closeTaskModal();
@@ -236,4 +257,4 @@ document.getElementById('create-task-form').addEventListener('submit', async (e)
   }
 });
 
-loadDashboardData();
+navReady.then((user) => { if (user) loadDashboardData(); });
