@@ -333,7 +333,7 @@ const RESET_TTL_MINUTES = 30;
 const RESET_MIN_RESPONSE_MS = 1200;
 const RESET_REQUEST_REPLY = {
   success: true,
-  message: 'Jika email tersebut terdaftar dan aktif, tautan untuk mengatur ulang kata sandi sudah dikirim. Periksa juga folder spam.',
+  message: 'Jika email tersebut terdaftar dan aktif, tautan untuk mengatur ulang kata sandi sudah dikirim. Periksa juga folder spam. Tidak menerima email dalam 5 menit? Hubungi Owner untuk mengatur ulang kata sandi Anda.',
 };
 const hashResetToken = (token) => crypto.createHash('sha256').update(token).digest('hex');
 
@@ -385,12 +385,22 @@ app.post('/api/auth/forgot-password', async (req, res) => {
     // Token in the URL fragment: it is never sent to the server in logs or Referer headers.
     const link = `${process.env.APP_URL.replace(/\/+$/, '')}/reset-password#token=${token}`;
     const safeName = escapeHtmlServer(user.name);
-    await sendMail({
+    try {
+      await sendMail({
       to: user.email,
       subject: 'Atur ulang kata sandi Manajemen Tugas',
       text: `Halo ${user.name},\n\nBuka tautan ini untuk membuat kata sandi baru (berlaku ${RESET_TTL_MINUTES} menit, sekali pakai):\n${link}\n\nJika Anda tidak meminta reset, abaikan email ini. Kata sandi Anda tidak berubah.`,
-      html: `<p>Halo ${safeName},</p><p>Klik tautan di bawah untuk membuat kata sandi baru. Tautan berlaku ${RESET_TTL_MINUTES} menit dan hanya bisa dipakai sekali.</p><p><a href="${link}">Atur ulang kata sandi</a></p><p>Jika Anda tidak meminta reset, abaikan email ini. Kata sandi Anda tidak berubah.</p>`,
-    });
+        html: `<p>Halo ${safeName},</p><p>Klik tautan di bawah untuk membuat kata sandi baru. Tautan berlaku ${RESET_TTL_MINUTES} menit dan hanya bisa dipakai sekali.</p><p><a href="${link}">Atur ulang kata sandi</a></p><p>Jika Anda tidak meminta reset, abaikan email ini. Kata sandi Anda tidak berubah.</p>`,
+      });
+    } catch (err) {
+      // Send failure (e.g. Resend without a verified domain only delivers to the account owner)
+      // must look identical to "unknown email", otherwise the reply reveals registered accounts.
+      // The Owner sees it in the login history and can reset the password manually.
+      console.error('[API AUTH FORGOT] Gagal kirim email:', err.message);
+      await db.query('DELETE FROM password_resets WHERE user_id = $1', [user.id]);
+      await recordLoginEvent(req, { userId: user.id, email: user.email, success: false, reason: 'RESET_MAIL_FAILED' });
+      return reply(200, RESET_REQUEST_REPLY);
+    }
     await recordLoginEvent(req, { userId: user.id, email: user.email, success: true, reason: 'RESET_REQUESTED' });
     return reply(200, RESET_REQUEST_REPLY);
   } catch (err) {

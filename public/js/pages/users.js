@@ -38,6 +38,7 @@ const LOGIN_REASONS = {
   WRONG_2FA: ['Kode 2FA salah', 'badge-overdue'],
   RESET_REQUESTED: ['Minta reset sandi', 'badge-todo'],
   PASSWORD_RESET: ['Sandi direset via email', 'badge-done'],
+  RESET_MAIL_FAILED: ['Email reset gagal terkirim', 'badge-urgent'],
 };
 
 // Short, readable device label from the user-agent string.
