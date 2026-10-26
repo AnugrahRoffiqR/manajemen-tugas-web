@@ -39,6 +39,21 @@ const PORT = process.env.PORT || 3000;
 // Trust the first proxy hop (Vercel) so req.ip is the real client IP for rate limiting.
 app.set('trust proxy', 1);
 
+// Browser security headers. Keep in sync with "headers" in vercel.json (Vercel serves static files itself).
+// 'unsafe-inline' is required by the inline <script> blocks and onclick handlers in public/*.html.
+app.disable('x-powered-by');
+const SECURITY_HEADERS = {
+  'Content-Security-Policy': "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data:; connect-src 'self'; frame-ancestors 'none'; base-uri 'self'; form-action 'self'; object-src 'none'",
+  'X-Frame-Options': 'DENY',
+  'X-Content-Type-Options': 'nosniff',
+  'Referrer-Policy': 'strict-origin-when-cross-origin',
+  'Permissions-Policy': 'camera=(), microphone=(), geolocation=()',
+};
+app.use((req, res, next) => {
+  res.set(SECURITY_HEADERS);
+  next();
+});
+
 // Middleware
 app.use(express.json({ limit: '100kb' }));
 app.use(express.urlencoded({ extended: true, limit: '100kb' }));
