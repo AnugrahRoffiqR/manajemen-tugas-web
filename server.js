@@ -330,11 +330,6 @@ app.post('/api/auth/logout', async (req, res) => {
 // The emailed token is random and only its SHA-256 is stored, so a DB leak cannot be
 // turned into reset links. Links live 30 minutes and work once.
 const RESET_TTL_MINUTES = 30;
-const RESET_MIN_RESPONSE_MS = 1200;
-const RESET_REQUEST_REPLY = {
-  success: true,
-  message: 'Jika email tersebut terdaftar dan aktif, kami sudah mengirim tautan reset atau meneruskan permintaan Anda ke Owner. Periksa juga folder spam. Tidak menerima email dalam 5 menit? Hubungi Owner.',
-};
 const hashResetToken = (token) => crypto.createHash('sha256').update(token).digest('hex');
 
 // Public on purpose: shown on the forgot-password page so members can reach the Owner.
@@ -343,24 +338,15 @@ app.get('/api/auth/contact', (req, res) => {
   return res.json({ success: true, data: { whatsapp: /^\d{8,15}$/.test(wa) ? wa : null } });
 });
 
+// Product decision: the reply says whether the email is registered and which role it has,
+// so Owners get an email link and members are sent to the Owner. This reveals accounts;
+// the per-IP/per-email limits below are what keeps guessing slow.
 app.post('/api/auth/forgot-password', async (req, res) => {
-  const started = Date.now();
-  // Same reply time for known and unknown emails, so timing does not reveal accounts.
-  const reply = async (status, body) => {
-    await new Promise((r) => setTimeout(r, Math.max(0, RESET_MIN_RESPONSE_MS - (Date.now() - started))));
-    return res.status(status).json(body);
-  };
+  const reply = (status, body) => res.status(status).json(body);
   try {
     const email = typeof req.body?.email === 'string' ? req.body.email.trim() : '';
     if (!email || email.length > 150 || !email.includes('@')) {
       return badRequest(res, 'Masukkan alamat email yang valid.');
-    }
-    if (!isMailConfigured()) {
-      return res.status(503).json({
-        success: false,
-        error: 'MAIL_NOT_CONFIGURED',
-        message: 'Reset lewat email belum aktif. Hubungi Owner untuk mengatur ulang kata sandi Anda.',
-      });
     }
     const wait = await resetRequestLockedFor(req.ip, email);
     if (wait) {
@@ -373,11 +359,29 @@ app.post('/api/auth/forgot-password', async (req, res) => {
     }
 
     const userRes = await db.query(
-      `SELECT id, name, email FROM users WHERE LOWER(email) = LOWER($1) AND status = 'Active'`,
+      `SELECT id, name, email, role, status FROM users WHERE LOWER(email) = LOWER($1)`,
       [email]
     );
     const user = userRes.rows[0];
-    if (!user) return reply(200, RESET_REQUEST_REPLY);
+    if (!user) {
+      return reply(404, { success: false, error: 'EMAIL_NOT_FOUND', message: 'Email ini tidak terdaftar. Periksa kembali penulisannya.' });
+    }
+    if (user.status !== 'Active') {
+      return reply(200, { success: true, data: { account: 'inactive' }, message: 'Akun ini sedang nonaktif. Hubungi Owner untuk mengaktifkannya kembali.' });
+    }
+    // Members never get an email link: the request goes to the Owner's Kelola Tim panel.
+    if (user.role !== 'Owner') {
+      await db.query('UPDATE users SET reset_requested_at = NOW() WHERE id = $1', [user.id]);
+      await recordLoginEvent(req, { userId: user.id, email: user.email, success: true, reason: 'RESET_ASKED_OWNER' });
+      return reply(200, {
+        success: true,
+        data: { account: 'member' },
+        message: 'Permintaan Anda sudah diteruskan ke Owner. Hubungi Owner agar kata sandi baru segera dibuatkan.',
+      });
+    }
+    if (!isMailConfigured()) {
+      return reply(503, { success: false, error: 'MAIL_NOT_CONFIGURED', message: 'Reset lewat email belum aktif di server.' });
+    }
 
     const token = crypto.randomBytes(32).toString('base64url');
     // One live link per user: a new request invalidates the previous one.
@@ -399,17 +403,17 @@ app.post('/api/auth/forgot-password', async (req, res) => {
         html: `<p>Halo ${safeName},</p><p>Klik tautan di bawah untuk membuat kata sandi baru. Tautan berlaku ${RESET_TTL_MINUTES} menit dan hanya bisa dipakai sekali.</p><p><a href="${link}">Atur ulang kata sandi</a></p><p>Jika Anda tidak meminta reset, abaikan email ini. Kata sandi Anda tidak berubah.</p>`,
       });
     } catch (err) {
-      // Send failure (e.g. Resend without a verified domain only delivers to the account owner)
-      // must look identical to "unknown email", otherwise the reply reveals registered accounts.
-      // The Owner sees it in the login history and can reset the password manually.
       console.error('[API AUTH FORGOT] Gagal kirim email:', err.message);
       await db.query('DELETE FROM password_resets WHERE user_id = $1', [user.id]);
-      await db.query('UPDATE users SET reset_requested_at = NOW() WHERE id = $1', [user.id]);
       await recordLoginEvent(req, { userId: user.id, email: user.email, success: false, reason: 'RESET_MAIL_FAILED' });
-      return reply(200, RESET_REQUEST_REPLY);
+      return reply(502, { success: false, error: 'MAIL_FAILED', message: 'Email reset gagal dikirim. Coba lagi beberapa saat.' });
     }
     await recordLoginEvent(req, { userId: user.id, email: user.email, success: true, reason: 'RESET_REQUESTED' });
-    return reply(200, RESET_REQUEST_REPLY);
+    return reply(200, {
+      success: true,
+      data: { account: 'owner' },
+      message: `Tautan reset sudah dikirim ke ${user.email}. Berlaku ${RESET_TTL_MINUTES} menit. Periksa juga folder spam.`,
+    });
   } catch (err) {
     console.error('[API AUTH FORGOT]', err.message);
     return reply(500, { success: false, error: 'SERVER_ERROR', message: 'Email belum bisa dikirim. Coba lagi beberapa saat.' });

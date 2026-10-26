@@ -40,6 +40,7 @@ const LOGIN_REASONS = {
   RESET_REQUESTED: ['Minta reset sandi', 'badge-todo'],
   PASSWORD_RESET: ['Sandi direset via email', 'badge-done'],
   RESET_MAIL_FAILED: ['Email reset gagal terkirim', 'badge-urgent'],
+  RESET_ASKED_OWNER: ['Minta reset ke Owner', 'badge-urgent'],
 };
 
 // Short, readable device label from the user-agent string.

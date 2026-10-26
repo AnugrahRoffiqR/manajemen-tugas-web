@@ -2,6 +2,11 @@ const form = document.getElementById('forgot-form');
 const submitBtn = document.getElementById('submit-btn');
 const errorAlert = document.getElementById('error-alert');
 const successAlert = document.getElementById('success-alert');
+const emailInput = document.getElementById('email');
+const memberResult = document.getElementById('member-result');
+const waLink = document.getElementById('wa-owner');
+const noContact = document.getElementById('no-contact');
+const retryBtn = document.getElementById('retry-btn');
 
 function show(el, message) {
   errorAlert.classList.add('hidden');
@@ -10,51 +15,59 @@ function show(el, message) {
   el.classList.remove('hidden');
 }
 
-const waLink = document.getElementById('wa-owner');
-const emailInput = document.getElementById('email');
-let waNumber = null;
-
-// Prefilled message carries the typed email so the Owner knows which account to reset.
-function updateWaLink() {
-  if (!waNumber) return;
-  const email = emailInput.value.trim();
-  const text = `Halo, saya minta reset kata sandi Manajemen Tugas${email ? ` untuk akun ${email}` : ''}.`;
-  waLink.href = `https://wa.me/${waNumber}?text=${encodeURIComponent(text)}`;
+// Prefilled message carries the email so the Owner knows which account to reset.
+async function showContactOwner(email) {
+  memberResult.classList.remove('hidden');
+  let wa = null;
+  try {
+    wa = (await (await fetch('/api/auth/contact')).json()).data?.whatsapp;
+  } catch {}
+  if (wa) {
+    const text = `Halo, saya minta reset kata sandi Manajemen Tugas untuk akun ${email}.`;
+    waLink.href = `https://wa.me/${wa}?text=${encodeURIComponent(text)}`;
+    waLink.classList.remove('hidden');
+    waLink.focus();
+  } else {
+    noContact.classList.remove('hidden');
+  }
 }
 
-fetch('/api/auth/contact')
-  .then((r) => r.json())
-  .then(({ data }) => {
-    if (!data?.whatsapp) return;
-    waNumber = data.whatsapp;
-    updateWaLink();
-    waLink.classList.remove('hidden');
-  })
-  .catch(() => {});
-emailInput.addEventListener('input', updateWaLink);
+function setBusy(busy) {
+  submitBtn.disabled = busy;
+  submitBtn.setAttribute('aria-busy', String(busy));
+  submitBtn.textContent = busy ? 'Memeriksa…' : 'Lanjutkan';
+}
 
 form.addEventListener('submit', async (e) => {
   e.preventDefault();
-  submitBtn.disabled = true;
-  submitBtn.setAttribute('aria-busy', 'true');
-  submitBtn.textContent = 'Mengirim…';
+  const email = emailInput.value.trim();
+  setBusy(true);
   try {
     const response = await fetch('/api/auth/forgot-password', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email: document.getElementById('email').value.trim() }),
+      body: JSON.stringify({ email }),
     });
     const data = await response.json().catch(() => ({ message: 'Server sedang bermasalah. Coba lagi beberapa saat.' }));
     if (response.ok) {
       show(successAlert, data.message);
       form.classList.add('hidden');
-      return;
+      retryBtn.classList.remove('hidden');
+      if (data.data?.account !== 'owner') await showContactOwner(email);
+      else retryBtn.focus();
+    } else {
+      show(errorAlert, data.message || 'Permintaan gagal. Coba lagi.');
+      if (data.error === 'EMAIL_NOT_FOUND') emailInput.focus();
     }
-    show(errorAlert, data.message || 'Permintaan gagal. Coba lagi.');
   } catch {
     show(errorAlert, 'Gagal terhubung ke server. Periksa koneksi internet Anda.');
   }
-  submitBtn.disabled = false;
-  submitBtn.setAttribute('aria-busy', 'false');
-  submitBtn.textContent = 'Kirim tautan reset';
+  setBusy(false);
+});
+
+retryBtn.addEventListener('click', () => {
+  [successAlert, errorAlert, memberResult, waLink, noContact, retryBtn].forEach((el) => el.classList.add('hidden'));
+  form.classList.remove('hidden');
+  emailInput.select();
+  emailInput.focus();
 });
