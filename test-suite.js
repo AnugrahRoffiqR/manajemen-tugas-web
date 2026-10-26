@@ -8,6 +8,13 @@ const app = require('./server');
 
 const PORT = process.env.PORT || 3005;
 const BASE_URL = `http://localhost:${PORT}`;
+// Real Owner credentials are never committed; pass them in the environment.
+const OWNER_EMAIL = process.env.TEST_OWNER_EMAIL;
+const OWNER_PASSWORD = process.env.TEST_OWNER_PASSWORD;
+if (!OWNER_EMAIL || !OWNER_PASSWORD) {
+  console.error('Set TEST_OWNER_EMAIL dan TEST_OWNER_PASSWORD sebelum menjalankan test-suite.');
+  process.exit(1);
+}
 
 async function runTests() {
   console.log('====================================================');
@@ -58,7 +65,7 @@ async function runTests() {
     const loginRes = await fetch(`${BASE_URL}/api/auth/login`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email: 'admin@manajementugas.local', password: 'Admin123!' }),
+      body: JSON.stringify({ email: OWNER_EMAIL, password: OWNER_PASSWORD }),
     });
     const loginData = await loginRes.json();
     ownerCookie = loginRes.headers.get('set-cookie')?.split(';')[0] || '';
@@ -70,7 +77,7 @@ async function runTests() {
     const wrongPassRes = await fetch(`${BASE_URL}/api/auth/login`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email: 'admin@manajementugas.local', password: 'WrongPassword999!' }),
+      body: JSON.stringify({ email: OWNER_EMAIL, password: 'WrongPassword999!' }),
     });
     assert(wrongPassRes.status === 401, 'TC-02', 'Login dengan password salah ditolak (401 Unauthorized)');
 
@@ -300,6 +307,38 @@ async function runTests() {
     }
 
     // ----------------------------------------------------
+    // TC-18: Ganti kata sandi mengeluarkan semua sesi lama akun itu
+    // ----------------------------------------------------
+    const u2Before = await fetch(`${BASE_URL}/api/tasks`, { headers: { 'Cookie': user2Cookie } });
+    const pwRes = await fetch(`${BASE_URL}/api/users/${testUser2Id}`, {
+      method: 'PUT', headers: jsonHeaders(ownerCookie), body: JSON.stringify({ password: 'GantiBaru123' }),
+    });
+    const u2After = await fetch(`${BASE_URL}/api/tasks`, { headers: { 'Cookie': user2Cookie } });
+    const u2AfterBody = await u2After.json();
+    assert(u2Before.status === 200 && pwRes.status === 200 && u2After.status === 401 && u2AfterBody.error === 'SESSION_REVOKED',
+      'TC-18a', `Sesi lama ditolak setelah kata sandi diganti (dapat ${u2After.status} ${u2AfterBody.error})`);
+    const u2Relogin = await fetch(`${BASE_URL}/api/auth/login`, {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email: user2Email, password: 'GantiBaru123' }),
+    });
+    const u2NewCookie = u2Relogin.headers.get('set-cookie')?.split(';')[0] || '';
+    const u2NewSession = await fetch(`${BASE_URL}/api/tasks`, { headers: { 'Cookie': u2NewCookie } });
+    assert(u2Relogin.status === 200 && u2NewSession.status === 200, 'TC-18b', 'Login dengan kata sandi baru berfungsi normal');
+    const ownerStill = await fetch(`${BASE_URL}/api/tasks`, { headers: { 'Cookie': ownerCookie } });
+    assert(ownerStill.status === 200, 'TC-18c', 'Sesi Owner tidak terdampak penggantian kata sandi user lain');
+
+    // ----------------------------------------------------
+    // TC-19: Riwayat login tercatat dan hanya untuk Owner
+    // ----------------------------------------------------
+    const evRes = await fetch(`${BASE_URL}/api/login-events`, { headers: { 'Cookie': ownerCookie } });
+    const evData = (await evRes.json()).data || [];
+    const sawFail = evData.some((e) => e.email === OWNER_EMAIL && e.reason === 'WRONG_PASSWORD');
+    const sawOk = evData.some((e) => e.email === user2Email && e.reason === 'OK');
+    assert(evRes.status === 200 && sawFail && sawOk, 'TC-19a', 'Login gagal & berhasil tercatat di riwayat');
+    const evMember = await fetch(`${BASE_URL}/api/login-events`, { headers: { 'Cookie': u2NewCookie } });
+    assert(evMember.status === 403, 'TC-19b', `User biasa dilarang melihat riwayat login (dapat ${evMember.status})`);
+
+    // ----------------------------------------------------
     // TC-17: Tugas baru bisa langsung dibuat di kolom In Progress
     // ----------------------------------------------------
     const t17 = await (await fetch(`${BASE_URL}/api/tasks`, {
@@ -337,7 +376,7 @@ async function runTests() {
     for (let i = 0; i < 6; i++) {
       const r = await fetch(`${BASE_URL}/api/auth/login`, {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email: 'admin@manajementugas.local', password: `salah-${i}` }),
+        body: JSON.stringify({ email: OWNER_EMAIL, password: `salah-${i}` }),
       });
       lastStatus = r.status;
     }

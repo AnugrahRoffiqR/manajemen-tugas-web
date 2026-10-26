@@ -30,6 +30,7 @@ const {
   loginRateLimit,
   recordLoginFailure,
   clearLoginFailures,
+  recordLoginEvent,
 } = require('./lib/auth');
 
 const app = express();
@@ -187,12 +188,13 @@ app.post('/api/auth/login', loginRateLimit, async (req, res) => {
     }
 
     const userRes = await db.query(
-      'SELECT id, name, email, password, role, status FROM users WHERE LOWER(email) = LOWER($1)',
+      'SELECT id, name, email, password, role, status, session_version FROM users WHERE LOWER(email) = LOWER($1)',
       [email.trim()]
     );
 
     if (userRes.rows.length === 0) {
       await recordLoginFailure(req.ip);
+      await recordLoginEvent(req, { email: email.trim(), success: false, reason: 'UNKNOWN_EMAIL' });
       return res.status(401).json({
         success: false,
         error: 'INVALID_CREDENTIALS',
@@ -205,6 +207,7 @@ app.post('/api/auth/login', loginRateLimit, async (req, res) => {
     const isMatch = await comparePassword(password, user.password);
     if (!isMatch) {
       await recordLoginFailure(req.ip);
+      await recordLoginEvent(req, { userId: user.id, email: user.email, success: false, reason: 'WRONG_PASSWORD' });
       return res.status(401).json({
         success: false,
         error: 'INVALID_CREDENTIALS',
@@ -214,6 +217,7 @@ app.post('/api/auth/login', loginRateLimit, async (req, res) => {
 
     // Checked after the password so account status is not revealed to guessers.
     if (user.status !== 'Active') {
+      await recordLoginEvent(req, { userId: user.id, email: user.email, success: false, reason: 'INACTIVE' });
       return res.status(403).json({
         success: false,
         error: 'ACCOUNT_INACTIVE',
@@ -222,6 +226,7 @@ app.post('/api/auth/login', loginRateLimit, async (req, res) => {
     }
 
     await clearLoginFailures(req.ip);
+    await recordLoginEvent(req, { userId: user.id, email: user.email, success: true, reason: 'OK' });
     const token = generateToken(user);
     res.cookie(COOKIE_NAME, token, COOKIE_OPTIONS);
 
@@ -782,29 +787,58 @@ app.put('/api/users/:id', authMiddleware, ownerOnlyMiddleware, async (req, res) 
     const newStatus = status ? status : user.status;
 
     let newPassword = user.password;
+    let passwordChanged = false;
     if (password && password.trim().length > 0) {
       if (!isValidPassword(password)) {
         return res.status(400).json({ success: false, message: `Kata sandi minimal ${PASSWORD_MIN_LENGTH} karakter.` });
       }
       newPassword = await hashPassword(password.trim());
+      passwordChanged = true;
     }
 
+    // A password change bumps session_version, which logs that account out everywhere.
     const updateRes = await db.query(
       `UPDATE users
-       SET name = $1, role = $2, status = $3, password = $4
+       SET name = $1, role = $2, status = $3, password = $4,
+           session_version = session_version + CASE WHEN $6 THEN 1 ELSE 0 END
        WHERE id = $5
-       RETURNING id, name, email, role, status`,
-      [newName, newRole, newStatus, newPassword, targetId]
+       RETURNING id, name, email, role, status, session_version`,
+      [newName, newRole, newStatus, newPassword, targetId, passwordChanged]
     );
+    const updated = updateRes.rows[0];
 
+    // Owner changing their own password: re-issue their cookie so only other devices are logged out.
+    if (passwordChanged && targetId === req.user.id) {
+      res.cookie(COOKIE_NAME, generateToken(updated), COOKIE_OPTIONS);
+    }
+
+    const { session_version: _sv, ...publicUser } = updated;
     return res.json({
       success: true,
-      data: updateRes.rows[0],
-      message: 'Data pengguna berhasil diperbarui.',
+      data: publicUser,
+      message: passwordChanged
+        ? 'Data pengguna diperbarui. Semua sesi lama akun ini telah dikeluarkan.'
+        : 'Data pengguna berhasil diperbarui.',
     });
   } catch (err) {
     console.error('[API USERS PUT]', err);
     return res.status(500).json({ success: false, message: 'Gagal memperbarui data user.' });
+  }
+});
+
+app.get('/api/login-events', authMiddleware, ownerOnlyMiddleware, async (req, res) => {
+  try {
+    const result = await db.query(
+      `SELECT e.id, e.email, e.ip, e.user_agent, e.success, e.reason, e.created_at, u.name AS user_name
+       FROM login_events e
+       LEFT JOIN users u ON u.id = e.user_id
+       ORDER BY e.created_at DESC
+       LIMIT 100`
+    );
+    return res.json({ success: true, data: result.rows });
+  } catch (err) {
+    console.error('[API LOGIN EVENTS]', err);
+    return res.status(500).json({ success: false, message: 'Gagal mengambil riwayat login.' });
   }
 });
 
@@ -890,7 +924,6 @@ if (require.main === module) {
     console.log(`=================================================`);
     console.log(`🚀 Website Manajemen Tugas Berjalan Aktif!`);
     console.log(`📡 URL Akses Lokal : http://localhost:${PORT}`);
-    console.log(`🔐 Akun Default   : admin@manajementugas.local / Admin123!`);
     console.log(`=================================================`);
     await checkAndSeedInitialData();
   });

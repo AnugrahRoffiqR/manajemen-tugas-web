@@ -48,6 +48,22 @@ CREATE TABLE IF NOT EXISTS login_attempts (
   reset_at  TIMESTAMPTZ NOT NULL
 );
 
+-- Riwayat login (berhasil & gagal) untuk dipantau Owner. Dipangkas otomatis > 90 hari.
+CREATE TABLE IF NOT EXISTS login_events (
+  id          BIGSERIAL PRIMARY KEY,
+  user_id     INTEGER REFERENCES users(id) ON DELETE SET NULL,
+  email       VARCHAR(150) NOT NULL,
+  ip          VARCHAR(64),
+  user_agent  VARCHAR(300),
+  success     BOOLEAN NOT NULL,
+  reason      VARCHAR(30) NOT NULL,
+  created_at  TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+CREATE INDEX IF NOT EXISTS idx_login_events_created_at ON login_events(created_at DESC);
+
+-- Versi sesi: dinaikkan saat kata sandi diganti, sehingga semua token lama ditolak.
+ALTER TABLE users ADD COLUMN IF NOT EXISTS session_version INTEGER NOT NULL DEFAULT 0;
+
 -- ------------------------------------------------------------------
 -- Migrasi untuk database lama (sudah diterapkan di production).
 -- ------------------------------------------------------------------

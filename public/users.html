@@ -48,6 +48,31 @@
         </div>
       </section>
 
+      <section class="card card-pad" aria-labelledby="login-events-title" style="margin-top: 1.5rem;">
+        <div class="section-head">
+          <div>
+            <h2 id="login-events-title" class="section-title">Riwayat Login</h2>
+            <p class="section-sub">100 percobaan masuk terakhir, berhasil maupun gagal. Disimpan 90 hari.</p>
+          </div>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Waktu</th>
+                <th>Email</th>
+                <th>Hasil</th>
+                <th>Alamat IP</th>
+                <th>Perangkat</th>
+              </tr>
+            </thead>
+            <tbody id="login-events-rows">
+              <tr><td colspan="5" class="loading-text">Memuat riwayat login…</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
     </main>
   </div>
 
@@ -166,8 +191,51 @@
           allUsersList = res.data;
           renderUsersTable(allUsersList);
         }
+        loadLoginEvents();
       } catch (err) {
         showLoadError(['#users-table-rows'], 'loadUsersData', err);
+      }
+    }
+
+    const LOGIN_REASONS = {
+      OK: ['Berhasil', 'badge-done'],
+      WRONG_PASSWORD: ['Kata sandi salah', 'badge-overdue'],
+      UNKNOWN_EMAIL: ['Email tidak terdaftar', 'badge-overdue'],
+      INACTIVE: ['Akun nonaktif', 'badge-todo'],
+    };
+
+    // Short, readable device label from the user-agent string.
+    function describeDevice(ua) {
+      if (!ua) return '–';
+      const browser = /Edg\//.test(ua) ? 'Edge' : /OPR\//.test(ua) ? 'Opera' : /Chrome\//.test(ua) ? 'Chrome'
+        : /Firefox\//.test(ua) ? 'Firefox' : /Safari\//.test(ua) ? 'Safari' : null;
+      const os = /Android/.test(ua) ? 'Android' : /iPhone|iPad/.test(ua) ? 'iOS' : /Windows/.test(ua) ? 'Windows'
+        : /Mac OS X/.test(ua) ? 'macOS' : /Linux/.test(ua) ? 'Linux' : null;
+      return browser || os ? [browser, os].filter(Boolean).join(' · ') : ua.slice(0, 40);
+    }
+
+    async function loadLoginEvents() {
+      const tbody = document.getElementById('login-events-rows');
+      try {
+        const res = await apiFetch('/api/login-events');
+        const events = res.data || [];
+        if (!events.length) {
+          tbody.innerHTML = '<tr><td colspan="5"><div class="empty-state-box compact">Belum ada percobaan login tercatat.</div></td></tr>';
+          return;
+        }
+        tbody.innerHTML = events.map(e => {
+          const [label, cls] = LOGIN_REASONS[e.reason] || [e.success ? 'Berhasil' : 'Gagal', e.success ? 'badge-done' : 'badge-overdue'];
+          return `
+            <tr>
+              <td class="nowrap font-mono muted" style="font-size: 0.8125rem;">${formatDateWIB(e.created_at)}</td>
+              <td style="overflow-wrap: anywhere;">${escapeHtml(e.email)}</td>
+              <td><span class="badge ${cls}">${label}</span></td>
+              <td class="nowrap font-mono" style="font-size: 0.8125rem;">${escapeHtml(e.ip || '–')}</td>
+              <td class="muted" title="${escapeHtml(e.user_agent || '')}">${escapeHtml(describeDevice(e.user_agent))}</td>
+            </tr>`;
+        }).join('');
+      } catch (err) {
+        showLoadError(['#login-events-rows'], 'loadLoginEvents', err);
       }
     }
 
