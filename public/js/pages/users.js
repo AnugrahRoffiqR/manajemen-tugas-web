@@ -253,11 +253,11 @@ document.getElementById('edit-user-form').addEventListener('submit', async (e) =
   const password = document.getElementById('edit-user-password').value;
 
   try {
-    await apiFetch(`/api/users/${id}`, {
+    const res = await apiFetch(`/api/users/${id}`, {
       method: 'PUT',
       body: JSON.stringify({ name, role, status, password }),
     });
-    showToast('Data pengguna berhasil diperbarui!', 'success');
+    showToast(res.message || 'Data pengguna berhasil diperbarui!', 'success');
     closeEditUserModal();
     loadUsersData();
   } catch (err) {
@@ -270,11 +270,12 @@ document.getElementById('edit-user-form').addEventListener('submit', async (e) =
 async function deleteUserAccount(id) {
   const user = allUsersList.find(u => u.id === id);
   if (!user) return;
-  if (!confirm(`Hapus akun ${user.name} secara permanen beserta seluruh tugasnya?`)) return;
+  const note = user.role === 'Owner' ? ' Tugas yang ia tanggung jawabi akan dipindahkan ke Anda.' : '';
+  if (!confirm(`Hapus akun ${user.name} secara permanen?${note}`)) return;
 
   try {
-    await apiFetch(`/api/users/${id}`, { method: 'DELETE' });
-    showToast('Akun berhasil dihapus.', 'info');
+    const res = await apiFetch(`/api/users/${id}`, { method: 'DELETE' });
+    showToast(res.message || 'Akun berhasil dihapus.', 'info');
     loadUsersData();
   } catch (err) {}
 }

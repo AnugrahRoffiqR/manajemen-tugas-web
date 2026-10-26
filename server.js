@@ -662,7 +662,9 @@ app.put('/api/tasks/:id', authMiddleware, ownerOnlyMiddleware, async (req, res) 
       ? existingTask.description
       : (description ? description.trim() || null : null);
     const updatedDueDate = isBlankOptional(due_date) ? existingTask.due_date : parseDateInput(due_date);
-    const updatedUserId = await resolveAssignee(user_id, existingTask.user_id);
+    // Keeping the current PJ is always allowed, even if that account later lost the Owner role.
+    const keepsAssignee = !isBlankOptional(user_id) && Number(user_id) === existingTask.user_id;
+    const updatedUserId = keepsAssignee ? existingTask.user_id : await resolveAssignee(user_id, existingTask.user_id);
     if (updatedUserId === null) return badRequest(res, 'Penanggung jawab harus Owner yang aktif.');
 
     const updateRes = await db.query(
@@ -1081,6 +1083,15 @@ app.put('/api/users/:id', authMiddleware, ownerOnlyMiddleware, async (req, res) 
     );
     const updated = updateRes.rows[0];
 
+    // Penanggung Jawab must stay an active Owner: move tasks off an Owner who is demoted or deactivated.
+    let moved = 0;
+    if (newRole !== 'Owner' || newStatus !== 'Active') {
+      moved = (await db.query(
+        'UPDATE tasks SET user_id = $1, updated_at = CURRENT_TIMESTAMP WHERE user_id = $2',
+        [req.user.id, targetId]
+      )).rowCount;
+    }
+
     // Owner changing their own password: re-issue their cookie so only other devices are logged out.
     if (passwordChanged && targetId === req.user.id) {
       res.cookie(COOKIE_NAME, generateToken(updated), COOKIE_OPTIONS);
@@ -1090,9 +1101,10 @@ app.put('/api/users/:id', authMiddleware, ownerOnlyMiddleware, async (req, res) 
     return res.json({
       success: true,
       data: publicUser,
-      message: passwordChanged
+      message: (passwordChanged
         ? 'Data pengguna diperbarui. Semua sesi lama akun ini telah dikeluarkan.'
-        : 'Data pengguna berhasil diperbarui.',
+        : 'Data pengguna berhasil diperbarui.')
+        + (moved ? ` ${moved} tugas yang ia tanggung jawabi dipindahkan ke Anda.` : ''),
     });
   } catch (err) {
     console.error('[API USERS PUT]', err);
@@ -1161,11 +1173,32 @@ app.delete('/api/users/:id', authMiddleware, ownerOnlyMiddleware, async (req, re
       return res.status(400).json({ success: false, message: 'Owner dilarang menghapus akun sendiri!' });
     }
 
-    const delRes = await db.query('DELETE FROM users WHERE id = $1', [targetId]);
+    // tasks.user_id cascades on delete, so hand an Owner's tasks to the acting Owner first.
+    const client = await db.pool.connect();
+    let delRes;
+    let moved = 0;
+    try {
+      await client.query('BEGIN');
+      moved = (await client.query('UPDATE tasks SET user_id = $1, updated_at = CURRENT_TIMESTAMP WHERE user_id = $2', [req.user.id, targetId])).rowCount;
+      // FK only nulls done_reported_by; clear the timestamp too so the task can be reported again.
+      await client.query('UPDATE tasks SET done_reported_by = NULL, done_reported_at = NULL WHERE done_reported_by = $1', [targetId]);
+      delRes = await client.query('DELETE FROM users WHERE id = $1', [targetId]);
+      await client.query(delRes.rowCount ? 'COMMIT' : 'ROLLBACK');
+    } catch (err) {
+      await client.query('ROLLBACK').catch(() => {});
+      throw err;
+    } finally {
+      client.release();
+    }
     if (delRes.rowCount === 0) {
       return res.status(404).json({ success: false, message: 'Pengguna tidak ditemukan.' });
     }
-    return res.json({ success: true, message: 'Akun pengguna berhasil dihapus secara permanen.' });
+    return res.json({
+      success: true,
+      message: moved
+        ? `Akun dihapus. ${moved} tugas yang ia tanggung jawabi dipindahkan ke Anda.`
+        : 'Akun pengguna berhasil dihapus secara permanen.',
+    });
   } catch (err) {
     console.error('[API USERS DELETE]', err);
     return res.status(500).json({ success: false, message: 'Gagal menghapus user.' });
