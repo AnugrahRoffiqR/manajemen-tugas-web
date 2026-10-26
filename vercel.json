@@ -50,6 +50,14 @@
       "destination": "/account.html"
     },
     {
+      "source": "/forgot-password",
+      "destination": "/forgot-password.html"
+    },
+    {
+      "source": "/reset-password",
+      "destination": "/reset-password.html"
+    },
+    {
       "source": "/",
       "destination": "/index.html"
     }

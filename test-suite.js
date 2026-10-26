@@ -356,6 +356,14 @@ async function runTests() {
     });
     assert(longTitle.status === 400, 'TC-22b', `Judul > 200 karakter ditolak (dapat ${longTitle.status})`);
 
+    // TC-23: Reset kata sandi menolak token palsu; halaman reset tersedia.
+    const fakeReset = await fetch(`${BASE_URL}/api/auth/reset-password`, {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ token: 'A'.repeat(43), password: 'BaruSekali123' }),
+    });
+    const resetPage = await fetch(`${BASE_URL}/reset-password`);
+    assert(fakeReset.status === 400 && resetPage.status === 200, 'TC-23', `Token reset palsu ditolak (${fakeReset.status}), halaman reset ${resetPage.status}`);
+
     // TC-17: Tugas baru bisa langsung dibuat di kolom In Progress
     // ----------------------------------------------------
     const t17 = await (await fetch(`${BASE_URL}/api/tasks`, {

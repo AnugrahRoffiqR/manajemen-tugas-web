@@ -14,10 +14,12 @@ process.on('beforeExit', (code) => {
 const express = require('express');
 const cookieParser = require('cookie-parser');
 const path = require('path');
+const crypto = require('crypto');
 require('dotenv').config();
 
 const db = require('./lib/db');
 const totp = require('./lib/totp');
+const { isMailConfigured, sendMail } = require('./lib/mailer');
 const {
   COOKIE_NAME,
   COOKIE_OPTIONS,
@@ -32,6 +34,7 @@ const {
   loginRateLimit,
   accountLockedFor,
   sendTooMany,
+  resetRequestLockedFor,
   generateChallenge,
   verifyChallenge,
   recordLoginFailure,
@@ -107,6 +110,12 @@ function parseDateInput(value) {
   return Number.isNaN(date.getTime()) ? null : date;
 }
 
+function escapeHtmlServer(value) {
+  return String(value ?? '').replace(/[&<>"']/g, (c) => ({
+    '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;',
+  }[c]));
+}
+
 function isBlankOptional(value) {
   return value === undefined || value === null || value === '';
 }
@@ -149,6 +158,9 @@ app.get('/api/health', (req, res) => {
 // ==========================================
 // MODUL AUTENTIKASI API (/api/auth)
 // ==========================================
+// bcrypt hash (cost 10, same as hashPassword) of a random string nobody knows.
+const DUMMY_PASSWORD_HASH = require('bcryptjs').hashSync(crypto.randomBytes(16).toString('hex'), 10);
+
 app.post('/api/auth/login', loginRateLimit, async (req, res) => {
   try {
     const { email, password } = req.body || {};
@@ -171,6 +183,8 @@ app.post('/api/auth/login', loginRateLimit, async (req, res) => {
     );
 
     if (userRes.rows.length === 0) {
+      // Burn the same bcrypt time as a real check so response time does not reveal registered emails.
+      await comparePassword(password, DUMMY_PASSWORD_HASH);
       await recordLoginFailure(req.ip, email);
       await recordLoginEvent(req, { email: email.trim(), success: false, reason: 'UNKNOWN_EMAIL' });
       return res.status(401).json({
@@ -308,6 +322,124 @@ app.post('/api/auth/logout', async (req, res) => {
     success: true,
     message: 'Anda berhasil keluar dari sistem.',
   });
+});
+
+// ------------------------------------------
+// Lupa kata sandi (email via Resend)
+// ------------------------------------------
+// The emailed token is random and only its SHA-256 is stored, so a DB leak cannot be
+// turned into reset links. Links live 30 minutes and work once.
+const RESET_TTL_MINUTES = 30;
+const RESET_MIN_RESPONSE_MS = 1200;
+const RESET_REQUEST_REPLY = {
+  success: true,
+  message: 'Jika email tersebut terdaftar dan aktif, tautan untuk mengatur ulang kata sandi sudah dikirim. Periksa juga folder spam.',
+};
+const hashResetToken = (token) => crypto.createHash('sha256').update(token).digest('hex');
+
+app.post('/api/auth/forgot-password', async (req, res) => {
+  const started = Date.now();
+  // Same reply time for known and unknown emails, so timing does not reveal accounts.
+  const reply = async (status, body) => {
+    await new Promise((r) => setTimeout(r, Math.max(0, RESET_MIN_RESPONSE_MS - (Date.now() - started))));
+    return res.status(status).json(body);
+  };
+  try {
+    const email = typeof req.body?.email === 'string' ? req.body.email.trim() : '';
+    if (!email || email.length > 150 || !email.includes('@')) {
+      return badRequest(res, 'Masukkan alamat email yang valid.');
+    }
+    if (!isMailConfigured()) {
+      return res.status(503).json({
+        success: false,
+        error: 'MAIL_NOT_CONFIGURED',
+        message: 'Reset lewat email belum aktif. Hubungi Owner untuk mengatur ulang kata sandi Anda.',
+      });
+    }
+    const wait = await resetRequestLockedFor(req.ip, email);
+    if (wait) {
+      res.set('Retry-After', String(wait));
+      return res.status(429).json({
+        success: false,
+        error: 'TOO_MANY_REQUESTS',
+        message: `Terlalu banyak permintaan. Coba lagi dalam ${Math.ceil(wait / 60)} menit.`,
+      });
+    }
+
+    const userRes = await db.query(
+      `SELECT id, name, email FROM users WHERE LOWER(email) = LOWER($1) AND status = 'Active'`,
+      [email]
+    );
+    const user = userRes.rows[0];
+    if (!user) return reply(200, RESET_REQUEST_REPLY);
+
+    const token = crypto.randomBytes(32).toString('base64url');
+    // One live link per user: a new request invalidates the previous one.
+    await db.query('DELETE FROM password_resets WHERE user_id = $1 OR expires_at < NOW()', [user.id]);
+    await db.query(
+      `INSERT INTO password_resets (token_hash, user_id, expires_at)
+       VALUES ($1, $2, NOW() + make_interval(mins => $3))`,
+      [hashResetToken(token), user.id, RESET_TTL_MINUTES]
+    );
+
+    // Token in the URL fragment: it is never sent to the server in logs or Referer headers.
+    const link = `${process.env.APP_URL.replace(/\/+$/, '')}/reset-password#token=${token}`;
+    const safeName = escapeHtmlServer(user.name);
+    await sendMail({
+      to: user.email,
+      subject: 'Atur ulang kata sandi Manajemen Tugas',
+      text: `Halo ${user.name},\n\nBuka tautan ini untuk membuat kata sandi baru (berlaku ${RESET_TTL_MINUTES} menit, sekali pakai):\n${link}\n\nJika Anda tidak meminta reset, abaikan email ini. Kata sandi Anda tidak berubah.`,
+      html: `<p>Halo ${safeName},</p><p>Klik tautan di bawah untuk membuat kata sandi baru. Tautan berlaku ${RESET_TTL_MINUTES} menit dan hanya bisa dipakai sekali.</p><p><a href="${link}">Atur ulang kata sandi</a></p><p>Jika Anda tidak meminta reset, abaikan email ini. Kata sandi Anda tidak berubah.</p>`,
+    });
+    await recordLoginEvent(req, { userId: user.id, email: user.email, success: true, reason: 'RESET_REQUESTED' });
+    return reply(200, RESET_REQUEST_REPLY);
+  } catch (err) {
+    console.error('[API AUTH FORGOT]', err.message);
+    return reply(500, { success: false, error: 'SERVER_ERROR', message: 'Email belum bisa dikirim. Coba lagi beberapa saat.' });
+  }
+});
+
+app.post('/api/auth/reset-password', loginRateLimit, async (req, res) => {
+  try {
+    const { token, password } = req.body || {};
+    if (typeof token !== 'string' || !/^[A-Za-z0-9_-]{43}$/.test(token)) {
+      await recordLoginFailure(req.ip);
+      return res.status(400).json({ success: false, error: 'INVALID_RESET_TOKEN', message: 'Tautan reset tidak valid atau sudah kedaluwarsa. Minta tautan baru.' });
+    }
+    if (!isValidPassword(password) || password.length > 200) {
+      return badRequest(res, `Kata sandi minimal ${PASSWORD_MIN_LENGTH} karakter.`);
+    }
+
+    // Atomic claim: two parallel submissions cannot both use the same link.
+    const claim = await db.query(
+      `UPDATE password_resets SET used_at = NOW()
+       WHERE token_hash = $1 AND used_at IS NULL AND expires_at > NOW()
+       RETURNING user_id`,
+      [hashResetToken(token)]
+    );
+    if (!claim.rows.length) {
+      await recordLoginFailure(req.ip);
+      return res.status(400).json({ success: false, error: 'INVALID_RESET_TOKEN', message: 'Tautan reset tidak valid atau sudah kedaluwarsa. Minta tautan baru.' });
+    }
+
+    // session_version bump logs out every existing session. 2FA stays on if it was enabled.
+    const upd = await db.query(
+      `UPDATE users SET password = $1, session_version = session_version + 1
+       WHERE id = $2 AND status = 'Active'
+       RETURNING id, email`,
+      [await hashPassword(password.trim()), claim.rows[0].user_id]
+    );
+    await db.query('DELETE FROM password_resets WHERE user_id = $1', [claim.rows[0].user_id]);
+    if (!upd.rows.length) {
+      return res.status(400).json({ success: false, error: 'INVALID_RESET_TOKEN', message: 'Akun ini tidak aktif. Hubungi Owner.' });
+    }
+    await clearLoginFailures(req.ip, upd.rows[0].email);
+    await recordLoginEvent(req, { userId: upd.rows[0].id, email: upd.rows[0].email, success: true, reason: 'PASSWORD_RESET' });
+    return res.json({ success: true, message: 'Kata sandi berhasil diganti. Silakan masuk dengan kata sandi baru.' });
+  } catch (err) {
+    console.error('[API AUTH RESET]', err.message);
+    return res.status(500).json({ success: false, error: 'SERVER_ERROR', message: 'Terjadi kesalahan sistem internal. Silakan coba lagi nanti.' });
+  }
 });
 
 app.get('/api/auth/me', authMiddleware, (req, res) => {
@@ -1044,6 +1176,14 @@ app.get('/reports', (req, res) => {
 
 app.get('/users', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'users.html'));
+});
+
+app.get('/forgot-password', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'forgot-password.html'));
+});
+
+app.get('/reset-password', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'reset-password.html'));
 });
 
 app.get('/account', (req, res) => {

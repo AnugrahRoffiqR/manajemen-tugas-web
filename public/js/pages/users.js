@@ -36,6 +36,8 @@ const LOGIN_REASONS = {
   UNKNOWN_EMAIL: ['Email tidak terdaftar', 'badge-overdue'],
   INACTIVE: ['Akun nonaktif', 'badge-todo'],
   WRONG_2FA: ['Kode 2FA salah', 'badge-overdue'],
+  RESET_REQUESTED: ['Minta reset sandi', 'badge-todo'],
+  PASSWORD_RESET: ['Sandi direset via email', 'badge-done'],
 };
 
 // Short, readable device label from the user-agent string.

@@ -71,6 +71,16 @@ CREATE TABLE IF NOT EXISTS revoked_sessions (
   expires_at  TIMESTAMPTZ NOT NULL
 );
 
+-- Tautan lupa kata sandi. Hanya hash SHA-256 token yang disimpan; berlaku 30 menit, sekali pakai.
+CREATE TABLE IF NOT EXISTS password_resets (
+  token_hash  CHAR(64) PRIMARY KEY,
+  user_id     INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  expires_at  TIMESTAMPTZ NOT NULL,
+  used_at     TIMESTAMPTZ,
+  created_at  TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+CREATE INDEX IF NOT EXISTS idx_password_resets_user_id ON password_resets(user_id);
+
 -- 2FA (TOTP). totp_secret terisi saat penyiapan; baru berlaku setelah totp_enabled = true.
 -- totp_last_step mencegah kode yang sama dipakai dua kali.
 ALTER TABLE users ADD COLUMN IF NOT EXISTS totp_secret    VARCHAR(64);
