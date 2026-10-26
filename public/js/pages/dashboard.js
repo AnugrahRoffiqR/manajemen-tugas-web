@@ -9,6 +9,29 @@ const STATUS_SEGMENTS = [
 let trendTasks = [];
 let trendRange = 14;
 
+// Same formulas as /api/reports/analytics (period=all).
+function computeMetrics(tasks) {
+  const count = (fn) => tasks.filter(fn).length;
+  const now = Date.now();
+  const completed = count(t => t.status === 'Done');
+  const onTime = count(t => t.status === 'Done' && t.completed_at && new Date(t.completed_at) <= new Date(t.due_date));
+  const cats = {};
+  tasks.forEach(t => { cats[t.category] = (cats[t.category] || 0) + 1; });
+  return {
+    total_tasks: tasks.length,
+    completed_tasks: completed,
+    in_progress_tasks: count(t => t.status === 'In Progress'),
+    todo_tasks: count(t => t.status === 'To Do'),
+    overdue_tasks: count(t => t.status !== 'Done' && new Date(t.due_date).getTime() < now),
+    on_time_tasks: onTime,
+    completion_rate: tasks.length ? Math.round((completed / tasks.length) * 1000) / 10 : 0,
+    on_time_rate: completed ? Math.round((onTime / completed) * 1000) / 10 : 100,
+    category_distribution: Object.entries(cats)
+      .map(([category, n]) => ({ category, count: n }))
+      .sort((a, b) => b.count - a.count),
+  };
+}
+
 async function loadDashboardData() {
   try {
     document.getElementById('dashboard-date').textContent = new Intl.DateTimeFormat('id-ID', {
@@ -26,10 +49,11 @@ async function loadDashboardData() {
       }
     } catch (e) {}
 
-    // Ambil Data Metrik Laporan
-    const reportsRes = await apiFetch('/api/reports/analytics?period=all');
-    if (reportsRes && reportsRes.data) {
-      const m = reportsRes.data.metrics;
+    // Metrics come from /api/tasks (already scoped per role) because /api/reports is Owner-only.
+    const tasksRes = await apiFetch('/api/tasks?status=Semua');
+    const allTasks = (tasksRes && tasksRes.data) || [];
+    {
+      const m = computeMetrics(allTasks);
       document.getElementById('stat-total').textContent = m.total_tasks;
       document.getElementById('stat-in-progress').textContent = m.in_progress_tasks;
       document.getElementById('stat-done').textContent = m.completed_tasks;
@@ -47,7 +71,7 @@ async function loadDashboardData() {
         ariaLabel: 'Komposisi status tugas',
         emptyText: 'Belum ada tugas.',
       });
-      renderCategoryChart(reportsRes.data.category_distribution || []);
+      renderCategoryChart(m.category_distribution);
     }
 
     // Ambil Notifikasi Kritis
@@ -65,9 +89,7 @@ async function loadDashboardData() {
     }
 
     // Tugas aktif terdekat (API sudah mengurutkan due_date ASC)
-    const tasksRes = await apiFetch('/api/tasks?status=Semua');
     const rowsContainer = document.getElementById('priority-task-rows');
-    const allTasks = (tasksRes && tasksRes.data) || [];
     trendTasks = allTasks;
     renderTrend();
     const activeTasks = allTasks.filter(t => !t.completed).slice(0, 5);
@@ -78,8 +100,8 @@ async function loadDashboardData() {
         <tr><td colspan="5">
           <div class="empty-state-box">
             <h4>${hasAny ? 'Semua tugas sudah selesai' : 'Belum ada tugas'}</h4>
-            <p>${hasAny ? 'Tidak ada tugas aktif saat ini.' : 'Buat tugas pertama untuk mulai melacak pekerjaan tim.'}</p>
-            <button type="button" data-click="openCreateTaskModal" class="btn-primary">Buat Tugas</button>
+            <p>${hasAny ? 'Tidak ada tugas aktif saat ini.' : 'Tugas yang dibuat atau ditugaskan akan muncul di sini.'}</p>
+            <button type="button" data-click="openCreateTaskModal" class="btn-primary owner-only">Buat Tugas</button>
           </div>
         </td></tr>`;
       return;
@@ -156,7 +178,11 @@ async function toggleTaskStatus(taskId, newStatus) {
 }
 
 // Modal Handlers
-function openCreateTaskModal() {
+async function openCreateTaskModal() {
+  if (!isOwnerView()) return;
+  try {
+    await fillAssigneeSelect(document.getElementById('task-assignee'), document.body.dataset.userId);
+  } catch { return; }
   const tomorrow = new Date();
   tomorrow.setDate(tomorrow.getDate() + 1);
   tomorrow.setHours(17, 0, 0, 0);
@@ -198,7 +224,7 @@ document.getElementById('create-task-form').addEventListener('submit', async (e)
   try {
     await apiFetch('/api/tasks', {
       method: 'POST',
-      body: JSON.stringify({ title, description, category, priority, due_date }),
+      body: JSON.stringify({ title, description, category, priority, due_date, user_id: Number(document.getElementById('task-assignee').value) }),
     });
     showToast('Tugas baru berhasil disimpan!', 'success');
     closeTaskModal();

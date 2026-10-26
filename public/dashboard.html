@@ -25,8 +25,8 @@
           <p class="page-sub">Pantau progres kerja tim dan tenggat waktu tugas.</p>
         </div>
         <div class="page-actions">
-          <a href="/reports" class="btn-secondary">Laporan Kinerja</a>
-          <button type="button" data-click="openCreateTaskModal" class="btn-primary" aria-keyshortcuts="n">
+          <a href="/reports" class="btn-secondary owner-only">Laporan Kinerja</a>
+          <button type="button" data-click="openCreateTaskModal" class="btn-primary owner-only" aria-keyshortcuts="n">
             Buat Tugas <kbd class="key-hint">N</kbd>
           </button>
         </div>
@@ -99,7 +99,7 @@
         <section class="card card-pad" aria-labelledby="category-chart-title">
           <div class="section-head">
             <h2 id="category-chart-title" class="section-title">Distribusi Kategori</h2>
-            <a href="/reports" class="link-arrow">Detail <span aria-hidden="true">→</span></a>
+            <a href="/reports" class="link-arrow owner-only">Detail <span aria-hidden="true">→</span></a>
           </div>
           <div id="category-chart"><div class="chart-empty">Memuat…</div></div>
         </section>
@@ -202,6 +202,11 @@
         <div class="field">
           <label for="task-due-date" class="field-label">Tenggat Waktu *</label>
           <input type="datetime-local" id="task-due-date" class="form-input" required>
+        </div>
+
+        <div class="field">
+          <label for="task-assignee" class="field-label">Penanggung Jawab</label>
+          <select id="task-assignee" class="form-select"></select>
         </div>
 
         <div class="form-actions">

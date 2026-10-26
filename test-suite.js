@@ -124,16 +124,27 @@ async function runTests() {
     // ----------------------------------------------------
     const emptyTaskRes = await fetch(`${BASE_URL}/api/tasks`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'Cookie': memberCookie },
+      headers: { 'Content-Type': 'application/json', 'Cookie': ownerCookie },
       body: JSON.stringify({ title: '', due_date: new Date().toISOString() }),
     });
     assert(emptyTaskRes.status === 400, 'TC-05a', 'Pembuatan tugas tanpa judul ditolak sistem (400 Bad Request)');
 
-    // Buat tugas valid
-    const validTaskRes = await fetch(`${BASE_URL}/api/tasks`, {
+    // TC-24: User tidak boleh membuat tugas, menghapus tugas, atau membuka laporan
+    const memberCreate = await fetch(`${BASE_URL}/api/tasks`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'Cookie': memberCookie },
+      body: JSON.stringify({ title: 'Coba buat', due_date: new Date(Date.now() + 3600000).toISOString() }),
+    });
+    assert(memberCreate.status === 403, 'TC-24a', `User dilarang membuat tugas (dapat ${memberCreate.status})`);
+    const memberReport = await fetch(`${BASE_URL}/api/reports/analytics`, { headers: { 'Cookie': memberCookie } });
+    assert(memberReport.status === 403, 'TC-24b', `User dilarang membuka laporan (dapat ${memberReport.status})`);
+
+    // Owner membuat tugas untuk anggota
+    const validTaskRes = await fetch(`${BASE_URL}/api/tasks`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Cookie': ownerCookie },
       body: JSON.stringify({
+        user_id: testMemberId,
         title: 'Tugas Uji Otomatis',
         description: 'Verifikasi state machine',
         category: 'Teknis',
@@ -143,7 +154,9 @@ async function runTests() {
     });
     const taskResult = await validTaskRes.json();
     testTaskId = taskResult.data?.id;
-    assert(validTaskRes.status === 201 && testTaskId, 'TC-05b', 'Tugas baru berhasil dibuat dengan status default To Do');
+    assert(validTaskRes.status === 201 && testTaskId && taskResult.data?.user_id === testMemberId, 'TC-05b', 'Owner membuat tugas untuk anggota dengan status default To Do');
+    const memberDelete = await fetch(`${BASE_URL}/api/tasks/${testTaskId}`, { method: 'DELETE', headers: { 'Cookie': memberCookie } });
+    assert(memberDelete.status === 403, 'TC-24c', `User dilarang menghapus tugas miliknya (dapat ${memberDelete.status})`);
 
     // ----------------------------------------------------
     // TC-06: Transisi Status Tugas ke Done (Timestamp Otomatis)

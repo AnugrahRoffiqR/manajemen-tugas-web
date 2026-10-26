@@ -602,7 +602,8 @@ app.get('/api/tasks', authMiddleware, async (req, res) => {
   }
 });
 
-app.post('/api/tasks', authMiddleware, async (req, res) => {
+// Only the Owner creates and deletes tasks; members work on what they are assigned.
+app.post('/api/tasks', authMiddleware, ownerOnlyMiddleware, async (req, res) => {
   try {
     const body = req.body || {};
     const { title, description, category, priority, due_date, user_id } = body;
@@ -723,7 +724,7 @@ app.put('/api/tasks/:id', authMiddleware, async (req, res) => {
   }
 });
 
-app.delete('/api/tasks/:id', authMiddleware, async (req, res) => {
+app.delete('/api/tasks/:id', authMiddleware, ownerOnlyMiddleware, async (req, res) => {
   try {
     const taskId = parseInt(req.params.id, 10);
     const checkRes = await db.query('SELECT * FROM tasks WHERE id = $1', [taskId]);
@@ -867,7 +868,7 @@ app.delete('/api/reminders/:id', authMiddleware, async (req, res) => {
 // ==========================================
 // MODUL LAPORAN & ANALITIK (/api/reports)
 // ==========================================
-app.get('/api/reports/analytics', authMiddleware, async (req, res) => {
+app.get('/api/reports/analytics', authMiddleware, ownerOnlyMiddleware, async (req, res) => {
   try {
     const rawPeriod = queryString(req.query.period);
     const period = ['today', 'week', 'month', 'all'].includes(rawPeriod) ? rawPeriod : 'all';

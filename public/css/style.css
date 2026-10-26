@@ -99,6 +99,7 @@ body.modal-open { overflow: hidden; }
 :focus-visible { outline: 2px solid var(--border-focus); outline-offset: 2px; }
 
 .hidden { display: none !important; }
+body:not([data-role="Owner"]) .owner-only { display: none !important; }
 .font-mono { font-family: 'JetBrains Mono', monospace; font-variant-numeric: tabular-nums; }
 .num { font-variant-numeric: tabular-nums; }
 .muted { color: var(--text-muted); }

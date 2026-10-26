@@ -28,7 +28,7 @@
             <button type="button" id="view-kanban-btn" data-click="switchView" data-args='["kanban"]' aria-pressed="true">Kanban</button>
             <button type="button" id="view-table-btn" data-click="switchView" data-args='["table"]' aria-pressed="false">Tabel</button>
           </div>
-          <button type="button" data-click="openTaskModal" class="btn-primary" aria-keyshortcuts="n">
+          <button type="button" data-click="openTaskModal" class="btn-primary owner-only" aria-keyshortcuts="n">
             Buat Tugas <kbd class="key-hint">N</kbd>
           </button>
         </div>
@@ -88,7 +88,7 @@
             <h2 id="col-todo-title" class="kanban-col-title"><span class="status-dot" style="background: var(--status-todo);" aria-hidden="true"></span>To Do</h2>
             <div class="cell-actions" style="align-items: center;">
               <span id="count-todo" class="badge badge-todo font-mono">0</span>
-              <button type="button" data-click="openTaskModal" data-args='["To Do"]' class="btn-action-icon" aria-label="Tambah tugas ke To Do" title="Tambah tugas ke To Do">
+              <button type="button" data-click="openTaskModal" data-args='["To Do"]' class="btn-action-icon owner-only" aria-label="Tambah tugas ke To Do" title="Tambah tugas ke To Do">
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
               </button>
             </div>
@@ -101,7 +101,7 @@
             <h2 id="col-inprogress-title" class="kanban-col-title"><span class="status-dot" style="background: var(--status-in-progress);" aria-hidden="true"></span>In Progress</h2>
             <div class="cell-actions" style="align-items: center;">
               <span id="count-inprogress" class="badge badge-in-progress font-mono">0</span>
-              <button type="button" data-click="openTaskModal" data-args='["In Progress"]' class="btn-action-icon" aria-label="Tambah tugas ke In Progress" title="Tambah tugas ke In Progress">
+              <button type="button" data-click="openTaskModal" data-args='["In Progress"]' class="btn-action-icon owner-only" aria-label="Tambah tugas ke In Progress" title="Tambah tugas ke In Progress">
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
               </button>
             </div>
@@ -203,6 +203,11 @@
             <label for="task-due-date" class="field-label">Tenggat Waktu *</label>
             <input type="datetime-local" id="task-due-date" class="form-input" required>
           </div>
+        </div>
+
+        <div class="field owner-only">
+          <label for="task-assignee" class="field-label">Penanggung Jawab</label>
+          <select id="task-assignee" class="form-select"></select>
         </div>
 
         <div class="form-actions">

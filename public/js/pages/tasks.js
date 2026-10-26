@@ -122,7 +122,7 @@ function createKanbanCard(task) {
           ${task.status !== 'In Progress' ? moveBtn('In Progress', ICON.progress, 'Pindah ke In Progress') : ''}
           ${task.status !== 'Done' ? moveBtn('Done', ICON.done, 'Tandai selesai', ' is-done') : ''}
           <button type="button" data-click="openEditTaskModal" data-args='[${id}]' class="btn-action-icon" aria-label="Edit: ${title}" title="Edit">${ICON.edit}</button>
-          <button type="button" data-click="deleteTask" data-args='[${id}]' class="btn-action-icon is-danger" aria-label="Hapus: ${title}" title="Hapus">${ICON.trash}</button>
+          <button type="button" data-click="deleteTask" data-args='[${id}]' class="btn-action-icon is-danger owner-only" aria-label="Hapus: ${title}" title="Hapus">${ICON.trash}</button>
         </div>
       </div>
     </article>`;
@@ -162,7 +162,7 @@ function renderTable(tasks) {
         <td class="right">
           <div class="cell-actions">
             <button type="button" data-click="openEditTaskModal" data-args='[${id}]' class="btn-action-icon" aria-label="Edit: ${title}" title="Edit">${ICON.edit}</button>
-            <button type="button" data-click="deleteTask" data-args='[${id}]' class="btn-action-icon is-danger" aria-label="Hapus: ${title}" title="Hapus">${ICON.trash}</button>
+            <button type="button" data-click="deleteTask" data-args='[${id}]' class="btn-action-icon is-danger owner-only" aria-label="Hapus: ${title}" title="Hapus">${ICON.trash}</button>
           </div>
         </td>
       </tr>`;
@@ -206,8 +206,13 @@ function showModal() {
 }
 
 // Modal Create / Edit
-function openTaskModal(defaultStatus = 'To Do') {
+async function openTaskModal(defaultStatus = 'To Do') {
+  if (!isOwnerView()) return;
+  try {
+    await fillAssigneeSelect(document.getElementById('task-assignee'));
+  } catch { return; }
   document.getElementById('task-form').reset();
+  document.getElementById('task-assignee').value = document.body.dataset.userId;
   document.getElementById('edit-task-id').value = '';
   document.getElementById('modal-title').textContent = 'Tambah Tugas Baru';
   document.getElementById('save-task-btn-text').textContent = 'Simpan Tugas';
@@ -222,9 +227,14 @@ function openTaskModal(defaultStatus = 'To Do') {
 }
 window.openTaskModal = openTaskModal;
 
-function openEditTaskModal(id) {
+async function openEditTaskModal(id) {
   const task = allTasks.find(t => t.id === id);
   if (!task) return;
+  if (isOwnerView()) {
+    try {
+      await fillAssigneeSelect(document.getElementById('task-assignee'), task.user_id);
+    } catch { return; }
+  }
 
   document.getElementById('edit-task-id').value = task.id;
   document.getElementById('task-title').value = task.title;
@@ -269,6 +279,7 @@ document.getElementById('task-form').addEventListener('submit', async (e) => {
     status: document.getElementById('task-status').value,
     due_date: localInputToISO(document.getElementById('task-due-date').value),
   };
+  if (isOwnerView()) payload.user_id = Number(document.getElementById('task-assignee').value);
 
   try {
     if (editId) {

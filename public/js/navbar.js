@@ -53,6 +53,13 @@ async function initNavigation(activeKey = '') {
   } catch (e) {}
 
   const isOwner = currentUser.role === 'Owner';
+  // CSS hides .owner-only controls unless this is Owner; the API enforces the same rules.
+  document.body.dataset.role = currentUser.role;
+  document.body.dataset.userId = currentUser.id;
+  if (activeKey === 'reports' && !isOwner) {
+    window.location.replace('/dashboard');
+    return null;
+  }
   const safeName = escapeHtml(currentUser.name);
   const initial = escapeHtml(currentUser.name.charAt(0).toUpperCase());
   const current = (key) => (activeKey === key ? ' active" aria-current="page' : '');
@@ -61,8 +68,10 @@ async function initNavigation(activeKey = '') {
     { key: 'dashboard', href: '/dashboard', label: 'Dashboard', short: 'Home', shortcut: '1' },
     { key: 'tasks', href: '/tasks', label: 'Daftar Tugas', short: 'Tugas', shortcut: '2' },
     { key: 'reminders', href: '/reminders', label: 'Pengingat', short: 'Ingat', shortcut: '3' },
-    { key: 'reports', href: '/reports', label: 'Laporan Kinerja', short: 'Rekap', shortcut: '4' },
-    ...(isOwner ? [{ key: 'users', href: '/users', label: 'Kelola Tim', short: 'Tim', shortcut: '5' }] : []),
+    ...(isOwner ? [
+      { key: 'reports', href: '/reports', label: 'Laporan Kinerja', short: 'Rekap', shortcut: '4' },
+      { key: 'users', href: '/users', label: 'Kelola Tim', short: 'Tim', shortcut: '5' },
+    ] : []),
   ];
 
   // 3. Render Desktop Sidebar (>= 1024px)

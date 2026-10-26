@@ -67,6 +67,20 @@ function categoryBadge(category) {
   return `<span class="cat-badge cat-${known.includes(key) ? key : 'umum'}"><span class="cat-dot" aria-hidden="true"></span>${escapeHtml(name)}</span>`;
 }
 
+const isOwnerView = () => document.body.dataset.role === 'Owner';
+
+// Owner picks who a task belongs to; list holds active users only.
+async function fillAssigneeSelect(select, selectedId) {
+  if (!select.options.length) {
+    const res = await apiFetch('/api/users');
+    select.innerHTML = (res.data || [])
+      .filter((u) => u.status === 'Active')
+      .map((u) => `<option value="${Number(u.id)}">${escapeHtml(u.name)}${u.role === 'Owner' ? ' (Owner)' : ''}</option>`)
+      .join('');
+  }
+  if (selectedId) select.value = String(selectedId);
+}
+
 // Global API Fetch
 async function apiFetch(endpoint, options = {}) {
   const defaultHeaders = {
