@@ -10,6 +10,29 @@ function show(el, message) {
   el.classList.remove('hidden');
 }
 
+const waLink = document.getElementById('wa-owner');
+const emailInput = document.getElementById('email');
+let waNumber = null;
+
+// Prefilled message carries the typed email so the Owner knows which account to reset.
+function updateWaLink() {
+  if (!waNumber) return;
+  const email = emailInput.value.trim();
+  const text = `Halo, saya minta reset kata sandi Manajemen Tugas${email ? ` untuk akun ${email}` : ''}.`;
+  waLink.href = `https://wa.me/${waNumber}?text=${encodeURIComponent(text)}`;
+}
+
+fetch('/api/auth/contact')
+  .then((r) => r.json())
+  .then(({ data }) => {
+    if (!data?.whatsapp) return;
+    waNumber = data.whatsapp;
+    updateWaLink();
+    waLink.classList.remove('hidden');
+  })
+  .catch(() => {});
+emailInput.addEventListener('input', updateWaLink);
+
 form.addEventListener('submit', async (e) => {
   e.preventDefault();
   submitBtn.disabled = true;

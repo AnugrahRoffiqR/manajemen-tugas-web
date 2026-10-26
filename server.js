@@ -333,9 +333,15 @@ const RESET_TTL_MINUTES = 30;
 const RESET_MIN_RESPONSE_MS = 1200;
 const RESET_REQUEST_REPLY = {
   success: true,
-  message: 'Jika email tersebut terdaftar dan aktif, tautan untuk mengatur ulang kata sandi sudah dikirim. Periksa juga folder spam. Tidak menerima email dalam 5 menit? Hubungi Owner untuk mengatur ulang kata sandi Anda.',
+  message: 'Jika email tersebut terdaftar dan aktif, kami sudah mengirim tautan reset atau meneruskan permintaan Anda ke Owner. Periksa juga folder spam. Tidak menerima email dalam 5 menit? Hubungi Owner.',
 };
 const hashResetToken = (token) => crypto.createHash('sha256').update(token).digest('hex');
+
+// Public on purpose: shown on the forgot-password page so members can reach the Owner.
+app.get('/api/auth/contact', (req, res) => {
+  const wa = (process.env.OWNER_CONTACT_WA || '').replace(/\D/g, '');
+  return res.json({ success: true, data: { whatsapp: /^\d{8,15}$/.test(wa) ? wa : null } });
+});
 
 app.post('/api/auth/forgot-password', async (req, res) => {
   const started = Date.now();
@@ -398,6 +404,7 @@ app.post('/api/auth/forgot-password', async (req, res) => {
       // The Owner sees it in the login history and can reset the password manually.
       console.error('[API AUTH FORGOT] Gagal kirim email:', err.message);
       await db.query('DELETE FROM password_resets WHERE user_id = $1', [user.id]);
+      await db.query('UPDATE users SET reset_requested_at = NOW() WHERE id = $1', [user.id]);
       await recordLoginEvent(req, { userId: user.id, email: user.email, success: false, reason: 'RESET_MAIL_FAILED' });
       return reply(200, RESET_REQUEST_REPLY);
     }
@@ -434,7 +441,7 @@ app.post('/api/auth/reset-password', loginRateLimit, async (req, res) => {
 
     // session_version bump logs out every existing session. 2FA stays on if it was enabled.
     const upd = await db.query(
-      `UPDATE users SET password = $1, session_version = session_version + 1
+      `UPDATE users SET password = $1, session_version = session_version + 1, reset_requested_at = NULL
        WHERE id = $2 AND status = 'Active'
        RETURNING id, email`,
       [await hashPassword(password.trim()), claim.rows[0].user_id]
@@ -968,7 +975,7 @@ app.get('/api/reports/analytics', authMiddleware, ownerOnlyMiddleware, async (re
 app.get('/api/users', authMiddleware, ownerOnlyMiddleware, async (req, res) => {
   try {
     const result = await db.query(
-      `SELECT u.id, u.name, u.email, u.role, u.status, u.totp_enabled, u.created_at,
+      `SELECT u.id, u.name, u.email, u.role, u.status, u.totp_enabled, u.created_at, u.reset_requested_at,
               COUNT(t.id) AS total_tasks,
               COUNT(t.id) FILTER (WHERE t.status = 'Done') AS completed_tasks
        FROM users u
@@ -1072,7 +1079,8 @@ app.put('/api/users/:id', authMiddleware, ownerOnlyMiddleware, async (req, res) 
     const updateRes = await db.query(
       `UPDATE users
        SET name = $1, role = $2, status = $3, password = $4,
-           session_version = session_version + CASE WHEN $6 THEN 1 ELSE 0 END
+           session_version = session_version + CASE WHEN $6 THEN 1 ELSE 0 END,
+           reset_requested_at = CASE WHEN $6 THEN NULL ELSE reset_requested_at END
        WHERE id = $5
        RETURNING id, name, email, role, status, session_version`,
       [newName, newRole, newStatus, newPassword, targetId, passwordChanged]
@@ -1111,6 +1119,18 @@ app.get('/api/login-events', authMiddleware, ownerOnlyMiddleware, async (req, re
   } catch (err) {
     console.error('[API LOGIN EVENTS]', err);
     return res.status(500).json({ success: false, message: 'Gagal mengambil riwayat login.' });
+  }
+});
+
+// Owner dismisses a reset request without changing the password (e.g. the member did not ask for it).
+app.delete('/api/users/:id/reset-request', authMiddleware, ownerOnlyMiddleware, async (req, res) => {
+  try {
+    const upd = await db.query('UPDATE users SET reset_requested_at = NULL WHERE id = $1', [parseInt(req.params.id, 10)]);
+    if (upd.rowCount === 0) return res.status(404).json({ success: false, message: 'Pengguna tidak ditemukan.' });
+    return res.json({ success: true, message: 'Permintaan reset diabaikan.' });
+  } catch (err) {
+    console.error('[API USERS RESET REQUEST]', err);
+    return res.status(500).json({ success: false, message: 'Gagal memperbarui permintaan reset.' });
   }
 });
 

@@ -847,6 +847,13 @@ td.nowrap { white-space: nowrap; }
 .link-btn:hover { text-decoration: underline; }
 a.link-btn { display: inline-flex; align-items: center; text-decoration: none; }
 .auth-foot { margin-top: 0.75rem; text-align: center; }
+.contact-owner { margin-top: 1.25rem; padding-top: 1.25rem; border-top: 1px solid var(--border); display: grid; gap: 0.625rem; }
+.contact-owner .field-hint { margin: 0; }
+.reset-requests { border-color: #fde68a; }
+.reset-list { list-style: none; padding: 0; margin: 0; display: grid; gap: 0.75rem; }
+.reset-item { display: flex; align-items: center; justify-content: space-between; gap: 0.75rem 1rem; flex-wrap: wrap; padding-top: 0.75rem; border-top: 1px solid var(--border); }
+.reset-item:first-child { padding-top: 0; border-top: 0; }
+.reset-item-actions { display: flex; gap: 0.5rem; flex-wrap: wrap; }
 .alert-success {
   display: flex; align-items: flex-start; gap: 0.5rem;
   padding: 0.75rem 1rem;

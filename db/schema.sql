@@ -81,6 +81,10 @@ CREATE TABLE IF NOT EXISTS password_resets (
 );
 CREATE INDEX IF NOT EXISTS idx_password_resets_user_id ON password_resets(user_id);
 
+-- Permintaan reset yang belum tertangani (email reset gagal terkirim). Owner melihatnya di halaman Pengguna;
+-- dikosongkan saat kata sandi diganti atau Owner mengabaikannya.
+ALTER TABLE users ADD COLUMN IF NOT EXISTS reset_requested_at TIMESTAMPTZ;
+
 -- 2FA (TOTP). totp_secret terisi saat penyiapan; baru berlaku setelah totp_enabled = true.
 -- totp_last_step mencegah kode yang sama dipakai dua kali.
 ALTER TABLE users ADD COLUMN IF NOT EXISTS totp_secret    VARCHAR(64);

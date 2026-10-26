@@ -23,6 +23,7 @@ async function loadUsersData() {
     if (res && res.data) {
       allUsersList = res.data;
       renderUsersTable(allUsersList);
+      renderResetRequests(allUsersList);
     }
     loadLoginEvents();
   } catch (err) {
@@ -126,6 +127,39 @@ function renderUsersTable(users) {
         </td>
       </tr>`;
   }).join('');
+}
+
+function renderResetRequests(users) {
+  const pending = users.filter(u => u.reset_requested_at);
+  document.getElementById('reset-requests').classList.toggle('hidden', !pending.length);
+  document.getElementById('reset-requests-list').innerHTML = pending.map(u => {
+    const id = Number(u.id);
+    const name = escapeHtml(u.name);
+    return `
+      <li class="reset-item">
+        <div style="min-width: 0;">
+          <p style="font-weight: 600; overflow-wrap: anywhere;">${name}</p>
+          <p class="cell-sub" style="overflow-wrap: anywhere;">${escapeHtml(u.email)} · ${formatDateWIB(u.reset_requested_at)}</p>
+        </div>
+        <div class="reset-item-actions">
+          <button type="button" data-click="dismissResetRequest" data-args='[${id}]' class="btn-secondary btn-sm" aria-label="Abaikan permintaan: ${name}">Abaikan</button>
+          <button type="button" data-click="openResetPassword" data-args='[${id}]' class="btn-primary btn-sm" aria-label="Atur kata sandi baru: ${name}">Atur sandi baru</button>
+        </div>
+      </li>`;
+  }).join('');
+}
+
+function openResetPassword(id) {
+  openEditUserModal(id);
+  document.getElementById('edit-user-password').focus();
+}
+
+async function dismissResetRequest(id) {
+  try {
+    const res = await apiFetch(`/api/users/${id}/reset-request`, { method: 'DELETE' });
+    showToast(res.message, 'info');
+    loadUsersData();
+  } catch (err) {}
 }
 
 function openModal(id, focusId) {
