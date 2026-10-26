@@ -340,6 +340,22 @@ async function runTests() {
     assert(evMember.status === 403, 'TC-19b', `User biasa dilarang melihat riwayat login (dapat ${evMember.status})`);
 
     // ----------------------------------------------------
+    // TC-22: Logout mencabut token di server; sesi lain tetap jalan. Batas panjang judul.
+    const extraLogin = await fetch(`${BASE_URL}/api/auth/login`, {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email: OWNER_EMAIL, password: OWNER_PASSWORD }),
+    });
+    const extraCookie = extraLogin.headers.get('set-cookie')?.split(';')[0] || '';
+    await fetch(`${BASE_URL}/api/auth/logout`, { method: 'POST', headers: { 'Cookie': extraCookie } });
+    const reuse = await fetch(`${BASE_URL}/api/tasks`, { headers: { 'Cookie': extraCookie } });
+    const ownerAlive = await fetch(`${BASE_URL}/api/tasks`, { headers: { 'Cookie': ownerCookie } });
+    assert(reuse.status === 401 && ownerAlive.status === 200, 'TC-22a', `Token setelah logout ditolak (${reuse.status}), sesi lain tetap aktif (${ownerAlive.status})`);
+    const longTitle = await fetch(`${BASE_URL}/api/tasks`, {
+      method: 'POST', headers: jsonHeaders(ownerCookie),
+      body: JSON.stringify({ title: 'a'.repeat(201), due_date: '2030-01-01T00:00:00Z' }),
+    });
+    assert(longTitle.status === 400, 'TC-22b', `Judul > 200 karakter ditolak (dapat ${longTitle.status})`);
+
     // TC-17: Tugas baru bisa langsung dibuat di kolom In Progress
     // ----------------------------------------------------
     const t17 = await (await fetch(`${BASE_URL}/api/tasks`, {

@@ -1,62 +1,41 @@
 const db = require('./lib/db');
 const { hashPassword } = require('./lib/auth');
 
-async function seed() {
-  try {
-    console.log('[SEED] Memeriksa data awal di Neon DB...');
-    const userCountRes = await db.query('SELECT COUNT(*) AS count FROM users');
-    const count = parseInt(userCountRes.rows[0].count, 10);
+// Creates the first Owner only when the users table is empty.
+// Credentials come from SEED_OWNER_EMAIL / SEED_OWNER_PASSWORD; there is no built-in default
+// password, so an empty database can never end up with a publicly known login.
+async function seedIfEmpty() {
+  const userCountRes = await db.query('SELECT COUNT(*) AS count FROM users');
+  const count = parseInt(userCountRes.rows[0].count, 10);
+  if (count > 0) return { created: false, count };
 
-    if (count === 0) {
-      console.log('[SEED] Tabel users kosong. Menambahkan akun Owner default...');
-      const hashedPassword = await hashPassword('Admin123!');
-      
-      const insertOwnerRes = await db.query(
-        `INSERT INTO users (name, email, password, role, status)
-         VALUES ($1, $2, $3, $4, $5)
-         RETURNING id, name, email, role`,
-        ['Nugi Pratama (Owner)', 'admin@manajementugas.local', hashedPassword, 'Owner', 'Active']
-      );
-
-      const ownerId = insertOwnerRes.rows[0].id;
-      console.log(`[SEED] Akun Owner berhasil dibuat (ID: ${ownerId}): admin@manajementugas.local / Admin123!`);
-
-      // Buat tugas awal
-      const now = new Date();
-      const in2Hours = new Date(now.getTime() + 2 * 60 * 60 * 1000);
-      const tomorrow = new Date(now.getTime() + 24 * 60 * 60 * 1000);
-      const yesterday = new Date(now.getTime() - 24 * 60 * 60 * 1000);
-
-      await db.query(
-        `INSERT INTO tasks (user_id, title, description, category, priority, status, due_date, completed)
-         VALUES 
-         ($1, 'Finalisasi Review Arsitektur Website', 'Memeriksa integrasi Neon DB dan Vercel API', 'Teknis', 'High', 'In Progress', $2, false),
-         ($1, 'Kirim Laporan Mingguan ke Tim', 'Merekap seluruh progres sprint minggu ini', 'Operasional', 'Medium', 'To Do', $3, false),
-         ($1, 'Setup Database & Koneksi Pooler Neon', 'Inisialisasi tabel users, tasks, dan reminders', 'Teknis', 'High', 'Done', $4, true)`,
-        [ownerId, in2Hours, tomorrow, yesterday]
-      );
-
-      await db.query(
-        `UPDATE tasks SET completed_at = CURRENT_TIMESTAMP WHERE status = 'Done' AND user_id = $1`,
-        [ownerId]
-      );
-
-      console.log('[SEED] 3 data tugas awal berhasil dibuat!');
-    } else {
-      console.log(`[SEED] Database sudah memiliki ${count} pengguna. Tidak perlu seed ulang.`);
-    }
-
-    const users = await db.query('SELECT id, name, email, role, status FROM users');
-    console.log('[DB USERS]', users.rows);
-
-    const tasks = await db.query('SELECT id, title, category, priority, status FROM tasks');
-    console.log('[DB TASKS]', tasks.rows);
-
-    process.exit(0);
-  } catch (err) {
-    console.error('[SEED ERROR]', err);
-    process.exit(1);
+  const email = (process.env.SEED_OWNER_EMAIL || '').trim();
+  const password = process.env.SEED_OWNER_PASSWORD || '';
+  if (!email || password.length < 12) {
+    console.warn('[SEED] Tabel users kosong. Isi SEED_OWNER_EMAIL dan SEED_OWNER_PASSWORD (min. 12 karakter) di .env lalu jalankan ulang untuk membuat akun Owner pertama.');
+    return { created: false, count };
   }
+
+  const insertOwnerRes = await db.query(
+    `INSERT INTO users (name, email, password, role, status)
+     VALUES ($1, $2, $3, 'Owner', 'Active')
+     RETURNING id`,
+    [process.env.SEED_OWNER_NAME || 'Owner', email, await hashPassword(password)]
+  );
+  console.log(`[SEED] Akun Owner pertama dibuat (ID: ${insertOwnerRes.rows[0].id}, email: ${email}). Hapus SEED_OWNER_PASSWORD dari .env sekarang.`);
+  return { created: true, count: 1 };
 }
 
-seed();
+module.exports = { seedIfEmpty };
+
+if (require.main === module) {
+  seedIfEmpty()
+    .then(({ created, count }) => {
+      if (!created && count > 0) console.log(`[SEED] Database sudah memiliki ${count} pengguna. Tidak perlu seed ulang.`);
+      process.exit(0);
+    })
+    .catch((err) => {
+      console.error('[SEED ERROR]', err);
+      process.exit(1);
+    });
+}

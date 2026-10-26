@@ -65,6 +65,12 @@ CREATE INDEX IF NOT EXISTS idx_login_events_created_at ON login_events(created_a
 -- Versi sesi: dinaikkan saat kata sandi diganti, sehingga semua token lama ditolak.
 ALTER TABLE users ADD COLUMN IF NOT EXISTS session_version INTEGER NOT NULL DEFAULT 0;
 
+-- Sesi yang sudah logout (jti token JWT). Dipangkas otomatis setelah kedaluwarsa.
+CREATE TABLE IF NOT EXISTS revoked_sessions (
+  jti         UUID PRIMARY KEY,
+  expires_at  TIMESTAMPTZ NOT NULL
+);
+
 -- 2FA (TOTP). totp_secret terisi saat penyiapan; baru berlaku setelah totp_enabled = true.
 -- totp_last_step mencegah kode yang sama dipakai dua kali.
 ALTER TABLE users ADD COLUMN IF NOT EXISTS totp_secret    VARCHAR(64);

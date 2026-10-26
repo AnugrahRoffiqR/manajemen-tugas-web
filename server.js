@@ -25,6 +25,7 @@ const {
   hashPassword,
   comparePassword,
   generateToken,
+  revokeToken,
   authMiddleware,
   ownerOnlyMiddleware,
   sameOriginMiddleware,
@@ -115,8 +116,10 @@ function validateTaskBody(body, isCreate) {
   const { title, description, category, priority, status, due_date, user_id } = body;
   if (isCreate || title !== undefined) {
     if (typeof title !== 'string' || !title.trim()) return 'Judul tugas wajib diisi.';
+    if (title.trim().length > 200) return 'Judul tugas maksimal 200 karakter.';
   }
   if (description !== undefined && description !== null && typeof description !== 'string') return 'Deskripsi tidak valid.';
+  if (typeof description === 'string' && description.trim().length > 5000) return 'Deskripsi maksimal 5000 karakter.';
   if (category !== undefined && (typeof category !== 'string' || !category.trim() || category.trim().length > 50)) {
     return 'Kategori tidak valid (maksimal 50 karakter).';
   }
@@ -134,55 +137,6 @@ async function resolveAssignee(req, rawUserId, fallbackId) {
   const id = Number(rawUserId);
   const result = await db.query(`SELECT id FROM users WHERE id = $1 AND status = 'Active'`, [id]);
   return result.rows.length ? id : null;
-}
-
-// ==========================================
-// AUTO-SEED LOGIC (Akun Owner & Data Awal)
-// ==========================================
-async function checkAndSeedInitialData() {
-  try {
-    const userCountRes = await db.query('SELECT COUNT(*) AS count FROM users');
-    const userCount = parseInt(userCountRes.rows[0].count, 10);
-
-    if (userCount === 0) {
-      console.log('[SEED] Tabel users kosong. Menginisialisasi akun Owner default...');
-      const hashedPassword = await hashPassword('Admin123!');
-      
-      const insertOwnerRes = await db.query(
-        `INSERT INTO users (name, email, password, role, status)
-         VALUES ($1, $2, $3, $4, $5)
-         RETURNING id, name, email, role`,
-        ['Nugi Pratama (Owner)', 'admin@manajementugas.local', hashedPassword, 'Owner', 'Active']
-      );
-
-      const ownerId = insertOwnerRes.rows[0].id;
-      console.log('[SEED] Akun Owner default berhasil dibuat: admin@manajementugas.local / Admin123!');
-
-      // Tambah contoh tugas awal agar dashboard langsung informatif
-      const now = new Date();
-      const in2Hours = new Date(now.getTime() + 2 * 60 * 60 * 1000);
-      const tomorrow = new Date(now.getTime() + 24 * 60 * 60 * 1000);
-      const yesterday = new Date(now.getTime() - 24 * 60 * 60 * 1000);
-
-      await db.query(
-        `INSERT INTO tasks (user_id, title, description, category, priority, status, due_date, completed)
-         VALUES 
-         ($1, 'Finalisasi Review Arsitektur Website', 'Memeriksa integrasi Neon DB dan Vercel API', 'Teknis', 'High', 'In Progress', $2, false),
-         ($1, 'Kirim Laporan Mingguan ke Tim', 'Merekap seluruh progres sprint minggu ini', 'Operasional', 'Medium', 'To Do', $3, false),
-         ($1, 'Setup Database & Koneksi Pooler Neon', 'Inisialisasi tabel users, tasks, dan reminders', 'Teknis', 'High', 'Done', $4, true)`,
-        [ownerId, in2Hours, tomorrow, yesterday]
-      );
-
-      await db.query(
-        `UPDATE tasks SET completed_at = CURRENT_TIMESTAMP WHERE status = 'Done' AND user_id = $1`,
-        [ownerId]
-      );
-
-      console.log('[SEED] 3 data tugas awal berhasil diinisialisasi.');
-    }
-  } catch (err) {
-    console.error('[SEED] Gagal mengecek/menginisialisasi seed data:', err.message);
-  }
 }
 
 // ==========================================
@@ -342,7 +296,13 @@ app.post('/api/auth/login/2fa', loginRateLimit, async (req, res) => {
   }
 });
 
-app.post('/api/auth/logout', (req, res) => {
+app.post('/api/auth/logout', async (req, res) => {
+  try {
+    await revokeToken(req.cookies?.[COOKIE_NAME]);
+  } catch (err) {
+    // Still clear the cookie; the token then simply expires on its own.
+    console.error('[API AUTH LOGOUT]', err.message);
+  }
   res.clearCookie(COOKIE_NAME, { path: '/' });
   return res.json({
     success: true,
@@ -1122,7 +1082,10 @@ if (require.main === module) {
     console.log(`🚀 Website Manajemen Tugas Berjalan Aktif!`);
     console.log(`📡 URL Akses Lokal : http://localhost:${PORT}`);
     console.log(`=================================================`);
-    await checkAndSeedInitialData();
+    // Lazy require: seed.js is excluded from the Vercel bundle (.vercelignore); local-only.
+    // Akun Owner pertama dibuat dari env; tidak ada kata sandi bawaan.
+    const { seedIfEmpty } = require('./seed');
+    await seedIfEmpty().catch((err) => console.error('[SEED] Gagal mengecek data awal:', err.message));
   });
 }
 
