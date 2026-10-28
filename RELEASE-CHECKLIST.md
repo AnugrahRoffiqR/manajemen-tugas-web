@@ -10,16 +10,16 @@ Terakhir diperbarui: 28 Okt 2026 (commit lokal, belum ada push/deploy).
 | 2 | Test lokal & build | PASS | `npm test` 103/103 (DEV, termasuk TC-36c); UI 59/59 di 390/768/1440; `node --check` semua file server; `npm audit` 0 kerentanan. Tidak ada tahap build/lint/typecheck. |
 | 3 | CI GitHub berhasil | BLOCKED | Tidak ada remote/repo GitHub; secrets & variable belum ada. Workflow siap (lihat README "Uji"). |
 | 4 | Env production lengkap | BLOCKED | Env Vercel tidak boleh dibaca/diubah dari sini. Diduga belum ada: `APP_URL`, `CRON_SECRET`, `OWNER_CONTACT_WA`, `RESEND_*`, `TURNSTILE_*`. Cek manual di Vercel → Settings → Environment Variables (lihat tabel di bawah). |
-| 5 | Turnstile production | BLOCKED | Belum ada widget/key production. Wajib key asli (bukan test key `1x00000000…`; server mencatat peringatan bila terpasang). |
+| 5 | Turnstile production | BLOCKED (28 Okt: `TURNSTILE_*` belum ada di Vercel, captcha nonaktif) | Belum ada widget/key production. Wajib key asli (bukan test key `1x00000000…`; server mencatat peringatan bila terpasang). |
 | 6 | Resend | BLOCKED | Butuh domain terverifikasi untuk `RESEND_FROM`. Tanpa itu reset sandi Owner via email nonaktif (503 `MAIL_NOT_CONFIGURED`). |
-| 7 | Backup production terbaru | BLOCKED | Satu-satunya snapshot dari 26 Okt. Paket Free: 1 snapshot manual. Butuh keputusan (hapus+buat ulang atau upgrade). Lihat `BACKUP-RESTORE.md`. |
+| 7 | Backup production terbaru | PASS | Snapshot lama 26 Okt dihapus (izin user), snapshot baru "pre-release-2026-10-28" 04:18 UTC dari production. Paket Free: tanpa jadwal otomatis. |
 | 8 | Restore drill branch terisolasi | PASS (snapshot 26 Okt) / NOT RUN (snapshot pra-migrasi) | 28 Okt: restore ke branch baru, skema identik, 0 invalid, 0 FK yatim, branch dihapus. Ulangi dengan snapshot baru. |
 | 9 | Integritas data & FK production | PASS (read-only) | Prod: 0 constraint/index invalid, `tasks.user_id` NULL = 0, FK yatim 0. Ulangi tepat sebelum migrasi. |
 | 10 | Migration SQL & target DB | PASS | `schema.sql` aditif & idempoten (diuji di DEV & branch sementara); transaksi tunggal; penjaga `DB_TARGET_CONFIRM` diuji (tanpa/salah → exit 2). Kolom legacy prod nullable + default, jadi INSERT kode baru aman sebelum drop. |
-| 11 | Izin eksplisit sebelum migration | BLOCKED | Menunggu persetujuan. |
-| 12 | Snapshot sebelum migration | BLOCKED | Bergantung pada #7. ID: `__________` |
-| 13 | Deployment disetujui | BLOCKED | Menunggu #3–#12 dan persetujuan. |
-| 14 | Live smoke test | NOT RUN | Daftar di bawah. Baseline 28 Okt (kode lama): `/login` 200, URL acak 404, header CSP/HSTS/XFO/nosniff/Referrer ada. |
+| 11 | Izin eksplisit sebelum migration | PASS | Disetujui user 28 Okt. |
+| 12 | Snapshot sebelum migration | PASS | "pre-release-2026-10-28" (lihat #7). |
+| 13 | Deployment | PASS | 28 Okt: migration `schema.sql` (43 statement, satu transaksi) di production; skema = DEV kecuali 3 kolom legacy. Deploy `vercel deploy --prod` dari commit `41ca0f0`, READY. `CRON_SECRET` ditambahkan. |
+| 14 | Live smoke test | PASS (tanpa login) | `/login` `/` `/offline` `/sw.js`(mt-v2) manifest ikon 200; URL acak 404; `/api/auth/me` & cron tanpa secret 401; login salah 401; 5 header keamanan ada; `error_logs` 0. Login Owner & buat tugas: belum (perlu kredensial prod). |
 | 15 | Monitoring error & fungsi penting | NOT RUN | Setelah deploy: Owner → halaman Log Error, Vercel → Logs, cron harian 00:00 UTC berjalan (log `/api/cron/daily` 200). |
 | 16 | Rollback plan | PASS (tertulis) | Bagian "Rollback" di bawah; belum pernah dipraktikkan di production. |
 | 17 | Izin terpisah sebelum `db/drop-legacy.sql` | BLOCKED | Checklist khusus di bawah. |
