@@ -738,6 +738,13 @@ async function canWorkOn(taskId, user) {
   return Boolean(r.rows[0]?.ok);
 }
 
+// Members may only work on a task once the Owner has started it (To Do -> In Progress).
+function notStarted(res, task, user) {
+  if (user.role === 'Owner' || task.status !== 'To Do') return false;
+  res.status(409).json({ success: false, error: 'NOT_STARTED', message: 'Tugas belum dimulai. Tunggu Owner memindahkannya ke In Progress.' });
+  return true;
+}
+
 async function activeMemberIds() {
   const r = await db.query(`SELECT id FROM users WHERE role = 'User' AND status = 'Active'`);
   return r.rows.map((row) => row.id);
@@ -1193,6 +1200,7 @@ app.post('/api/tasks/:id/report-done', authMiddleware, async (req, res) => {
     if (!(await canWorkOn(taskId, req.user))) {
       return res.status(403).json({ success: false, error: 'NOT_ASSIGNED', message: 'Tugas ini ditugaskan ke anggota lain.' });
     }
+    if (notStarted(res, task, req.user)) return;
 
     const result = await db.query(
       `UPDATE tasks SET done_reported_by = $1, done_reported_at = CURRENT_TIMESTAMP, updated_at = CURRENT_TIMESTAMP
@@ -1363,6 +1371,7 @@ app.put('/api/tasks/:id/checklist/:itemId', authMiddleware, async (req, res) => 
     if (!(await canWorkOn(taskId, req.user))) {
       return res.status(403).json({ success: false, error: 'NOT_ASSIGNED', message: 'Tugas ini ditugaskan ke anggota lain.' });
     }
+    if (notStarted(res, task, req.user)) return;
     const upd = await db.query(
       `UPDATE task_checklist
        SET text = COALESCE($3, text),

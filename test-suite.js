@@ -199,6 +199,11 @@ async function runTests() {
       method: 'PUT', headers: jsonHeaders(memberCookie), body: JSON.stringify({ status: 'Done' }),
     });
     assert(memberPut.status === 403, 'TC-25b', `Anggota dilarang mengubah status (dapat ${memberPut.status})`);
+    // Members cannot work on a To Do task until the Owner starts it.
+    const reportTodo = await fetch(`${BASE_URL}/api/tasks/${testTaskId}/report-done`, { method: 'POST', headers: { 'Cookie': memberCookie } });
+    const reportTodoBody = await reportTodo.json();
+    assert(reportTodo.status === 409 && reportTodoBody.error === 'NOT_STARTED', 'TC-25j', `Lapor selesai saat To Do ditolak (dapat ${reportTodo.status} ${reportTodoBody.error})`);
+    await fetch(`${BASE_URL}/api/tasks/${testTaskId}`, { method: 'PUT', headers: jsonHeaders(ownerCookie), body: JSON.stringify({ status: 'In Progress' }) });
     const report1 = await fetch(`${BASE_URL}/api/tasks/${testTaskId}/report-done`, { method: 'POST', headers: { 'Cookie': memberCookie } });
     assert(report1.status === 200, 'TC-25c', `Anggota bisa lapor selesai (dapat ${report1.status})`);
     const report2 = await fetch(`${BASE_URL}/api/tasks/${testTaskId}/report-done`, { method: 'POST', headers: { 'Cookie': memberCookie } });
@@ -213,7 +218,7 @@ async function runTests() {
 
     // Owner memindahkan status (bukan ke Done) → laporan dibersihkan
     const moveRes = await fetch(`${BASE_URL}/api/tasks/${testTaskId}`, {
-      method: 'PUT', headers: jsonHeaders(ownerCookie), body: JSON.stringify({ status: 'In Progress' }),
+      method: 'PUT', headers: jsonHeaders(ownerCookie), body: JSON.stringify({ status: 'To Do' }),
     });
     const moveData = await moveRes.json();
     assert(moveRes.status === 200 && moveData.data?.done_reported_at === null, 'TC-25h', 'Pindah status oleh Owner menghapus laporan selesai');
@@ -514,7 +519,7 @@ async function runTests() {
 
     const badMembers = await createTask(ownerCookie, { title: 'X', due_date: due, member_ids: [ownerSelfId] });
     assert(badMembers.status === 400, 'TC-27a', `Owner sebagai anggota ditolak (dapat ${badMembers.status})`);
-    const assigned = await createTask(ownerCookie, { title: 'TC27 ditugaskan', due_date: due, member_ids: [testUser3Id] });
+    const assigned = await createTask(ownerCookie, { title: 'TC27 ditugaskan', due_date: due, member_ids: [testUser3Id], status: 'In Progress' });
     const t27 = assigned.body.data;
     assert(assigned.status === 201 && t27?.members?.length === 1 && t27.members[0].id === testUser3Id,
       'TC-27b', 'Tugas dibuat dengan anggota terpilih');
@@ -566,6 +571,11 @@ async function runTests() {
     assert(ck.status === 201 && memberAddCk.status === 403 && tick.status === 200 && tickOther.status === 403
       && renameMember.status === 403 && Number(listCounts?.checklist_done) === 1 && Number(listCounts?.checklist_total) === 1 && delCk.status === 200,
       'TC-30', `Subtugas: tambah ${ck.status}/${memberAddCk.status}, centang ${tick.status}/${tickOther.status}, ubah teks anggota ${renameMember.status}, hapus ${delCk.status}`);
+    const todoTask = (await createTask(ownerCookie, { title: 'TC30b belum dimulai', due_date: due, member_ids: [testUser3Id] })).body.data;
+    const todoCkId = (await (await fetch(`${BASE_URL}/api/tasks/${todoTask?.id}/checklist`, { method: 'POST', headers: jsonHeaders(ownerCookie), body: JSON.stringify({ text: 'L1' }) })).json()).data?.id;
+    const tickTodo = await fetch(`${BASE_URL}/api/tasks/${todoTask?.id}/checklist/${todoCkId}`, { method: 'PUT', headers: jsonHeaders(u3Cookie), body: JSON.stringify({ done: true }) });
+    const ownerTickTodo = await fetch(`${BASE_URL}/api/tasks/${todoTask?.id}/checklist/${todoCkId}`, { method: 'PUT', headers: jsonHeaders(ownerCookie), body: JSON.stringify({ done: true }) });
+    assert(tickTodo.status === 409 && ownerTickTodo.status === 200, 'TC-30c', `Centang subtugas saat To Do: anggota ${tickTodo.status}, Owner ${ownerTickTodo.status}`);
     const badItem = await fetch(`${BASE_URL}/api/tasks/${t27?.id}/checklist/abc`, { method: 'PUT', headers: jsonHeaders(ownerCookie), body: JSON.stringify({ done: true }) });
     assert(badItem.status === 400, 'TC-30b', `itemId non-angka ditolak (dapat ${badItem.status})`);
 

@@ -197,6 +197,9 @@ function taskActions(task, title, { compact = false } = {}) {
   if (!canWork(task)) {
     return `<span class="chip-meta" title="Tugas ini ditugaskan ke anggota lain">Ditugaskan ke ${escapeHtml(membersLabel(task))}</span>`;
   }
+  if (task.status === 'To Do') {
+    return `<span class="chip-meta" title="Owner belum memulai tugas ini">Menunggu dimulai Owner</span>`;
+  }
   return `<button type="button" data-click="openReportModal" data-args='[${id}]' class="btn-secondary btn-sm" aria-label="Lapor selesai: ${title}">${ICON.done} Lapor selesai</button>`;
 }
 
@@ -568,7 +571,8 @@ async function loadTaskDetail(taskId) {
 
   const doneCount = checklist.filter((c) => c.done).length;
   const pct = checklist.length ? Math.round((doneCount / checklist.length) * 100) : 0;
-  const canTick = live && canWorkHere && !task.archived_at;
+  const waiting = !owner && task.status === 'To Do';
+  const canTick = live && canWorkHere && !task.archived_at && !waiting;
 
   const ownerButtons = owner ? `
     <div class="form-actions" style="justify-content: flex-start; margin-top: 1rem;">
@@ -582,7 +586,9 @@ async function loadTaskDetail(taskId) {
         <button type="button" class="btn-danger btn-sm" data-click="purgeTask" data-args='[${task.id}]'>Hapus permanen</button>`}
     </div>` : '';
 
-  const memberButton = !owner && live && !task.archived_at && !isDone(task) && !task.done_reported_at && canWorkHere
+  const memberButton = !owner && live && !task.archived_at && canWorkHere && waiting
+    ? `<p class="field-hint" style="margin-top: 0.75rem;">Tugas belum dimulai. Anda bisa mengerjakannya setelah Owner memindahkannya ke In Progress.</p>`
+    : !owner && live && !task.archived_at && !isDone(task) && !task.done_reported_at && canWorkHere
     ? `<div class="form-actions" style="justify-content: flex-start; margin-top: 1rem;">
          <button type="button" class="btn-primary btn-sm" data-click="openReportModal" data-args='[${task.id}]'>${ICON.done} Lapor selesai</button>
        </div>` : '';

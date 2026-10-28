@@ -83,6 +83,7 @@ function reminderAction(task, title) {
     return `<button type="button" data-click="completeTaskNow" data-args='[${id}]' class="btn-primary btn-sm" aria-label="Tandai selesai: ${title}">Tandai Selesai</button>`;
   }
   if (task.done_reported_at) return '';
+  if (task.status === 'To Do') return '<span class="chip-meta">Menunggu dimulai Owner</span>';
   return `<button type="button" data-click="reportTaskDone" data-args='[${id}]' class="btn-primary btn-sm" aria-label="Lapor selesai: ${title}">Lapor selesai</button>`;
 }
 
