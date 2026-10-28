@@ -458,7 +458,7 @@ app.post('/api/auth/reset-password', loginRateLimit, async (req, res) => {
       `UPDATE users SET password = $1, session_version = session_version + 1, reset_requested_at = NULL
        WHERE id = $2 AND status = 'Active'
        RETURNING id, email`,
-      [await hashPassword(password.trim()), claim.rows[0].user_id]
+      [await hashPassword(password), claim.rows[0].user_id]
     );
     await db.query('DELETE FROM password_resets WHERE user_id = $1', [claim.rows[0].user_id]);
     if (!upd.rows.length) {
@@ -649,12 +649,18 @@ async function fetchTask(taskId, { includeDeleted = false } = {}) {
 const taskNotFound = (res) => res.status(404).json({ success: false, message: 'Tugas tidak ditemukan.' });
 
 async function logActivity(taskId, userId, action, detail = null, client = db) {
+  // Inside a transaction a failed INSERT would abort it and turn COMMIT into a silent ROLLBACK,
+  // so isolate the log write in a savepoint.
+  const inTx = client !== db;
   try {
+    if (inTx) await client.query('SAVEPOINT log_activity');
     await client.query(
       'INSERT INTO task_activity (task_id, user_id, action, detail) VALUES ($1, $2, $3, $4)',
       [taskId, userId, action, detail ? String(detail).slice(0, 300) : null]
     );
+    if (inTx) await client.query('RELEASE SAVEPOINT log_activity');
   } catch (err) {
+    if (inTx) await client.query('ROLLBACK TO SAVEPOINT log_activity').catch(() => {});
     console.warn('[TASK ACTIVITY] Gagal mencatat:', err.message);
   }
 }
@@ -696,22 +702,26 @@ function parseNote(value, max = NOTE_MAX) {
 
 /** Next due date for a recurring task, always in the future. */
 function nextDueDate(from, recurrence) {
-  const next = new Date(from);
+  // NULL/invalid due dates (older rows) would start at the epoch and never reach the future.
+  const base = from ? new Date(from) : null;
+  const next = base && !Number.isNaN(base.getTime()) ? base : new Date();
   const step = () => {
     if (recurrence === 'daily') next.setUTCDate(next.getUTCDate() + 1);
     else if (recurrence === 'weekly') next.setUTCDate(next.getUTCDate() + 7);
     else next.setUTCMonth(next.getUTCMonth() + 1);
   };
   step();
-  for (let i = 0; i < 1000 && next <= new Date(); i += 1) step();
+  for (let i = 0; i < 10000 && next <= new Date(); i += 1) step();
   return next;
 }
 
-// Who may report / tick the checklist: assigned members, or any member when nobody is assigned.
+// Who may report / tick the checklist: assigned members, or any member when no active member is
+// assigned (so a task does not get stuck when its only assignee is deactivated).
 async function canWorkOn(taskId, user) {
   if (user.role === 'Owner') return true;
   const r = await db.query(
-    `SELECT NOT EXISTS (SELECT 1 FROM task_assignees WHERE task_id = $1)
+    `SELECT NOT EXISTS (SELECT 1 FROM task_assignees a JOIN users u ON u.id = a.user_id
+                        WHERE a.task_id = $1 AND u.status = 'Active')
             OR EXISTS (SELECT 1 FROM task_assignees WHERE task_id = $1 AND user_id = $2) AS ok`,
     [taskId, user.id]
   );
@@ -774,8 +784,13 @@ async function spawnNextRecurring(taskId, actorId) {
   } finally {
     client.release();
   }
-  const members = (await db.query('SELECT user_id FROM task_assignees WHERE task_id = $1', [created.id])).rows.map((r) => r.user_id);
-  await notifyNewTask(created, members, true);
+  // The task is already committed; a notification failure must not surface as an error.
+  try {
+    const members = (await db.query('SELECT user_id FROM task_assignees WHERE task_id = $1', [created.id])).rows.map((r) => r.user_id);
+    await notifyNewTask(created, members, true);
+  } catch (err) {
+    console.warn('[RECURRING] Notifikasi gagal:', err.message);
+  }
   return created;
 }
 
@@ -925,8 +940,13 @@ app.post('/api/tasks', authMiddleware, ownerOnlyMiddleware, async (req, res) => 
     }
 
     const full = await fetchTask(task.id);
-    await notifyNewTask(full, members, true);
-    if (isDone && full.recurrence) await spawnNextRecurring(full.id, req.user.id);
+    // Committed already: follow-ups must not turn into a 500 (a retry would duplicate the task).
+    try {
+      await notifyNewTask(full, members, true);
+      if (isDone && full.recurrence) await spawnNextRecurring(full.id, req.user.id);
+    } catch (err) {
+      reportError(req, '[TASK CREATE FOLLOW-UP]', err);
+    }
 
     return res.status(201).json({
       success: true,
@@ -1045,7 +1065,10 @@ app.put('/api/tasks/:id', authMiddleware, ownerOnlyMiddleware, async (req, res) 
       if (existingTask.done_reported_by) {
         await notify([existingTask.done_reported_by], { type: 'approved', title: `Laporan diterima: ${updatedTitle}`, taskId });
       }
-      if (updatedRecurrence) nextTask = await spawnNextRecurring(taskId, req.user.id);
+      if (updatedRecurrence) {
+        nextTask = await spawnNextRecurring(taskId, req.user.id)
+          .catch((err) => { reportError(req, '[RECURRING SPAWN]', err); return null; });
+      }
     }
 
     return res.json({
@@ -1296,7 +1319,8 @@ app.post('/api/tasks/:id/checklist', authMiddleware, ownerOnlyMiddleware, async 
     const taskId = Number(req.params.id);
     const text = parseNote(req.body?.text, 200);
     if (!text) return badRequest(res, 'Isi subtugas wajib diisi (maksimal 200 karakter).');
-    if (!(await fetchTask(taskId))) return taskNotFound(res);
+    const task = await fetchTask(taskId);
+    if (!task || task.archived_at) return taskNotFound(res);
     const count = await db.query('SELECT COUNT(*)::int AS n, COALESCE(MAX(position), 0) AS p FROM task_checklist WHERE task_id = $1', [taskId]);
     if (count.rows[0].n >= 50) return badRequest(res, 'Maksimal 50 subtugas per tugas.');
     const ins = await db.query(
@@ -1325,7 +1349,7 @@ app.put('/api/tasks/:id/checklist/:itemId', authMiddleware, async (req, res) => 
       return res.status(403).json({ success: false, error: 'FORBIDDEN', message: 'Hanya Owner yang dapat mengubah isi subtugas.' });
     }
     const task = await fetchTask(taskId);
-    if (!task) return taskNotFound(res);
+    if (!task || task.archived_at) return taskNotFound(res);
     if (!(await canWorkOn(taskId, req.user))) {
       return res.status(403).json({ success: false, error: 'NOT_ASSIGNED', message: 'Tugas ini ditugaskan ke anggota lain.' });
     }
@@ -1351,6 +1375,8 @@ app.put('/api/tasks/:id/checklist/:itemId', authMiddleware, async (req, res) => 
 app.delete('/api/tasks/:id/checklist/:itemId', authMiddleware, ownerOnlyMiddleware, async (req, res) => {
   try {
     const taskId = Number(req.params.id);
+    const task = await fetchTask(taskId);
+    if (!task || task.archived_at) return taskNotFound(res);
     const del = await db.query('DELETE FROM task_checklist WHERE id = $1 AND task_id = $2 RETURNING text', [Number(req.params.itemId), taskId]);
     if (!del.rowCount) return res.status(404).json({ success: false, message: 'Subtugas tidak ditemukan.' });
     await logActivity(taskId, req.user.id, 'checklist', `Hapus: ${del.rows[0].text}`);
@@ -1628,8 +1654,8 @@ app.post('/api/users', authMiddleware, ownerOnlyMiddleware, async (req, res) => 
       return badRequest(res, 'Format email tidak valid.');
     }
     if (role !== undefined && !USER_ROLES.includes(role)) return badRequest(res, 'Peran harus Owner atau User.');
-    if (!isValidPassword(password)) {
-      return res.status(400).json({ success: false, message: `Kata sandi minimal ${PASSWORD_MIN_LENGTH} karakter.` });
+    if (!isValidPassword(password) || password.length > 200) {
+      return res.status(400).json({ success: false, message: `Kata sandi ${PASSWORD_MIN_LENGTH}-200 karakter.` });
     }
 
     // Cek duplikasi email
@@ -1694,10 +1720,11 @@ app.put('/api/users/:id', authMiddleware, ownerOnlyMiddleware, async (req, res) 
     let newPassword = user.password;
     let passwordChanged = false;
     if (password && password.trim().length > 0) {
-      if (!isValidPassword(password)) {
-        return res.status(400).json({ success: false, message: `Kata sandi minimal ${PASSWORD_MIN_LENGTH} karakter.` });
+      if (!isValidPassword(password) || password.length > 200) {
+        return res.status(400).json({ success: false, message: `Kata sandi ${PASSWORD_MIN_LENGTH}-200 karakter.` });
       }
-      newPassword = await hashPassword(password.trim());
+      // Hash the raw value: login compares it untrimmed.
+      newPassword = await hashPassword(password);
       passwordChanged = true;
     }
 

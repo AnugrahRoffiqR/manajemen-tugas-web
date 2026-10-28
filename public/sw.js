@@ -1,6 +1,6 @@
 // Service worker: offline shell only. API calls always go to the network (never cached),
 // so data is never stale; pages fall back to the cached copy, then to /offline.html.
-const VERSION = 'mt-v1';
+const VERSION = 'mt-v2';
 const SHELL = [
   '/offline.html', '/css/style.css', '/js/theme.js', '/js/api.js', '/js/navbar.js',
   '/favicon.svg', '/icons/icon-192.png', '/manifest.webmanifest',
@@ -25,7 +25,13 @@ self.addEventListener('fetch', (event) => {
 
   if (req.mode === 'navigate') {
     event.respondWith(
-      fetch(req).catch(async () => (await caches.match(req)) || caches.match('/offline.html'))
+      fetch(req).catch(async () => {
+        const cached = (await caches.match(req)) || (await caches.match('/offline.html'));
+        // Vercel cleanUrls redirects /offline.html; browsers reject redirected responses for navigations.
+        return cached && cached.redirected
+          ? new Response(cached.body, { status: cached.status, statusText: cached.statusText, headers: cached.headers })
+          : cached;
+      })
     );
     return;
   }
@@ -50,8 +56,9 @@ self.addEventListener('notificationclick', (event) => {
   event.waitUntil(
     self.clients.matchAll({ type: 'window', includeUncontrolled: true }).then((list) => {
       const tab = list.find((c) => new URL(c.url).origin === self.location.origin);
-      if (tab) return tab.navigate(target).then((c) => (c || tab).focus());
-      return self.clients.openWindow(target);
+      if (!tab) return self.clients.openWindow(target);
+      // navigate() rejects for tabs this worker does not control; fall back to a new window.
+      return tab.navigate(target).then((c) => (c || tab).focus()).catch(() => self.clients.openWindow(target));
     })
   );
 });
