@@ -638,6 +638,9 @@ async function runTests() {
     const u3Other = (await fetch(`${BASE_URL}/api/auth/login`, {
       method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email: user3Email, password: 'User123!' }),
     })).headers.get('set-cookie')?.split(';')[0] || '';
+    // Wrong current password counts on its own key, not the account login lock.
+    const cpWrong = await postJson('/api/auth/change-password', { current_password: 'SalahTotal1', new_password: 'BaruSekali99' }, u3Cookie);
+    assert(cpWrong.status === 400, 'TC-36c', `Ganti sandi dengan sandi lama salah → ${cpWrong.status}`);
     const cpSame = await postJson('/api/auth/change-password', { current_password: 'User123!', new_password: 'User123!' }, u3Cookie);
     const cp = await postJson('/api/auth/change-password', { current_password: 'User123!', new_password: 'BaruSekali99' }, u3Cookie);
     const u3Fresh = cp.headers.get('set-cookie')?.split(';')[0] || '';

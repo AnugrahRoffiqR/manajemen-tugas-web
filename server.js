@@ -40,6 +40,8 @@ const {
   generateChallenge,
   verifyChallenge,
   recordLoginFailure,
+  reauthLockedFor,
+  recordReauthFailure,
   clearLoginFailures,
   recordLoginEvent,
 } = require('./lib/auth');
@@ -516,11 +518,12 @@ app.post('/api/auth/change-password', authMiddleware, async (req, res) => {
     if (next.length > 200) return badRequest(res, 'Kata sandi baru maksimal 200 karakter.');
     if (next === current) return badRequest(res, 'Kata sandi baru harus berbeda dari yang lama.');
 
-    const wait = await accountLockedFor(req.user.email);
+    const wait = await reauthLockedFor(req.user.id);
     if (wait) return sendTooMany(res, wait);
     const row = (await db.query('SELECT password FROM users WHERE id = $1', [req.user.id])).rows[0];
     if (!row || !(await comparePassword(current, row.password))) {
-      await recordLoginFailure(req.ip, req.user.email);
+      // Separate counter: failures here must not lock the account's normal login.
+      await recordReauthFailure(req.ip, req.user.id);
       return res.status(400).json({ success: false, error: 'INVALID_CREDENTIALS', message: 'Kata sandi saat ini salah.' });
     }
     const upd = await db.query(
@@ -708,7 +711,14 @@ function nextDueDate(from, recurrence) {
   const step = () => {
     if (recurrence === 'daily') next.setUTCDate(next.getUTCDate() + 1);
     else if (recurrence === 'weekly') next.setUTCDate(next.getUTCDate() + 7);
-    else next.setUTCMonth(next.getUTCMonth() + 1);
+    else {
+      // Clamp to the month's last day: Jan 31 -> Feb 28/29, not Mar 3.
+      const day = next.getUTCDate();
+      next.setUTCDate(1);
+      next.setUTCMonth(next.getUTCMonth() + 1);
+      const lastDay = new Date(Date.UTC(next.getUTCFullYear(), next.getUTCMonth() + 1, 0)).getUTCDate();
+      next.setUTCDate(Math.min(day, lastDay));
+    }
   };
   step();
   for (let i = 0; i < 10000 && next <= new Date(); i += 1) step();

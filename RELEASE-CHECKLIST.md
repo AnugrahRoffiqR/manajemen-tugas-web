@@ -2,12 +2,12 @@
 
 Status: **PASS** = dijalankan, ada bukti · **FAIL** = diperiksa, gagal · **BLOCKED** = butuh izin/akses/prasyarat ·
 **NOT RUN** = belum dijalankan. Kerjakan berurutan; jangan lanjut bila ada FAIL atau BLOCKED sebelumnya.
-Terakhir diperbarui: 28 Okt 2026 (pemeriksaan lokal, belum ada commit/deploy).
+Terakhir diperbarui: 28 Okt 2026 (commit lokal, belum ada push/deploy).
 
 | # | Item | Status | Bukti / alasan |
 |---|---|---|---|
-| 1 | Working tree & review diff | PASS (lokal) / BLOCKED (commit) | Branch `main`, HEAD `bdacbe9`, semua perubahan belum di-commit. Tidak ada remote git. `check-prd.js`, `scrollcraft/`, `.agents/skills/scroll-craft/` jangan ikut di-commit. Commit butuh izin. |
-| 2 | Test lokal & build | PASS | `npm test` 102/102 (DEV); UI 59/59 di 390/768/1440; `node --check` semua file server; `npm audit` 0 kerentanan. Tidak ada tahap build/lint/typecheck. |
+| 1 | Working tree & review diff | PASS (lokal) / BLOCKED (push) | Branch `main`: `e82fa3c` release hardening, `8df8561` perbaikan bug review, lalu commit perbaikan lanjutan (lockout ganti sandi, tenggat bulanan, `.gitattributes`). Working tree bersih. Belum ada remote. `check-prd.js`, `scrollcraft/`, `.agents/skills/scroll-craft/` di-ignore. |
+| 2 | Test lokal & build | PASS | `npm test` 103/103 (DEV, termasuk TC-36c); UI 59/59 di 390/768/1440; `node --check` semua file server; `npm audit` 0 kerentanan. Tidak ada tahap build/lint/typecheck. |
 | 3 | CI GitHub berhasil | BLOCKED | Tidak ada remote/repo GitHub; secrets & variable belum ada. Workflow siap (lihat README "Uji"). |
 | 4 | Env production lengkap | BLOCKED | Env Vercel tidak boleh dibaca/diubah dari sini. Diduga belum ada: `APP_URL`, `CRON_SECRET`, `OWNER_CONTACT_WA`, `RESEND_*`, `TURNSTILE_*`. Cek manual di Vercel → Settings → Environment Variables (lihat tabel di bawah). |
 | 5 | Turnstile production | BLOCKED | Belum ada widget/key production. Wajib key asli (bukan test key `1x00000000…`; server mencatat peringatan bila terpasang). |
