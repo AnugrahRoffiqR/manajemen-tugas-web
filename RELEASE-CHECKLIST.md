@@ -45,7 +45,7 @@ Terakhir diperbarui: 28 Okt 2026 (sudah di-push ke GitHub privat, sudah deploy p
 1. Keputusan backup (#7) → snapshot production baru, catat ID (#12) → restore drill snapshot itu (#8).
 2. Read-only di prod: `SELECT count(*) FROM tasks WHERE user_id IS NULL` = 0.
 3. `npm run migrate` dengan URL production + `DB_TARGET_CONFIRM`=endpoint production (`db/schema.sql`). Kembalikan `.env` ke DEV.
-4. `npm run deploy` (test DEV lalu `vercel deploy --prod`).
+4. Deploy: push ke `main` (Vercel Git integration, terhubung 28 Okt, auto-deploy production). `npm run deploy` hanya untuk deploy manual.
 5. Smoke test live (di bawah) dalam 15 menit; pantau log 24–48 jam.
 6. Baru setelah itu, dengan izin terpisah: `drop-legacy`.
 
