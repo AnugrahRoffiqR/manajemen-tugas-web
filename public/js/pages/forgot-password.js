@@ -7,6 +7,7 @@ const memberResult = document.getElementById('member-result');
 const waLink = document.getElementById('wa-owner');
 const noContact = document.getElementById('no-contact');
 const retryBtn = document.getElementById('retry-btn');
+const captcha = mountCaptcha(document.getElementById('captcha-box'), 'forgot');
 
 function show(el, message) {
   errorAlert.classList.add('hidden');
@@ -41,13 +42,18 @@ function setBusy(busy) {
 form.addEventListener('submit', async (e) => {
   e.preventDefault();
   const email = emailInput.value.trim();
+  if (captcha.enabled && !captcha.token()) {
+    show(errorAlert, 'Selesaikan verifikasi keamanan terlebih dahulu.');
+    return;
+  }
   setBusy(true);
   try {
     const response = await fetch('/api/auth/forgot-password', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email }),
+      body: JSON.stringify({ email, turnstile_token: captcha.token() || undefined }),
     });
+    captcha.reset();
     const data = await response.json().catch(() => ({ message: 'Server sedang bermasalah. Coba lagi beberapa saat.' }));
     if (response.ok) {
       show(successAlert, data.message);
@@ -60,6 +66,7 @@ form.addEventListener('submit', async (e) => {
       if (data.error === 'EMAIL_NOT_FOUND') emailInput.focus();
     }
   } catch {
+    captcha.reset();
     show(errorAlert, 'Gagal terhubung ke server. Periksa koneksi internet Anda.');
   }
   setBusy(false);

@@ -1,0 +1,37 @@
+# Runs the API suite against the Neon DEV branch. Never point DATABASE_URL at production.
+name: test
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+concurrency:
+  # The suite locks test accounts/IPs for ~60s, so never run two at once.
+  group: api-suite
+  cancel-in-progress: false
+
+jobs:
+  api:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      DATABASE_URL: ${{ secrets.DATABASE_URL }}
+      ADMIN_SESSION_SECRET: ${{ secrets.ADMIN_SESSION_SECRET }}
+      TEST_OWNER_EMAIL: ${{ secrets.TEST_OWNER_EMAIL }}
+      TEST_OWNER_PASSWORD: ${{ secrets.TEST_OWNER_PASSWORD }}
+      # Repo variable (not a secret): the DEV endpoint id, e.g. ep-xxx-yyy-12345678. Migrate and the
+      # suite refuse to run if it does not match DATABASE_URL.
+      DB_TARGET_CONFIRM: ${{ vars.DB_TARGET_CONFIRM }}
+      PORT: '3005'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - name: Syntax check
+        run: for f in server.js seed.js test-suite.js api/*.js lib/*.js scripts/*.js; do node --check "$f"; done
+      - run: npm run migrate
+      - run: npm test

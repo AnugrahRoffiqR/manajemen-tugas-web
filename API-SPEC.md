@@ -4,6 +4,54 @@
 > **Autentikasi**: Signed HTTP-Only Cookie (`session_token`)  
 > **Format Data**: `application/json`
 
+## 0. Daftar Endpoint (sumber kebenaran: `server.js`)
+
+Bagian detail di bawah menjelaskan endpoint inti; tabel ini mencakup semua endpoint yang ada saat ini.
+Akses: **Publik** = tanpa login, **Login** = Owner/anggota, **Owner** = hanya Owner. Otorisasi selalu dicek di server.
+
+| Metode | Path | Akses | Keterangan |
+|---|---|---|---|
+| GET | `/health` | Publik | Cek hidup |
+| GET | `/auth/captcha` | Publik | Site key Turnstile (`null` jika nonaktif) |
+| POST | `/auth/login` | Publik | Wajib `turnstile_token` jika Turnstile aktif; limit 5/60 dtk per IP, 10/15 mnt per akun |
+| POST | `/auth/login/2fa` | Publik | Kode TOTP sekali pakai |
+| POST | `/auth/logout` | Publik | Mencabut token (`revoked_sessions`) |
+| GET | `/auth/contact` | Publik | Nomor WA Owner |
+| POST | `/auth/forgot-password` | Publik | Owner: email reset; anggota: diteruskan ke Owner. Wajib `turnstile_token` jika aktif |
+| POST | `/auth/reset-password` | Publik | Token sekali pakai, 30 menit |
+| GET | `/auth/me` | Login | Profil sesi |
+| PUT | `/auth/profile` | Login | `name`, `email_notifications` |
+| POST | `/auth/change-password` | Login | Mengeluarkan perangkat lain |
+| POST | `/auth/2fa/setup` · `/enable` · `/disable` | Login | TOTP |
+| GET | `/tasks` | Login | `view` (active/archived/trash*/all), `status`, `search`, `member` (`me`/id), `reported`, `due_from`, `due_to`, `sort`, `page`, `limit≤100`. *trash = Owner |
+| GET | `/tasks/:id/detail` | Login | Tugas + anggota + subtugas + komentar + riwayat |
+| POST | `/tasks` | Owner | `title≤200`, `description≤5000`, `due_date`, `status`, `member_ids[]`, `recurrence` (daily/weekly/monthly) |
+| PUT | `/tasks/:id` | Owner | Done pada tugas berulang membuat 1 tugas berikutnya (`next_task`) |
+| DELETE | `/tasks/:id` | Owner | Pindah ke Sampah |
+| POST | `/tasks/:id/restore` | Owner | Pulihkan dari Sampah |
+| DELETE | `/tasks/:id/purge` | Owner | Hapus permanen; hanya dari Sampah |
+| POST | `/tasks/:id/archive` · `/unarchive` | Owner | Arsip hanya untuk tugas Done |
+| POST | `/tasks/:id/report-done` | Login | Anggota terpilih (atau semua anggota jika tidak ada yang dipilih); `note`, `link` (http/https) |
+| POST | `/tasks/:id/reject-report` | Owner | `reason` wajib |
+| POST | `/tasks/:id/comments` | Login | `body`, `link` opsional |
+| DELETE | `/tasks/:id/comments/:itemId` | Login | Penulis atau Owner |
+| POST | `/tasks/:id/checklist` | Owner | Tambah subtugas |
+| PUT | `/tasks/:id/checklist/:itemId` | Login | Anggota terpilih: hanya `done`; Owner: `text`/`done` |
+| DELETE | `/tasks/:id/checklist/:itemId` | Owner | |
+| GET | `/reminders`, `/reminders/urgent` | Login | |
+| POST · DELETE | `/reminders`, `/reminders/:id` | Owner | |
+| GET | `/reports/analytics` | Owner | |
+| GET | `/reports/export.csv` | Owner | CSV UTF-8, sel `= + - @` di-escape (anti formula injection) |
+| GET · POST · PUT · DELETE | `/users`, `/users/:id` | Owner | |
+| GET | `/login-events` | Owner | Riwayat login |
+| DELETE | `/users/:id/reset-request` | Owner | |
+| POST | `/users/:id/reset-2fa` | Owner | |
+| GET | `/notifications` | Login | 30 terbaru + `meta.unread` |
+| POST | `/notifications/read` | Login | `ids[]` atau kosong = semua |
+| POST | `/client-errors` | Publik | Laporan error browser; dibatasi per IP & global |
+| GET · DELETE | `/error-logs` | Owner | |
+| GET | `/cron/daily` | Cron | `Authorization: Bearer $CRON_SECRET` |
+
 ---
 
 ## 1. Standar Format Respons & Error Handling

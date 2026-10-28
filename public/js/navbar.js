@@ -14,10 +14,187 @@ const ICONS = {
   logout: svg(16, '<path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/>'),
   check: svg(18, '<polyline points="20 6 9 17 4 12"/>'),
   shield: svg(16, '<path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>'),
+  bell: svg(18, '<path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/>'),
+  moon: svg(18, '<path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>'),
 };
 
+// ------------------------------------------------------------------
+// Notifications: bell panel, unread count, polling, browser Notification
+// ------------------------------------------------------------------
+const NOTIF_POLL_MS = 60000;
+let notifItems = [];
+let notifUser = null;
+
+function notifHref(n) {
+  if (n.type === 'reminder' && !n.task_id) return '/reminders';
+  return n.task_id ? `/tasks?task=${Number(n.task_id)}` : '/tasks';
+}
+
+function relativeTime(date) {
+  const mins = Math.round((Date.now() - new Date(date).getTime()) / 60000);
+  if (mins < 1) return 'baru saja';
+  if (mins < 60) return `${mins} menit lalu`;
+  if (mins < 1440) return `${Math.round(mins / 60)} jam lalu`;
+  return formatDateWIB(date);
+}
+
+function renderBell(unread) {
+  document.querySelectorAll('[data-bell-count]').forEach((el) => {
+    el.textContent = unread > 99 ? '99+' : String(unread);
+    el.hidden = unread === 0;
+  });
+  document.querySelectorAll('[data-bell-btn]').forEach((btn) => {
+    btn.setAttribute('aria-label', unread ? `Notifikasi, ${unread} belum dibaca` : 'Notifikasi');
+  });
+  const list = document.getElementById('bell-list');
+  if (!list) return;
+  list.innerHTML = notifItems.length
+    ? notifItems.map((n) => `
+        <li class="bell-item${n.read_at ? '' : ' unread'}">
+          <a href="${notifHref(n)}" data-notif-id="${Number(n.id)}">
+            <span class="dot" aria-hidden="true"></span>
+            <span><span class="bell-title">${escapeHtml(n.title)}</span><span class="bell-time">${relativeTime(n.created_at)}${n.read_at ? '' : '<span class="sr-only">, belum dibaca</span>'}</span></span>
+          </a>
+        </li>`).join('')
+    : '<li class="bell-empty">Belum ada notifikasi.</li>';
+  const permBtn = document.getElementById('bell-permission');
+  if (permBtn) permBtn.hidden = !('Notification' in window) || Notification.permission !== 'default';
+}
+
+async function showBrowserNotification(n) {
+  if (!('Notification' in window) || Notification.permission !== 'granted') return;
+  const options = { body: 'Manajemen Tugas', icon: '/icons/icon-192.png', tag: `notif-${n.id}`, data: { url: notifHref(n) } };
+  try {
+    const reg = await navigator.serviceWorker?.getRegistration();
+    if (reg) return reg.showNotification(n.title, options);
+    const note = new Notification(n.title, options);
+    note.onclick = () => { window.focus(); window.location.href = notifHref(n); };
+  } catch { /* some browsers only allow notifications from a service worker */ }
+}
+
+async function pollNotifications({ announce = true } = {}) {
+  let res;
+  try {
+    res = await fetch('/api/notifications');
+    if (!res.ok) return;
+    res = await res.json();
+  } catch { return; }
+  notifItems = res.data || [];
+  renderBell(res.meta?.unread || 0);
+
+  // Announce only notifications newer than the last one this browser has seen.
+  const key = `notif-last-${notifUser?.id}`;
+  const maxId = notifItems.reduce((m, n) => Math.max(m, Number(n.id)), 0);
+  let lastSeen = 0;
+  try { lastSeen = Number(localStorage.getItem(key)) || 0; } catch { /* storage blocked */ }
+  if (announce && lastSeen) {
+    const fresh = notifItems.filter((n) => Number(n.id) > lastSeen && !n.read_at).reverse();
+    fresh.slice(-3).forEach((n) => {
+      if (document.hidden) showBrowserNotification(n);
+      else showToast(n.title, 'info');
+    });
+  }
+  if (maxId > lastSeen) { try { localStorage.setItem(key, String(maxId)); } catch { /* ignore */ } }
+}
+
+function placeBellPanel(panel, anchor) {
+  const r = anchor.getBoundingClientRect();
+  const w = panel.offsetWidth;
+  const h = panel.offsetHeight;
+  if (r.left < 320 && window.innerWidth >= 1024) {
+    // Desktop sidebar: open to the right of the button.
+    panel.style.left = `${Math.round(r.right + 12)}px`;
+    panel.style.top = `${Math.round(Math.max(8, Math.min(r.top, window.innerHeight - h - 8)))}px`;
+  } else {
+    panel.style.top = `${Math.round(r.bottom + 8)}px`;
+    panel.style.left = `${Math.round(Math.max(12, Math.min(r.right - w, window.innerWidth - w - 12)))}px`;
+  }
+}
+
+function toggleBell() {
+  const panel = document.getElementById('bell-panel');
+  const open = panel.hidden;
+  document.querySelectorAll('[data-bell-btn]').forEach((b) => b.setAttribute('aria-expanded', String(open)));
+  if (!open) { panel.hidden = true; return; }
+  panel.hidden = false;
+  placeBellPanel(panel, this);
+  panel.dataset.anchor = this.id;
+  pollNotifications({ announce: false });
+  panel.querySelector('a, button:not([hidden])')?.focus();
+}
+
+function closeBell(returnFocus) {
+  const panel = document.getElementById('bell-panel');
+  if (!panel || panel.hidden) return false;
+  panel.hidden = true;
+  document.querySelectorAll('[data-bell-btn]').forEach((b) => b.setAttribute('aria-expanded', 'false'));
+  if (returnFocus) document.getElementById(panel.dataset.anchor)?.focus();
+  return true;
+}
+
+async function markAllNotificationsRead() {
+  try {
+    await apiFetch('/api/notifications/read', { method: 'POST', body: '{}' });
+    notifItems = notifItems.map((n) => ({ ...n, read_at: n.read_at || new Date().toISOString() }));
+    renderBell(0);
+  } catch { /* toast already shown */ }
+}
+
+async function requestNotificationPermission() {
+  if (!('Notification' in window)) return;
+  const result = await Notification.requestPermission();
+  showToast(result === 'granted' ? 'Notifikasi browser aktif selama tab ini terbuka.' : 'Notifikasi browser tidak diizinkan.', result === 'granted' ? 'success' : 'warning');
+  renderBell(notifItems.filter((n) => !n.read_at).length);
+}
+
+function mountBell(user) {
+  notifUser = user;
+  const panel = document.createElement('div');
+  panel.id = 'bell-panel';
+  panel.className = 'bell-panel';
+  panel.hidden = true;
+  panel.setAttribute('role', 'dialog');
+  panel.setAttribute('aria-labelledby', 'bell-heading');
+  panel.innerHTML = `
+    <div class="bell-head">
+      <h2 id="bell-heading">Notifikasi</h2>
+      <button type="button" class="btn-ghost btn-sm" data-click="markAllNotificationsRead">Tandai semua dibaca</button>
+    </div>
+    <ul id="bell-list" class="bell-list"><li class="bell-empty">Memuat…</li></ul>
+    <div class="bell-foot"><button type="button" id="bell-permission" class="btn-secondary btn-sm btn-block" data-click="requestNotificationPermission" hidden>Aktifkan notifikasi browser</button></div>`;
+  document.body.appendChild(panel);
+
+  // Mark one as read when it is opened (navigation continues normally).
+  panel.addEventListener('click', (e) => {
+    const link = e.target.closest('[data-notif-id]');
+    if (!link) return;
+    fetch('/api/notifications/read', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ ids: [Number(link.dataset.notifId)] }), keepalive: true,
+    }).catch(() => {});
+  });
+  document.addEventListener('click', (e) => {
+    if (panel.hidden || panel.contains(e.target) || e.target.closest('[data-bell-btn]')) return;
+    closeBell(false);
+  });
+  window.addEventListener('resize', () => closeBell(false));
+
+  pollNotifications();
+  setInterval(() => { if (!document.hidden) pollNotifications(); }, NOTIF_POLL_MS);
+  // Hidden tabs are throttled; poll less often but still announce via browser notification.
+  setInterval(() => { if (document.hidden) pollNotifications(); }, NOTIF_POLL_MS * 2);
+  document.addEventListener('visibilitychange', () => { if (!document.hidden) pollNotifications(); });
+}
+
 const accountLink = (activeKey) => `
-  <a href="/account" class="btn-action-icon${activeKey === 'account' ? ' active" aria-current="page' : ''}" title="Keamanan akun" aria-label="Keamanan akun">${ICONS.shield}</a>`;
+  <a href="/account" class="btn-action-icon${activeKey === 'account' ? ' active" aria-current="page' : ''}" title="Akun saya" aria-label="Akun saya">${ICONS.shield}</a>`;
+
+// id must be unique per page: the sidebar and the mobile header both render a set.
+const shellTools = (suffix) => `
+  <button type="button" id="bell-btn-${suffix}" class="btn-action-icon bell-btn" data-bell-btn data-click="toggleBell" aria-haspopup="dialog" aria-expanded="false" aria-controls="bell-panel" aria-label="Notifikasi" title="Notifikasi">
+    ${ICONS.bell}<span class="bell-count" data-bell-count hidden>0</span>
+  </button>
+  <button type="button" class="btn-action-icon" data-theme-toggle data-click="toggleTheme" aria-pressed="false" aria-label="Ganti tema">${ICONS.moon}</button>`;
 
 const BRAND_HTML = `
   <div class="brand-mark">${ICONS.check}</div>
@@ -44,7 +221,9 @@ async function initNavigation(activeKey = '') {
 
   // CSS hides .owner-only / .member-only controls by role; the API enforces the same rules.
   document.body.dataset.role = currentUser.role;
+  document.documentElement.dataset.role = currentUser.role;
   document.body.dataset.userId = currentUser.id;
+  try { sessionStorage.setItem('role', currentUser.role); } catch { /* storage blocked */ }
 
   // 2. Cek Notifikasi Mendesak untuk Counter Badge
   let urgentCount = 0;
@@ -82,6 +261,7 @@ async function initNavigation(activeKey = '') {
       <aside class="sidebar">
         <div>
           <div class="brand">${BRAND_HTML}</div>
+          <div class="sidebar-tools">${shellTools('side')}</div>
           <nav class="nav-list" aria-label="Navigasi utama">
             ${links.map((l) => `
               <a href="${l.href}" class="nav-item${current(l.key)}" aria-keyshortcuts="${l.shortcut}">
@@ -114,7 +294,8 @@ async function initNavigation(activeKey = '') {
       <header class="mobile-topbar">
         <div class="brand">${BRAND_HTML}</div>
         <div class="mobile-user">
-          <span>${escapeHtml(currentUser.name.split(' ')[0])}</span>
+          <span class="mobile-user-name">${escapeHtml(currentUser.name.split(' ')[0])}</span>
+          ${shellTools('top')}
           ${accountLink(activeKey)}
           <button type="button" data-click="handleLogout" class="btn-action-icon" title="Keluar dari akun" aria-label="Keluar dari akun">
             ${ICONS.logout}
@@ -139,8 +320,12 @@ async function initNavigation(activeKey = '') {
     `;
   }
 
+  window.syncThemeToggles?.();
+  mountBell(currentUser);
+
   // 6. Global Shortcuts & Modal Escape
   document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && closeBell(true)) return;
     // Tutup Modal via Escape
     if (e.key === 'Escape') {
       const activeModal = document.querySelector('.modal-overlay.active');

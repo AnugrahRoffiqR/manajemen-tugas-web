@@ -8,3 +8,6 @@ seed.js
 AGENTS.md
 *.md
 node_modules
+scripts
+.github
+scrollcraft

@@ -6,6 +6,10 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Masuk — Sistem Manajemen Tugas</title>
   <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+  <link rel="manifest" href="/manifest.webmanifest">
+  <link rel="apple-touch-icon" href="/icons/apple-touch-icon.png">
+  <meta name="theme-color" content="#faf6f0">
+  <script src="/js/theme.js"></script>
   <link rel="stylesheet" href="/css/style.css">
 </head>
 
@@ -58,6 +62,7 @@
           autocomplete="current-password">
       </div>
 
+      <div id="captcha-box" class="captcha-box" hidden></div>
       <button type="submit" id="submit-btn" class="btn-primary btn-block">
         <span id="btn-spinner" class="spinner hidden" aria-hidden="true"></span>
         <span id="btn-text">Masuk ke Sistem</span>
@@ -79,6 +84,7 @@
   </main>
 
   <script src="/js/api.js"></script>
+  <script src="/js/captcha.js"></script>
   <script src="/js/pages/login.js"></script>
 </body>
 

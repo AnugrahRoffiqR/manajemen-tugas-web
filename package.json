@@ -6,7 +6,10 @@
   "scripts": {
     "start": "node server.js",
     "dev": "node server.js",
-    "seed": "node seed.js"
+    "seed": "node seed.js",
+    "migrate": "node scripts/migrate.js",
+    "test": "node test-suite.js",
+    "deploy": "npm test && vercel deploy --prod"
   },
   "keywords": [
     "task-management",

@@ -1,6 +1,6 @@
 -- Skema database Manajemen Tugas (PostgreSQL / Neon).
--- Aman dijalankan ulang: semua perintah idempoten.
--- Enum status/prioritas/peran divalidasi di server.js (TASK_STATUSES, TASK_PRIORITIES, USER_ROLES, USER_STATUSES).
+-- Aman dijalankan ulang: semua perintah idempoten dan hanya menambah (tidak menghapus kolom/data).
+-- Enum status/peran divalidasi di server.js (TASK_STATUSES, USER_ROLES, USER_STATUSES).
 
 CREATE TABLE IF NOT EXISTS users (
   id          SERIAL PRIMARY KEY,
@@ -15,12 +15,9 @@ CREATE TABLE IF NOT EXISTS users (
 CREATE TABLE IF NOT EXISTS tasks (
   id            SERIAL PRIMARY KEY,
   title         TEXT NOT NULL,
-  completed     BOOLEAN DEFAULT false,
   created_at    TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
   user_id       INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
   description   TEXT,
-  category      VARCHAR(50) DEFAULT 'Umum',
-  priority      VARCHAR(20) DEFAULT 'Medium',
   status        VARCHAR(20) DEFAULT 'To Do',
   due_date      TIMESTAMPTZ,
   updated_at    TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
@@ -91,8 +88,8 @@ ALTER TABLE users ADD COLUMN IF NOT EXISTS totp_secret    VARCHAR(64);
 ALTER TABLE users ADD COLUMN IF NOT EXISTS totp_enabled   BOOLEAN NOT NULL DEFAULT false;
 ALTER TABLE users ADD COLUMN IF NOT EXISTS totp_last_step BIGINT;
 
--- Model tugas: Owner membuat & mengatur status; semua anggota mengerjakan dan bisa "Lapor selesai".
--- tasks.user_id = penanggung jawab (selalu Owner). category/priority tidak dipakai lagi tapi dibiarkan.
+-- Model tugas: Owner membuat & mengatur status; anggota mengerjakan dan bisa "Lapor selesai".
+-- tasks.user_id = penanggung jawab (selalu Owner).
 ALTER TABLE tasks ADD COLUMN IF NOT EXISTS done_reported_by INTEGER REFERENCES users(id) ON DELETE SET NULL;
 ALTER TABLE tasks ADD COLUMN IF NOT EXISTS done_reported_at TIMESTAMPTZ;
 
@@ -100,6 +97,88 @@ ALTER TABLE tasks ADD COLUMN IF NOT EXISTS done_reported_at TIMESTAMPTZ;
 ALTER TABLE reminders ADD COLUMN IF NOT EXISTS created_by INTEGER REFERENCES users(id) ON DELETE SET NULL;
 ALTER TABLE reminders ADD COLUMN IF NOT EXISTS batch_id UUID;
 CREATE INDEX IF NOT EXISTS idx_reminders_created_by ON reminders(created_by);
+
+-- Tempat sampah (deleted_at), arsip tugas Done (archived_at), dan tugas berulang.
+-- recurrence: NULL | 'daily' | 'weekly' | 'monthly'. next_task_id mencegah tugas berikutnya dibuat dua kali.
+ALTER TABLE tasks ADD COLUMN IF NOT EXISTS deleted_at   TIMESTAMPTZ;
+ALTER TABLE tasks ADD COLUMN IF NOT EXISTS deleted_by   INTEGER REFERENCES users(id) ON DELETE SET NULL;
+ALTER TABLE tasks ADD COLUMN IF NOT EXISTS archived_at  TIMESTAMPTZ;
+ALTER TABLE tasks ADD COLUMN IF NOT EXISTS recurrence   VARCHAR(10);
+ALTER TABLE tasks ADD COLUMN IF NOT EXISTS next_task_id INTEGER REFERENCES tasks(id) ON DELETE SET NULL;
+CREATE INDEX IF NOT EXISTS idx_tasks_deleted_at ON tasks(deleted_at);
+
+-- Anggota yang ditugaskan. Tugas tanpa baris di sini boleh dilaporkan anggota mana pun.
+CREATE TABLE IF NOT EXISTS task_assignees (
+  task_id  INTEGER NOT NULL REFERENCES tasks(id) ON DELETE CASCADE,
+  user_id  INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  PRIMARY KEY (task_id, user_id)
+);
+CREATE INDEX IF NOT EXISTS idx_task_assignees_user_id ON task_assignees(user_id);
+
+-- Catatan pada tugas. kind: 'comment' | 'report' (catatan lapor selesai) | 'reject' (alasan penolakan).
+CREATE TABLE IF NOT EXISTS task_comments (
+  id          BIGSERIAL PRIMARY KEY,
+  task_id     INTEGER NOT NULL REFERENCES tasks(id) ON DELETE CASCADE,
+  user_id     INTEGER REFERENCES users(id) ON DELETE SET NULL,
+  kind        VARCHAR(10) NOT NULL DEFAULT 'comment',
+  body        TEXT NOT NULL,
+  link_url    VARCHAR(500),
+  created_at  TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+CREATE INDEX IF NOT EXISTS idx_task_comments_task_id ON task_comments(task_id);
+
+-- Riwayat aktivitas per tugas.
+CREATE TABLE IF NOT EXISTS task_activity (
+  id          BIGSERIAL PRIMARY KEY,
+  task_id     INTEGER NOT NULL REFERENCES tasks(id) ON DELETE CASCADE,
+  user_id     INTEGER REFERENCES users(id) ON DELETE SET NULL,
+  action      VARCHAR(20) NOT NULL,
+  detail      VARCHAR(300),
+  created_at  TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+CREATE INDEX IF NOT EXISTS idx_task_activity_task_id ON task_activity(task_id);
+
+-- Subtugas / checklist.
+CREATE TABLE IF NOT EXISTS task_checklist (
+  id          SERIAL PRIMARY KEY,
+  task_id     INTEGER NOT NULL REFERENCES tasks(id) ON DELETE CASCADE,
+  text        VARCHAR(200) NOT NULL,
+  done        BOOLEAN NOT NULL DEFAULT false,
+  done_by     INTEGER REFERENCES users(id) ON DELETE SET NULL,
+  position    INTEGER NOT NULL DEFAULT 0,
+  created_at  TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+CREATE INDEX IF NOT EXISTS idx_task_checklist_task_id ON task_checklist(task_id);
+
+-- Notifikasi di web. show_at di masa depan = muncul nanti (dipakai pengingat).
+CREATE TABLE IF NOT EXISTS notifications (
+  id           BIGSERIAL PRIMARY KEY,
+  user_id      INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  type         VARCHAR(20) NOT NULL,
+  title        VARCHAR(300) NOT NULL,
+  task_id      INTEGER REFERENCES tasks(id) ON DELETE CASCADE,
+  reminder_id  INTEGER REFERENCES reminders(id) ON DELETE CASCADE,
+  show_at      TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  read_at      TIMESTAMPTZ,
+  created_at   TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+CREATE INDEX IF NOT EXISTS idx_notifications_user_show ON notifications(user_id, show_at DESC);
+
+-- Email notifikasi (tugas baru, laporan ditolak, ringkasan harian). Bisa dimatikan di halaman Akun.
+ALTER TABLE users ADD COLUMN IF NOT EXISTS email_notifications BOOLEAN NOT NULL DEFAULT true;
+
+-- Error server & browser untuk dipantau Owner. Dipangkas otomatis > 30 hari (cron harian).
+CREATE TABLE IF NOT EXISTS error_logs (
+  id          BIGSERIAL PRIMARY KEY,
+  source      VARCHAR(10) NOT NULL,
+  tag         VARCHAR(80),
+  message     VARCHAR(1000) NOT NULL,
+  stack       VARCHAR(4000),
+  path        VARCHAR(300),
+  user_id     INTEGER REFERENCES users(id) ON DELETE SET NULL,
+  created_at  TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+CREATE INDEX IF NOT EXISTS idx_error_logs_created_at ON error_logs(created_at DESC);
 
 -- ------------------------------------------------------------------
 -- Migrasi untuk database lama (sudah diterapkan di production).
@@ -117,3 +196,6 @@ END $$;
 -- 2) tasks.user_id wajib terisi. Tugas tanpa pemilik harus dihapus/di-assign dulu,
 --    jika tidak perintah ini gagal (disengaja, agar tidak ada data hilang diam-diam).
 ALTER TABLE tasks ALTER COLUMN user_id SET NOT NULL;
+
+-- 3) Kolom lama category/priority/completed dihapus di db/drop-legacy.sql, TERPISAH dari file ini:
+--    kode versi lama masih menulis kolom completed, jadi DROP baru boleh jalan setelah kode baru live.

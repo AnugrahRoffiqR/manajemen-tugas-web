@@ -5,6 +5,10 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Daftar Tugas — Sistem Manajemen Tugas</title>
   <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+  <link rel="manifest" href="/manifest.webmanifest">
+  <link rel="apple-touch-icon" href="/icons/apple-touch-icon.png">
+  <meta name="theme-color" content="#faf6f0">
+  <script src="/js/theme.js"></script>
   <link rel="stylesheet" href="/css/style.css">
 </head>
 <body>
@@ -37,6 +41,13 @@
 
       <!-- Filter Toolbar -->
       <section class="card toolbar" aria-label="Filter tugas">
+        <div class="toolbar-top">
+          <div class="segmented" role="group" aria-label="Kumpulan tugas">
+            <button type="button" id="tab-active" data-click="setTaskView" data-args='["active"]' aria-pressed="true">Aktif</button>
+            <button type="button" id="tab-archived" data-click="setTaskView" data-args='["archived"]' aria-pressed="false">Arsip</button>
+            <button type="button" id="tab-trash" class="owner-only" data-click="setTaskView" data-args='["trash"]' aria-pressed="false">Sampah</button>
+          </div>
+        </div>
         <div class="chip-row" role="group" aria-label="Filter cepat">
           <button type="button" class="filter-chip active" id="chip-all" data-click="applyQuickChip" data-args='["all"]' aria-pressed="true">Semua Tugas</button>
           <button type="button" class="filter-chip" id="chip-todo" data-click="applyQuickChip" data-args='["todo"]' aria-pressed="false">Belum Dikerjakan</button>
@@ -59,10 +70,45 @@
               <option value="Done">Done</option>
             </select>
 
+            <label for="filter-member" class="sr-only">Anggota</label>
+            <select id="filter-member" class="form-select auto" data-change="loadTasks">
+              <option value="">Semua anggota</option>
+            </select>
+
+            <label for="filter-reported" class="sr-only">Laporan selesai</label>
+            <select id="filter-reported" class="form-select auto" data-change="loadTasks">
+              <option value="">Semua laporan</option>
+              <option value="yes">Sudah dilaporkan</option>
+              <option value="no">Belum dilaporkan</option>
+            </select>
+
+            <label for="filter-sort" class="sr-only">Urutkan</label>
+            <select id="filter-sort" class="form-select auto" data-change="loadTasks">
+              <option value="due_asc">Tenggat terdekat</option>
+              <option value="due_desc">Tenggat terjauh</option>
+              <option value="created_desc">Terbaru dibuat</option>
+              <option value="created_asc">Terlama dibuat</option>
+              <option value="updated_desc">Terakhir diubah</option>
+              <option value="title">Judul A–Z</option>
+            </select>
+
             <button type="button" data-click="resetFilters" class="btn-secondary">Reset</button>
           </div>
         </div>
+
+        <div class="toolbar-row toolbar-dates">
+          <div class="field-inline">
+            <label for="filter-due-from" class="field-label">Tenggat dari</label>
+            <input type="date" id="filter-due-from" class="form-input" data-change="loadTasks">
+          </div>
+          <div class="field-inline">
+            <label for="filter-due-to" class="field-label">sampai</label>
+            <input type="date" id="filter-due-to" class="form-input" data-change="loadTasks">
+          </div>
+        </div>
       </section>
+
+      <p id="view-note" class="view-note" hidden></p>
 
       <!-- VIEW 1: KANBAN BOARD -->
       <div id="kanban-view" class="kanban-grid">
@@ -111,7 +157,7 @@
                 <th>Judul Tugas</th>
                 <th>Status</th>
                 <th>Tenggat Waktu</th>
-                <th>Penanggung Jawab</th>
+                <th>Anggota</th>
                 <th class="right"><span class="sr-only">Aksi</span></th>
               </tr>
             </thead>
@@ -120,6 +166,13 @@
             </tbody>
           </table>
         </div>
+        <nav class="pager" aria-label="Halaman tabel tugas">
+          <span id="pager-info" aria-live="polite"></span>
+          <div class="pager-buttons">
+            <button type="button" id="pager-prev" class="btn-secondary btn-sm" data-click="changePage" data-args='[-1]'>Sebelumnya</button>
+            <button type="button" id="pager-next" class="btn-secondary btn-sm" data-click="changePage" data-args='[1]'>Berikutnya</button>
+          </div>
+        </nav>
       </section>
 
     </main>
@@ -165,15 +218,100 @@
           </div>
         </div>
 
-        <div class="field owner-only">
-          <label for="task-assignee" class="field-label">Penanggung Jawab</label>
-          <select id="task-assignee" class="form-select" aria-describedby="task-assignee-hint"></select>
-          <p id="task-assignee-hint" class="field-hint">Tugas dikerjakan semua anggota. Anggota melapor selesai, Anda yang memindahkan statusnya.</p>
+        <div class="field-row">
+          <div class="field">
+            <label for="task-assignee" class="field-label">Penanggung Jawab</label>
+            <select id="task-assignee" class="form-select"></select>
+          </div>
+          <div class="field">
+            <label for="task-recurrence" class="field-label">Pengulangan</label>
+            <select id="task-recurrence" class="form-select" aria-describedby="task-recurrence-hint">
+              <option value="">Tidak berulang</option>
+              <option value="daily">Harian</option>
+              <option value="weekly">Mingguan</option>
+              <option value="monthly">Bulanan</option>
+            </select>
+          </div>
         </div>
+        <p id="task-recurrence-hint" class="field-hint">Tugas berulang dibuat ulang otomatis saat ditandai Done.</p>
+
+        <fieldset class="field">
+          <legend class="field-label">Anggota yang ditugaskan</legend>
+          <div id="task-members" class="member-picker" aria-describedby="task-members-hint"></div>
+          <p id="task-members-hint" class="field-hint">Kosongkan bila semua anggota boleh mengerjakan. Hanya anggota terpilih yang bisa melapor selesai.</p>
+        </fieldset>
 
         <div class="form-actions">
           <button type="button" data-click="closeTaskModal" class="btn-secondary">Batal</button>
           <button type="submit" id="save-task-btn" class="btn-primary"><span id="save-task-btn-text">Simpan Tugas</span></button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal Detail Tugas -->
+  <div id="detail-modal" class="modal-overlay">
+    <div class="modal-container is-wide" role="dialog" aria-modal="true" aria-labelledby="detail-title">
+      <div class="modal-head">
+        <h2 id="detail-title" class="modal-title">Detail Tugas</h2>
+        <button type="button" data-click="closeDetailModal" class="btn-action-icon" aria-label="Tutup">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </button>
+      </div>
+      <div id="detail-body" class="modal-body">
+        <p class="loading-text">Memuat detail…</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal Lapor Selesai (anggota) -->
+  <div id="report-modal" class="modal-overlay">
+    <div class="modal-container" role="dialog" aria-modal="true" aria-labelledby="report-title">
+      <div class="modal-head">
+        <h2 id="report-title" class="modal-title">Lapor Selesai</h2>
+        <button type="button" data-click="closeReportModal" class="btn-action-icon" aria-label="Tutup">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </button>
+      </div>
+      <form id="report-form" class="modal-body">
+        <input type="hidden" id="report-task-id" value="">
+        <p id="report-task-name" class="detail-desc" style="margin-bottom: 1rem; font-weight: 600;"></p>
+        <div class="field">
+          <label for="report-note" class="field-label">Catatan (opsional)</label>
+          <textarea id="report-note" class="form-textarea" rows="3" maxlength="2000" placeholder="Apa yang sudah dikerjakan?"></textarea>
+        </div>
+        <div class="field">
+          <label for="report-link" class="field-label">Tautan hasil (opsional)</label>
+          <input type="url" id="report-link" class="form-input" maxlength="500" placeholder="https://…" inputmode="url" autocomplete="off">
+          <p class="field-hint">Mis. link Google Drive, dokumen, atau foto hasil kerja.</p>
+        </div>
+        <div class="form-actions">
+          <button type="button" data-click="closeReportModal" class="btn-secondary">Batal</button>
+          <button type="submit" id="report-submit" class="btn-primary">Kirim laporan</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal Tolak Laporan (Owner) -->
+  <div id="reject-modal" class="modal-overlay">
+    <div class="modal-container" role="dialog" aria-modal="true" aria-labelledby="reject-title">
+      <div class="modal-head">
+        <h2 id="reject-title" class="modal-title">Tolak Laporan</h2>
+        <button type="button" data-click="closeRejectModal" class="btn-action-icon" aria-label="Tutup">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </button>
+      </div>
+      <form id="reject-form" class="modal-body">
+        <input type="hidden" id="reject-task-id" value="">
+        <div class="field">
+          <label for="reject-reason" class="field-label">Alasan *</label>
+          <textarea id="reject-reason" class="form-textarea" rows="3" maxlength="1000" required placeholder="Apa yang perlu diperbaiki?"></textarea>
+          <p class="field-hint">Anggota yang melapor akan menerima alasan ini dan bisa melapor ulang.</p>
+        </div>
+        <div class="form-actions">
+          <button type="button" data-click="closeRejectModal" class="btn-secondary">Batal</button>
+          <button type="submit" id="reject-submit" class="btn-danger">Tolak laporan</button>
         </div>
       </form>
     </div>

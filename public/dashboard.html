@@ -5,6 +5,10 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Dashboard — Sistem Manajemen Tugas</title>
   <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+  <link rel="manifest" href="/manifest.webmanifest">
+  <link rel="apple-touch-icon" href="/icons/apple-touch-icon.png">
+  <meta name="theme-color" content="#faf6f0">
+  <script src="/js/theme.js"></script>
   <link rel="stylesheet" href="/css/style.css">
 </head>
 <body>
@@ -191,7 +195,21 @@
             <select id="task-assignee" class="form-select"></select>
           </div>
         </div>
-        <p class="field-hint" style="margin-top: -0.25rem;">Tugas dikerjakan semua anggota. Anggota melapor selesai, Anda yang memindahkan statusnya.</p>
+        <div class="field">
+          <label for="task-recurrence" class="field-label">Pengulangan</label>
+          <select id="task-recurrence" class="form-select">
+            <option value="">Tidak berulang</option>
+            <option value="daily">Harian</option>
+            <option value="weekly">Mingguan</option>
+            <option value="monthly">Bulanan</option>
+          </select>
+        </div>
+
+        <fieldset class="field">
+          <legend class="field-label">Anggota yang ditugaskan</legend>
+          <div id="task-members" class="member-picker" aria-describedby="task-members-hint"></div>
+          <p id="task-members-hint" class="field-hint">Kosongkan bila semua anggota boleh mengerjakan. Anggota melapor selesai, Anda yang memindahkan statusnya.</p>
+        </fieldset>
 
         <div class="form-actions">
           <button type="button" data-click="closeTaskModal" class="btn-secondary">Batal</button>

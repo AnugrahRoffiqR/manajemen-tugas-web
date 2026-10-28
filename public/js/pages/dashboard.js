@@ -88,7 +88,7 @@ async function loadDashboardData() {
     const rowsContainer = document.getElementById('priority-task-rows');
     trendTasks = allTasks;
     renderTrend();
-    const activeTasks = allTasks.filter(t => !t.completed).slice(0, 5);
+    const activeTasks = allTasks.filter(t => t.status !== 'Done').slice(0, 5);
 
     if (!activeTasks.length) {
       const hasAny = allTasks.length > 0;
@@ -106,7 +106,7 @@ async function loadDashboardData() {
     rowsContainer.innerHTML = activeTasks.map(task => `
       <tr>
         <td class="cell-title">
-          ${escapeHtml(task.title)}
+          <a href="/tasks?task=${Number(task.id)}" class="link-title">${escapeHtml(task.title)}</a>
           ${task.description ? `<p class="cell-sub">${escapeHtml(task.description)}</p>` : ''}
         </td>
         <td>
@@ -133,7 +133,13 @@ function taskActionButton(task) {
     return `<button type="button" data-click="toggleTaskStatus" data-args='[${id},"Done"]' class="btn-secondary btn-sm" aria-label="Tandai selesai: ${title}">Selesaikan</button>`;
   }
   if (task.done_reported_at) return '';
-  return `<button type="button" data-click="reportTaskDone" data-args='[${id}]' class="btn-secondary btn-sm" aria-label="Lapor selesai: ${title}">Lapor selesai</button>`;
+  const members = task.members || [];
+  const me = Number(document.body.dataset.userId);
+  if (members.length && !members.some((m) => Number(m.id) === me)) {
+    return `<span class="chip-meta">Ditugaskan ke ${escapeHtml(membersLabel(task))}</span>`;
+  }
+  // The report form (note + link) lives in the task detail panel.
+  return `<a href="/tasks?task=${id}" class="btn-secondary btn-sm" aria-label="Lapor selesai: ${title}">Lapor selesai</a>`;
 }
 
 function renderReported(tasks) {
@@ -153,17 +159,6 @@ function renderReported(tasks) {
       </div>
       ${isOwnerView() ? `<button type="button" data-click="toggleTaskStatus" data-args='[${Number(t.id)},"Done"]' class="btn-primary btn-sm" aria-label="Tandai Done: ${escapeHtml(t.title)}">Tandai Done</button>` : ''}
     </li>`).join('');
-}
-
-async function reportTaskDone(taskId) {
-  this.disabled = true;
-  try {
-    const res = await apiFetch(`/api/tasks/${taskId}/report-done`, { method: 'POST' });
-    showToast(res.message || 'Laporan terkirim ke Owner.', 'success');
-    loadDashboardData();
-  } catch (err) {
-    this.disabled = false;
-  }
 }
 
 function renderTrend() {
@@ -204,8 +199,12 @@ async function toggleTaskStatus(taskId, newStatus) {
 async function openCreateTaskModal() {
   if (!isOwnerView()) return;
   try {
-    await fillAssigneeSelect(document.getElementById('task-assignee'), document.body.dataset.userId);
+    await Promise.all([
+      fillAssigneeSelect(document.getElementById('task-assignee'), document.body.dataset.userId),
+      fillMemberPicker(document.getElementById('task-members'), []),
+    ]);
   } catch { return; }
+  document.getElementById('task-recurrence').value = '';
   const tomorrow = new Date();
   tomorrow.setDate(tomorrow.getDate() + 1);
   tomorrow.setHours(17, 0, 0, 0);
@@ -245,7 +244,14 @@ document.getElementById('create-task-form').addEventListener('submit', async (e)
   try {
     await apiFetch('/api/tasks', {
       method: 'POST',
-      body: JSON.stringify({ title, description, due_date, user_id: Number(document.getElementById('task-assignee').value) }),
+      body: JSON.stringify({
+        title,
+        description,
+        due_date,
+        user_id: Number(document.getElementById('task-assignee').value),
+        recurrence: document.getElementById('task-recurrence').value || null,
+        member_ids: pickedMemberIds(document.getElementById('task-members')),
+      }),
     });
     showToast('Tugas baru berhasil disimpan!', 'success');
     closeTaskModal();

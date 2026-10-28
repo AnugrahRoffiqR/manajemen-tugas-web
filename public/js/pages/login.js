@@ -20,6 +20,7 @@ const twofaCode = document.getElementById('twofa-code');
 const twofaBtn = document.getElementById('twofa-btn');
 const IDLE_LABEL = 'Masuk ke Sistem';
 let challenge = null;
+const captcha = mountCaptcha(document.getElementById('captcha-box'), 'login');
 
 // Toggle the submit button between idle and loading (cold DB start can take several seconds)
 function setLoading(loading) {
@@ -70,9 +71,15 @@ form.addEventListener('submit', async (e) => {
 
   const email = document.getElementById('email').value.trim();
   const password = document.getElementById('password').value;
+  if (captcha.enabled && !captcha.token()) {
+    showError('Selesaikan verifikasi keamanan di atas tombol Masuk.');
+    setLoading(false);
+    return;
+  }
 
   try {
-    const { ok, data } = await postJson('/api/auth/login', { email, password });
+    const { ok, data } = await postJson('/api/auth/login', { email, password, turnstile_token: captcha.token() || undefined });
+    captcha.reset();
     if (ok && data.twoFactorRequired) {
       challenge = data.challenge;
       setLoading(false);
@@ -84,6 +91,7 @@ form.addEventListener('submit', async (e) => {
       setLoading(false);
     }
   } catch (err) {
+    captcha.reset();
     showError('Gagal terhubung ke server backend. Periksa koneksi internet Anda.');
     setLoading(false);
   }

@@ -92,5 +92,10 @@ coverage/
 tmp/
 temp/
 
+# Alat lokal, bukan bagian aplikasi
+/check-prd.js
+/scrollcraft/
+/.agents/skills/scroll-craft/
+
 .vercel
 .env*

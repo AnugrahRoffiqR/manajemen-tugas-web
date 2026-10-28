@@ -3,8 +3,12 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Keamanan Akun — Sistem Manajemen Tugas</title>
+  <title>Akun Saya — Sistem Manajemen Tugas</title>
   <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+  <link rel="manifest" href="/manifest.webmanifest">
+  <link rel="apple-touch-icon" href="/icons/apple-touch-icon.png">
+  <meta name="theme-color" content="#faf6f0">
+  <script src="/js/theme.js"></script>
   <link rel="stylesheet" href="/css/style.css">
 </head>
 <body>
@@ -18,10 +22,70 @@
 
       <header class="page-head">
         <div>
-          <h1 class="page-title">Keamanan Akun</h1>
-          <p class="page-sub">Lindungi akun Anda dengan verifikasi dua langkah.</p>
+          <h1 class="page-title">Akun Saya</h1>
+          <p class="page-sub">Profil, notifikasi, kata sandi, dan verifikasi dua langkah.</p>
         </div>
       </header>
+
+      <section class="card card-pad account-card" aria-labelledby="profile-title">
+        <div class="section-head">
+          <div>
+            <h2 id="profile-title" class="section-title">Profil</h2>
+            <p class="section-sub">Email dan peran diatur oleh Owner.</p>
+          </div>
+        </div>
+        <form id="profile-form">
+          <div class="field-row">
+            <div class="field">
+              <label for="profile-name" class="field-label">Nama</label>
+              <input type="text" id="profile-name" class="form-input" maxlength="100" required autocomplete="name">
+            </div>
+            <div class="field">
+              <label for="profile-email" class="field-label">Email</label>
+              <input type="email" id="profile-email" class="form-input" readonly aria-readonly="true">
+            </div>
+          </div>
+          <label class="switch-row" for="profile-email-notif">
+            <span>
+              <span class="field-label" style="display: block;">Kirim notifikasi lewat email</span>
+              <span class="field-hint">Tugas baru, laporan ditolak/diterima, dan ringkasan harian tenggat.</span>
+            </span>
+            <input type="checkbox" id="profile-email-notif">
+          </label>
+          <div class="form-actions">
+            <button type="submit" id="profile-btn" class="btn-primary">Simpan profil</button>
+          </div>
+        </form>
+      </section>
+
+      <section class="card card-pad account-card" aria-labelledby="password-title">
+        <div class="section-head">
+          <div>
+            <h2 id="password-title" class="section-title">Ganti Kata Sandi</h2>
+            <p class="section-sub">Perangkat lain akan otomatis keluar setelah kata sandi diganti.</p>
+          </div>
+        </div>
+        <form id="password-form">
+          <div class="field">
+            <label for="pw-current" class="field-label">Kata sandi saat ini</label>
+            <input type="password" id="pw-current" class="form-input" autocomplete="current-password" required>
+          </div>
+          <div class="field-row">
+            <div class="field">
+              <label for="pw-new" class="field-label">Kata sandi baru</label>
+              <input type="password" id="pw-new" class="form-input" autocomplete="new-password" minlength="8" maxlength="200" required aria-describedby="pw-hint">
+            </div>
+            <div class="field">
+              <label for="pw-confirm" class="field-label">Ulangi kata sandi baru</label>
+              <input type="password" id="pw-confirm" class="form-input" autocomplete="new-password" minlength="8" maxlength="200" required>
+            </div>
+          </div>
+          <p id="pw-hint" class="field-hint">Minimal 8 karakter.</p>
+          <div class="form-actions">
+            <button type="submit" id="password-btn" class="btn-primary">Ganti kata sandi</button>
+          </div>
+        </form>
+      </section>
 
       <section class="card card-pad account-card" aria-labelledby="twofa-title">
         <div class="section-head">
@@ -85,6 +149,20 @@
             <button type="submit" id="disable-btn" class="btn-danger">Nonaktifkan 2FA</button>
           </form>
         </div>
+      </section>
+
+      <section class="card card-pad account-card owner-only" aria-labelledby="errors-title">
+        <div class="section-head">
+          <div>
+            <h2 id="errors-title" class="section-title">Log Error Aplikasi</h2>
+            <p class="section-sub">Error dari server dan browser pengguna, 100 terbaru. Otomatis dibersihkan setelah 30 hari.</p>
+          </div>
+          <div class="cell-actions">
+            <button type="button" class="btn-secondary btn-sm" data-click="loadErrorLogs">Muat ulang</button>
+            <button type="button" id="clear-errors-btn" class="btn-danger btn-sm" data-click="clearErrorLogs">Bersihkan</button>
+          </div>
+        </div>
+        <div id="error-log-list"><p class="loading-text">Memuat…</p></div>
       </section>
 
     </main>

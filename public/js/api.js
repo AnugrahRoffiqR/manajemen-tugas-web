@@ -76,6 +76,36 @@ async function fillAssigneeSelect(select, selectedId) {
   if (selectedId) select.value = String(selectedId);
 }
 
+// Checkbox list of active members for task assignment. No box ticked = every member may work on it.
+let activeMembersCache = null;
+async function fillMemberPicker(container, selectedIds = []) {
+  if (!activeMembersCache) {
+    const res = await apiFetch('/api/users');
+    activeMembersCache = (res.data || []).filter((u) => u.status === 'Active' && u.role === 'User');
+  }
+  const selected = new Set(selectedIds.map(Number));
+  container.innerHTML = activeMembersCache.length
+    ? activeMembersCache.map((u) => `
+        <label class="check-row">
+          <input type="checkbox" name="member_ids" value="${Number(u.id)}" ${selected.has(Number(u.id)) ? 'checked' : ''}>
+          <span>${escapeHtml(u.name)}</span>
+        </label>`).join('')
+    : '<p class="field-hint">Belum ada anggota aktif. Tugas tetap bisa dibuat.</p>';
+}
+
+function pickedMemberIds(container) {
+  return [...container.querySelectorAll('input[name="member_ids"]:checked')].map((el) => Number(el.value));
+}
+
+const RECURRENCE_LABEL = { daily: 'Harian', weekly: 'Mingguan', monthly: 'Bulanan' };
+
+// "Semua anggota" or the assigned members' first names.
+function membersLabel(task) {
+  const members = task.members || [];
+  if (!members.length) return 'Semua anggota';
+  return members.map((m) => m.name.split(' ')[0]).join(', ');
+}
+
 // Reminder recipients: "Semua anggota" plus each active member.
 async function fillMemberSelect(select) {
   const res = await apiFetch('/api/users');
@@ -222,8 +252,36 @@ function bindDelegatedEvents() {
 }
 bindDelegatedEvents();
 
+// Browser errors go to /api/client-errors (Owner sees them on the Akun page). Capped per page load.
+(function reportClientErrors() {
+  let sent = 0;
+  const send = (message, stack) => {
+    if (sent >= 5 || !message) return;
+    sent += 1;
+    fetch('/api/client-errors', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ message: String(message).slice(0, 1000), stack: stack ? String(stack).slice(0, 4000) : null, path: location.pathname }),
+      keepalive: true,
+    }).catch(() => {});
+  };
+  window.addEventListener('error', (e) => {
+    if (e.target && e.target !== window) return; // failed <img>/<script> loads: not code errors
+    if (/^ResizeObserver loop/.test(e.message || '')) return; // benign browser notice (charts resizing)
+    send(e.message, e.error?.stack || `${e.filename}:${e.lineno}:${e.colno}`);
+  });
+  window.addEventListener('unhandledrejection', (e) => {
+    const r = e.reason;
+    // Handled API failures already showed a toast; only report real bugs.
+    if (r?.handled || r instanceof TypeError && /fetch/i.test(r.message)) return;
+    if (r instanceof Error && !(r instanceof TypeError || r instanceof ReferenceError || r instanceof SyntaxError || r instanceof RangeError)) return;
+    send(r?.message || String(r), r?.stack);
+  });
+})();
+
 // User Logout
 async function handleLogout() {
+  try { sessionStorage.removeItem('role'); } catch { /* storage blocked */ }
   try {
     await fetch('/api/auth/logout', { method: 'POST' });
     showToast('Berhasil keluar. Sampai jumpa!', 'success');
