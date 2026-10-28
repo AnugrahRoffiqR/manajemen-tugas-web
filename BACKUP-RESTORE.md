@@ -11,11 +11,12 @@ lihat di Neon Console.
 | Paket | Free | `describe_project` |
 | Riwayat point-in-time | 6 jam | `history_retention_seconds=21600`; titik 30 jam lalu ditolak "before retention window" |
 | Jadwal backup otomatis | tidak ada | `get_snapshot_schedule(production)` → `[]` |
-| Snapshot tersedia | 1: "post-fix-2026-10-26", manual, 2026-10-26 04:04 UTC, ±32 MB | `list_snapshots` |
+| Snapshot tersedia | 1: "pre-release-2026-10-28", manual, 2026-10-28 04:18 UTC (sebelum migrasi rilis) | `list_snapshots` |
 | Batas snapshot manual | 1 (Free), 100 (paket berbayar) | dokumentasi & halaman harga resmi Neon |
 
 Akibatnya: snapshot baru **tidak bisa** dibuat tanpa menghapus snapshot yang ada, dan tidak ada backup harian.
-Snapshot yang ada **tidak** berisi perubahan sesudah 26 Okt (mis. tugas 31 yang dibuat 27 Okt).
+Snapshot "post-fix-2026-10-26" (dipakai uji restore di bawah) sudah dihapus 28 Okt dan diganti "pre-release-2026-10-28".
+Snapshot yang ada berisi kondisi production **sebelum** migrasi rilis 28 Okt.
 
 ## Uji restore 28 Okt 2026 (sudah dijalankan, dengan izin)
 

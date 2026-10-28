@@ -2,14 +2,14 @@
 
 Status: **PASS** = dijalankan, ada bukti · **FAIL** = diperiksa, gagal · **BLOCKED** = butuh izin/akses/prasyarat ·
 **NOT RUN** = belum dijalankan. Kerjakan berurutan; jangan lanjut bila ada FAIL atau BLOCKED sebelumnya.
-Terakhir diperbarui: 28 Okt 2026 (commit lokal, belum ada push/deploy).
+Terakhir diperbarui: 28 Okt 2026 (sudah di-push ke GitHub privat, sudah deploy production).
 
 | # | Item | Status | Bukti / alasan |
 |---|---|---|---|
-| 1 | Working tree & review diff | PASS (lokal) / BLOCKED (push) | Branch `main`: `e82fa3c` release hardening, `8df8561` perbaikan bug review, lalu commit perbaikan lanjutan (lockout ganti sandi, tenggat bulanan, `.gitattributes`). Working tree bersih. Belum ada remote. `check-prd.js`, `scrollcraft/`, `.agents/skills/scroll-craft/` di-ignore. |
+| 1 | Working tree & review diff | PASS | Branch `main` di-push ke GitHub privat `AnugrahRoffiqR/manajemen-tugas-web` (origin). Working tree bersih. `check-prd.js`, `scrollcraft/`, `.agents/skills/scroll-craft/` di-ignore. |
 | 2 | Test lokal & build | PASS | `npm test` 103/103 (DEV, termasuk TC-36c); UI 59/59 di 390/768/1440; `node --check` semua file server; `npm audit` 0 kerentanan. Tidak ada tahap build/lint/typecheck. |
-| 3 | CI GitHub berhasil | BLOCKED | Tidak ada remote/repo GitHub; secrets & variable belum ada. Workflow siap (lihat README "Uji"). |
-| 4 | Env production lengkap | BLOCKED | Env Vercel tidak boleh dibaca/diubah dari sini. Diduga belum ada: `APP_URL`, `CRON_SECRET`, `OWNER_CONTACT_WA`, `RESEND_*`, `TURNSTILE_*`. Cek manual di Vercel → Settings → Environment Variables (lihat tabel di bawah). |
+| 3 | CI GitHub berhasil | PASS | 4 secrets + variable `DB_TARGET_CONFIRM` (endpoint DEV) terisi. Run 28 Okt: migrate ke DEV, `npm test` 103/103. |
+| 4 | Env production lengkap | PASS kecuali Turnstile | Ada di Vercel production: `DATABASE_URL`, `ADMIN_SESSION_SECRET`, `APP_URL`, `OWNER_CONTACT_WA`, `RESEND_API_KEY`, `RESEND_FROM`, `CRON_SECRET` (ditambahkan 28 Okt). Belum: `TURNSTILE_*` (#5). |
 | 5 | Turnstile production | BLOCKED (28 Okt: `TURNSTILE_*` belum ada di Vercel, captcha nonaktif) | Belum ada widget/key production. Wajib key asli (bukan test key `1x00000000…`; server mencatat peringatan bila terpasang). |
 | 6 | Resend | BLOCKED | Butuh domain terverifikasi untuk `RESEND_FROM`. Tanpa itu reset sandi Owner via email nonaktif (503 `MAIL_NOT_CONFIGURED`). |
 | 7 | Backup production terbaru | PASS | Snapshot lama 26 Okt dihapus (izin user), snapshot baru "pre-release-2026-10-28" 04:18 UTC dari production. Paket Free: tanpa jadwal otomatis. |
@@ -20,7 +20,7 @@ Terakhir diperbarui: 28 Okt 2026 (commit lokal, belum ada push/deploy).
 | 12 | Snapshot sebelum migration | PASS | "pre-release-2026-10-28" (lihat #7). |
 | 13 | Deployment | PASS | 28 Okt: migration `schema.sql` (43 statement, satu transaksi) di production; skema = DEV kecuali 3 kolom legacy. Deploy `vercel deploy --prod` dari commit `41ca0f0`, READY. `CRON_SECRET` ditambahkan. |
 | 14 | Live smoke test | PASS (tanpa login) | `/login` `/` `/offline` `/sw.js`(mt-v2) manifest ikon 200; URL acak 404; `/api/auth/me` & cron tanpa secret 401; login salah 401; 5 header keamanan ada; `error_logs` 0. Login Owner & buat tugas: belum (perlu kredensial prod). |
-| 15 | Monitoring error & fungsi penting | NOT RUN | Setelah deploy: Owner → halaman Log Error, Vercel → Logs, cron harian 00:00 UTC berjalan (log `/api/cron/daily` 200). |
+| 15 | Monitoring error & fungsi penting | PARTIAL (28 Okt: `error_logs` prod 0, Vercel log error 30 menit terakhir 0; cron harian belum lewat jadwal) | Setelah deploy: Owner → halaman Log Error, Vercel → Logs, cron harian 00:00 UTC berjalan (log `/api/cron/daily` 200). |
 | 16 | Rollback plan | PASS (tertulis) | Bagian "Rollback" di bawah; belum pernah dipraktikkan di production. |
 | 17 | Izin terpisah sebelum `db/drop-legacy.sql` | BLOCKED | Checklist khusus di bawah. |
 
