@@ -1,9 +1,10 @@
 // Service worker: offline shell only. API calls always go to the network (never cached),
 // so data is never stale; pages fall back to the cached copy, then to /offline.html.
-const VERSION = 'mt-v2';
+const VERSION = 'mt-v4';
 const SHELL = [
   '/offline.html', '/css/style.css', '/js/theme.js', '/js/api.js', '/js/navbar.js',
-  '/favicon.svg', '/icons/icon-192.png', '/manifest.webmanifest',
+  '/icons/icon-192.png', '/icons/icon-512.png', '/icons/icon-maskable-512.png',
+  '/icons/apple-touch-icon.png', '/icons/logotask.png', '/manifest.webmanifest',
 ];
 
 self.addEventListener('install', (event) => {

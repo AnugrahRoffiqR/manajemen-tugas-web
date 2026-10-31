@@ -197,7 +197,7 @@ const shellTools = (suffix) => `
   <button type="button" class="btn-action-icon" data-theme-toggle data-click="toggleTheme" aria-pressed="false" aria-label="Ganti tema">${ICONS.moon}</button>`;
 
 const BRAND_HTML = `
-  <div class="brand-mark">${ICONS.check}</div>
+  <img src="/icons/logotask.png" width="40" height="40" alt="" aria-hidden="true">
   <div>
     <div class="brand-name">Manajemen Tugas</div>
     <div class="brand-sub">Workspace Tim</div>
