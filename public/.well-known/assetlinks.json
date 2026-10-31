@@ -1,0 +1,14 @@
+[
+  {
+    "relation": [
+      "delegate_permission/common.handle_all_urls"
+    ],
+    "target": {
+      "namespace": "android_app",
+      "package_name": "id.roffiq.manajementugas",
+      "sha256_cert_fingerprints": [
+        "8E:B1:70:15:E7:19:40:96:16:00:6F:66:21:3D:60:24:D6:A5:28:F3:D3:6A:7A:25:53:B9:5F:D4:E9:D6:C3:26"
+      ]
+    }
+  }
+]
