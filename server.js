@@ -61,6 +61,7 @@ const SECURITY_HEADERS = {
   'X-Content-Type-Options': 'nosniff',
   'Referrer-Policy': 'strict-origin-when-cross-origin',
   'Permissions-Policy': 'camera=(), microphone=(), geolocation=()',
+  'Strict-Transport-Security': 'max-age=31536000',
 };
 app.use((req, res, next) => {
   res.set(SECURITY_HEADERS);
@@ -2122,6 +2123,7 @@ app.get('/forgot-password', (req, res) => {
 });
 
 app.get('/reset-password', (req, res) => {
+  res.set('Cache-Control', 'no-store');
   res.sendFile(path.join(__dirname, 'public', 'reset-password.html'));
 });
 
