@@ -605,11 +605,14 @@ app.post('/api/auth/2fa/disable', authMiddleware, async (req, res) => {
         message: 'Kata sandi atau kode verifikasi salah.',
       });
     }
-    await db.query(
-      'UPDATE users SET totp_enabled = false, totp_secret = NULL, totp_last_step = NULL WHERE id = $1',
+    const upd = await db.query(
+      `UPDATE users SET totp_enabled = false, totp_secret = NULL, totp_last_step = NULL,
+              session_version = session_version + 1
+       WHERE id = $1 RETURNING id, name, email, role, session_version`,
       [req.user.id]
     );
-    return res.json({ success: true, message: '2FA dinonaktifkan.' });
+    res.cookie(COOKIE_NAME, generateToken(upd.rows[0]), COOKIE_OPTIONS);
+    return res.json({ success: true, message: '2FA dinonaktifkan. Perangkat lain yang sedang login telah dikeluarkan.' });
   } catch (err) {
     reportError(req, '[API 2FA DISABLE]', err);
     return res.status(500).json({ success: false, message: 'Gagal menonaktifkan 2FA.' });

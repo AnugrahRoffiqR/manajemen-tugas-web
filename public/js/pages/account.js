@@ -87,7 +87,7 @@ document.getElementById('disable-form').addEventListener('submit', async (e) => 
     });
     showToast(res.message, 'success');
     e.target.reset();
-    showPanel('twofa-off');
+    await loadTwoFactorStatus();
   } catch (err) {
     // apiFetch already showed the error toast
   } finally {
